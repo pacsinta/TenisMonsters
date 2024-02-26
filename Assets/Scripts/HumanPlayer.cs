@@ -23,6 +23,10 @@ public partial class PlayerMovement : PlayerAbilites
         transform.Translate(Vector3.forward * Time.deltaTime * speed * verticalInput);
         transform.Translate(Vector3.right * Time.deltaTime * speed * horizontalInput);
 
+        if(Input.GetKeyDown(KeyCode.Escape))
+        {
+            PauseGame();
+        }
         if(Input.GetKeyDown(KeyCode.Space))
         {
             Jump();
@@ -31,5 +35,10 @@ public partial class PlayerMovement : PlayerAbilites
         {
             CickBall();
         }
+    }
+
+    void PauseGame()
+    {
+        Application.Quit();
     }
 }
