@@ -678,7 +678,7 @@ GameObject:
   - component: {fileID: 516593441}
   - component: {fileID: 516593442}
   m_Layer: 5
-  m_Name: Toggle
+  m_Name: IsHostToggle
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -693,8 +693,8 @@ RectTransform:
   m_GameObject: {fileID: 516593440}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
+  m_LocalScale: {x: 1.678389, y: 1.678389, z: 1.678389}
+  m_ConstrainProportionsScale: 1
   m_Children:
   - {fileID: 1730305021}
   - {fileID: 974588863}
@@ -702,7 +702,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 953, y: 391}
+  m_AnchoredPosition: {x: 77, y: 216}
   m_SizeDelta: {x: 160, y: 20}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &516593442
@@ -751,8 +751,20 @@ MonoBehaviour:
   m_Group: {fileID: 0}
   onValueChanged:
     m_PersistentCalls:
-      m_Calls: []
-  m_IsOn: 1
+      m_Calls:
+      - m_Target: {fileID: 1971778028}
+        m_TargetAssemblyTypeName: MainMenu, Assembly-CSharp
+        m_MethodName: IsHostToggled
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+  m_IsOn: 0
 --- !u!1 &974588862
 GameObject:
   m_ObjectHideFlags: 0
@@ -823,7 +835,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: Toggle
+  m_Text: Is host
 --- !u!222 &974588865
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -1182,7 +1194,7 @@ Camera:
   m_Enabled: 1
   serializedVersion: 2
   m_ClearFlags: 2
-  m_BackGroundColor: {r: 1, g: 0.42657948, b: 0, a: 0}
+  m_BackGroundColor: {r: 0, g: 0.65881395, b: 1, a: 0}
   m_projectionMatrixMode: 1
   m_GateFitMode: 2
   m_FOVAxisMode: 0
@@ -1250,6 +1262,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a8eabf4c34546254486c8ac61935c0e2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  IsHostToggle: {fileID: 516593442}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

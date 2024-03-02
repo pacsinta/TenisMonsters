@@ -1,10 +1,23 @@
+using Assets.Scripts;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Netcode;
 using UnityEngine;
 
 public class GameRules : MonoBehaviour
 {
-    // Start is called before the first frame update
+    void Awake()
+    {
+        Debug.Log("MultiplayerMode: " + (Settings.isHost ? "Host" : "Client"));
+        if(Settings.isHost)
+        {
+            NetworkManager.Singleton.StartHost(); // Start the server
+        }
+        else
+        {
+            // Do client stuff
+        }
+    }
     void Start()
     {
         
