@@ -10,6 +10,8 @@ GameObject:
   m_Component:
   - component: {fileID: 5079527059283233883}
   - component: {fileID: 6314719177498053234}
+  - component: {fileID: 3301438653888039764}
+  - component: {fileID: -6535512337876176762}
   m_Layer: 0
   m_Name: OnlinePlayer
   m_TagString: Untagged
@@ -54,6 +56,54 @@ MonoBehaviour:
   SpawnWithObservers: 1
   DontDestroyWithOwner: 0
   AutoObjectParentSync: 1
+--- !u!114 &3301438653888039764
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1102946381779666811}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1eda967bb4a8dcb4082ad252292bb84c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  kickForce: 15
+  ballDistance: 2
+  jumpForce: 5
+  ball: {fileID: 3615773093467541624, guid: 4d878265aa0b0404097233bc870ff062, type: 3}
+  speed: 5
+--- !u!114 &-6535512337876176762
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1102946381779666811}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: df2868252ab5c4d1da357e8f11f1b524, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  UseUnreliableDeltas: 0
+  SyncPositionX: 1
+  SyncPositionY: 1
+  SyncPositionZ: 1
+  SyncRotAngleX: 0
+  SyncRotAngleY: 0
+  SyncRotAngleZ: 0
+  SyncScaleX: 0
+  SyncScaleY: 0
+  SyncScaleZ: 0
+  PositionThreshold: 0.001
+  RotAngleThreshold: 0.01
+  ScaleThreshold: 0.01
+  UseQuaternionSynchronization: 0
+  UseQuaternionCompression: 0
+  UseHalfFloatPrecision: 0
+  InLocalSpace: 0
+  Interpolate: 1
+  SlerpPosition: 0
 --- !u!1 &2378318322983339654
 GameObject:
   m_ObjectHideFlags: 0
@@ -187,5 +237,5 @@ Rigidbody:
   m_UseGravity: 1
   m_IsKinematic: 0
   m_Interpolate: 0
-  m_Constraints: 0
+  m_Constraints: 112
   m_CollisionDetection: 0

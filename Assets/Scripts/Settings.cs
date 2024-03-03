@@ -7,8 +7,8 @@ using UnityEngine;
 
 namespace Assets.Scripts
 {
-    public class Settings : MonoBehaviour
+    public static class Settings
     {
-        public static bool isHost = false;
+        public static bool isHost = true;
     }
 }

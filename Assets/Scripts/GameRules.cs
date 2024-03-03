@@ -15,17 +15,7 @@ public class GameRules : MonoBehaviour
         }
         else
         {
-            // Do client stuff
+            NetworkManager.Singleton.StartClient(); // Start the client
         }
-    }
-    void Start()
-    {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
     }
 }

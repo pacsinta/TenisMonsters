@@ -16,15 +16,11 @@ public class MainMenu : MonoBehaviour
     }
     public void StartNewGame()
     {
-        SceneManager.LoadSceneAsync(1); // Load the game scene
+        SceneLoader.LoadScene(SceneLoader.Scene.GameScene);
     }
 
     public void QuitGame()
     {
         Application.Quit();
-    }
-    public void Update()
-    {
-        Debug.Log(Settings.isHost);
     }
 }
