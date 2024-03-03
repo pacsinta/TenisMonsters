@@ -1,11 +1,13 @@
 using Assets.Scripts;
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using Unity.Netcode;
 using UnityEngine;
 
 public class GameRules : MonoBehaviour
 {
+    public TextMeshProUGUI debugText;
     void Awake()
     {
         Debug.Log("MultiplayerMode: " + (Settings.isHost ? "Host" : "Client"));
@@ -17,5 +19,10 @@ public class GameRules : MonoBehaviour
         {
             NetworkManager.Singleton.StartClient(); // Start the client
         }
+    }
+
+    void Start()
+    {
+        debugText.text = "MultiplayerMode: " + (Settings.isHost ? "Host" : "Client");
     }
 }
