@@ -20,7 +20,7 @@ public class MainMenu : NetworkBehaviour
     {
         startGameBtn.onClick.AddListener(StartNewGame);
         exitBtn.onClick.AddListener(QuitGame);
-        playerName.onValueChanged.AddListener(PlayerNameChenged);
+        playerName.onValueChanged.AddListener(PlayerNameChanged);
 
         playerInfo = new PlayerInfo();
         playerName.text = playerInfo.PlayerName;
@@ -29,7 +29,21 @@ public class MainMenu : NetworkBehaviour
     {
         if (string.IsNullOrEmpty(playerName.text)) return;
 
-        if(IsHostToggle.isOn)
+        startNetworkManager(IsHostToggle.isOn);
+        SceneLoader.LoadScene(SceneLoader.Scene.LobbyScene);
+    }
+    void QuitGame()
+    {
+        Application.Quit();
+    }
+    private void PlayerNameChanged(string newName)
+    {
+        playerInfo.PlayerName = newName;
+        playerInfo.StorePlayerInfo();
+    }
+    void startNetworkManager(bool isHost)
+    {
+        if (isHost)
         {
             NetworkManager.Singleton.StartHost();
         }
@@ -37,17 +51,5 @@ public class MainMenu : NetworkBehaviour
         {
             NetworkManager.Singleton.StartClient();
         }
-        SceneLoader.LoadScene(SceneLoader.Scene.LobbyScene);
-    }
-
-    void QuitGame()
-    {
-        Application.Quit();
-    }
-
-    private void PlayerNameChenged(string newName)
-    {
-        playerInfo.PlayerName = newName;
-        playerInfo.StorePlayerInfo();
     }
 }
