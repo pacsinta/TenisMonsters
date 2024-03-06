@@ -1,26 +1,53 @@
 using Assets.Scripts;
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using Unity.Netcode;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
-public class MainMenu : MonoBehaviour
+public class MainMenu : NetworkBehaviour
 {
     public Toggle IsHostToggle;
+    public TMP_InputField playerName;
+    public Button startGameBtn;
+    public Button exitBtn;
 
-    public void IsHostToggled()
+    private PlayerInfo playerInfo;
+    private void Start()
     {
-        Settings.isHost = IsHostToggle.isOn;
+        startGameBtn.onClick.AddListener(StartNewGame);
+        exitBtn.onClick.AddListener(QuitGame);
+        playerName.onValueChanged.AddListener(PlayerNameChenged);
+
+        playerInfo = new PlayerInfo();
+        playerName.text = playerInfo.PlayerName;
     }
-    public void StartNewGame()
+    void StartNewGame()
     {
-        SceneLoader.LoadScene(SceneLoader.Scene.GameScene);
+        if (string.IsNullOrEmpty(playerName.text)) return;
+
+        if(IsHostToggle.isOn)
+        {
+            NetworkManager.Singleton.StartHost();
+        }
+        else
+        {
+            NetworkManager.Singleton.StartClient();
+        }
+        SceneLoader.LoadScene(SceneLoader.Scene.LobbyScene);
     }
 
-    public void QuitGame()
+    void QuitGame()
     {
         Application.Quit();
+    }
+
+    private void PlayerNameChenged(string newName)
+    {
+        playerInfo.PlayerName = newName;
+        playerInfo.StorePlayerInfo();
     }
 }
