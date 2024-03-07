@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using Unity.Netcode;
+using Unity.Netcode.Transports.UTP;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -14,6 +15,7 @@ public class MainMenu : NetworkBehaviour
     public TMP_InputField playerName;
     public Button startGameBtn;
     public Button exitBtn;
+    public TMP_InputField hostIpInput;
 
     private PlayerInfo playerInfo;
     private void Start()
@@ -30,7 +32,12 @@ public class MainMenu : NetworkBehaviour
         if (string.IsNullOrEmpty(playerName.text)) return;
 
         startNetworkManager(IsHostToggle.isOn);
-        SceneLoader.LoadScene(SceneLoader.Scene.LobbyScene);
+
+        if (IsHost)
+        {
+            SceneLoader.LoadScene(SceneLoader.Scene.LobbyScene, NetworkManager.Singleton);
+        }
+        
     }
     void QuitGame()
     {
@@ -43,6 +50,12 @@ public class MainMenu : NetworkBehaviour
     }
     void startNetworkManager(bool isHost)
     {
+        /*NetworkManager.Singleton.GetComponent<UnityTransport>().SetConnectionData(
+            hostIpInput.text,
+            (ushort)7777,
+            "0.0.0.0"
+        );*/
+        
         if (isHost)
         {
             NetworkManager.Singleton.StartHost();

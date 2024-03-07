@@ -3,6 +3,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
+using Unity.Collections;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.UI;
@@ -11,12 +12,22 @@ public class Lobby : NetworkBehaviour
 {
     public TextMeshProUGUI clientsText;
     public Button startGameBtn;
+    public TextMeshProUGUI IsHostText;
 
     private int maxPlayerCount = 2;
     private PlayerInfo playerInfo;
-    private void Start()
+
+    public override void OnNetworkSpawn()
     {
         clientsText.text = "No clients connected";
+        if(IsServer)
+        {
+            IsHostText.text = "Host";
+        }
+        else
+        {
+            IsHostText.text = "Client";
+        }
 
         NetworkManager.Singleton.OnClientConnectedCallback += HandleClientConnect;
         NetworkManager.Singleton.ConnectionApprovalCallback += ApprovalCheck;
@@ -24,6 +35,18 @@ public class Lobby : NetworkBehaviour
         startGameBtn.onClick.AddListener(StartGame);
 
         playerInfo = new PlayerInfo();
+    }
+
+    private void Update()
+    {
+        if(string.IsNullOrEmpty(playerNames.Value.clientPlayerName.ToString()))
+        {
+            clientsText.text = "No clients connected";
+        }
+        else
+        {
+            clientsText.text = "Host: " + playerNames.Value.hostPlayerName + "\nClient: " + playerNames.Value.clientPlayerName;
+        }
     }
 
     void ApprovalCheck(NetworkManager.ConnectionApprovalRequest request, NetworkManager.ConnectionApprovalResponse response)
@@ -36,35 +59,60 @@ public class Lobby : NetworkBehaviour
         {
             response.Approved = true;
         }
-
-        Debug.Log("ApprovalCheck: " + response.Approved);
     }
 
     void HandleClientConnect(ulong clientId)
     {
-        Debug.Log("Handle Connection: " + clientId);
-        
-        if(IsOwner)
+        if(NetworkManager.Singleton.LocalClientId == clientId)
         {
             RegisterPlayerOnServerRpc(playerInfo.PlayerName);
         }
     }
 
-    void ApprovalCheckDecline(NetworkManager.ConnectionApprovalRequest request, NetworkManager.ConnectionApprovalResponse response)
-    {
-        response.Approved = false;
-        response.Reason = "Game already in progress";
-    }
-
     void StartGame()
     {
-        SceneLoader.LoadScene(SceneLoader.Scene.GameScene);
+        if(IsServer)
+        {
+            SceneLoader.LoadScene(SceneLoader.Scene.GameScene, NetworkManager.Singleton);
+        }
+        else
+        {
+            StartGameServerRpc();
+        }
     }
 
-    [ServerRpc]
-    void RegisterPlayerOnServerRpc(string PlayerName)
+    [ServerRpc(RequireOwnership = false)]
+    void RegisterPlayerOnServerRpc(string playerName,ServerRpcParams serverRpcParams = default)
     {
-        Debug.Log("PlayerName: " + PlayerName);
-        clientsText.text = "Client connected: " + PlayerName;
+        var clientId = serverRpcParams.Receive.SenderClientId;
+        if (NetworkManager.ConnectedClients.ContainsKey(clientId))
+        {
+            if (playerName.Length > 32) playerName = playerName.Substring(0, 32);
+            playerNames.Value = new PlayerNames
+            {
+                hostPlayerName = playerInfo.PlayerName,
+                clientPlayerName = playerName
+            };
+        }
     }
+
+    [ServerRpc(RequireOwnership = false)]
+    void StartGameServerRpc(ServerRpcParams serverRpcParams = default)
+    {
+        SceneLoader.LoadScene(SceneLoader.Scene.GameScene, NetworkManager.Singleton);
+    }
+
+    struct PlayerNames : INetworkSerializable
+    {
+        public FixedString32Bytes hostPlayerName;
+        public FixedString32Bytes clientPlayerName;
+
+        public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
+        {
+            serializer.SerializeValue(ref hostPlayerName);
+            serializer.SerializeValue(ref clientPlayerName);
+        }
+    }
+
+    NetworkVariable<PlayerNames> playerNames = new NetworkVariable<PlayerNames>();
 }

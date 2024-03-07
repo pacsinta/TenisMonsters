@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -13,8 +14,8 @@ public class SceneLoader
         LobbyScene = 2
     }
 
-    public static void LoadScene(Scene scene)
+    public static void LoadScene(Scene scene, NetworkManager networkManager)
     {
-        SceneManager.LoadScene(scene.ToString());
+        networkManager.SceneManager.LoadScene(scene.ToString(), LoadSceneMode.Single);
     }
 }
