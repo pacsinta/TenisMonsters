@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 705507994}
-  m_IndirectSpecularColor: {r: 0.44657826, g: 0.49641263, b: 0.57481676, a: 1}
+  m_IndirectSpecularColor: {r: 0.44657898, g: 0.4964133, b: 0.5748178, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -508,7 +508,7 @@ Transform:
   m_GameObject: {fileID: 797888645}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 8.909907, y: 0.06723559, z: -1.76368}
+  m_LocalPosition: {x: 0, y: 0.5, z: 0}
   m_LocalScale: {x: 100, y: 1.2, z: 0.1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -640,7 +640,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 500, y: 29.315}
+  m_AnchoredPosition: {x: 0, y: 29.315}
   m_SizeDelta: {x: 1000, y: 58.6308}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1054594142
@@ -979,6 +979,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1537785844}
+  - component: {fileID: 1537785846}
   - component: {fileID: 1537785845}
   m_Layer: 0
   m_Name: Environment
@@ -996,7 +997,7 @@ Transform:
   m_GameObject: {fileID: 1537785843}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -8.219908, y: 0.5217644, z: 4.95368}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -1018,6 +1019,30 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   debugText: {fileID: 1054594142}
+  playerObject: {fileID: 6314719177498053234, guid: fe59c1e19fdb6694b8f94ffb71983d98, type: 3}
+  PlayerStartPosition: {x: 0, y: 2, z: 5}
+  ZOffsetOfNet: 0
+--- !u!114 &1537785846
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1537785843}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  GlobalObjectIdHash: 1754986764
+  InScenePlacedSourceGlobalObjectIdHash: 0
+  AlwaysReplicateAsRoot: 0
+  SynchronizeTransform: 1
+  ActiveSceneSynchronization: 0
+  SceneMigrationSynchronization: 1
+  SpawnWithObservers: 1
+  DontDestroyWithOwner: 0
+  AutoObjectParentSync: 1
 --- !u!1 &1827358621
 GameObject:
   m_ObjectHideFlags: 0
@@ -1166,7 +1191,7 @@ Transform:
   m_GameObject: {fileID: 1885699774}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 8.219908, y: -0.5217644, z: -4.95368}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 100, y: 1, z: 100}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1182,15 +1207,15 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 3160587955602104005, guid: 4d878265aa0b0404097233bc870ff062, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 9
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 3160587955602104005, guid: 4d878265aa0b0404097233bc870ff062, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 1.2182356
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 3160587955602104005, guid: 4d878265aa0b0404097233bc870ff062, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -12.16968
+      value: 5
       objectReference: {fileID: 0}
     - target: {fileID: 3160587955602104005, guid: 4d878265aa0b0404097233bc870ff062, type: 3}
       propertyPath: m_LocalRotation.w
