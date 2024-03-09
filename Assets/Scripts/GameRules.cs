@@ -5,7 +5,7 @@ using TMPro;
 using Unity.Netcode;
 using UnityEngine;
 
-public class GameRules : MonoBehaviour
+public class GameRules : NetworkBehaviour
 {
     public TextMeshProUGUI debugText;
     void Awake()
@@ -21,8 +21,9 @@ public class GameRules : MonoBehaviour
         }*/
     }
 
-    void Start()
+    public override void OnNetworkSpawn()
     {
+
         //debugText.text = "MultiplayerMode: " + (PlayerInfo.isHost ? "Host" : "Client");
     }
 }

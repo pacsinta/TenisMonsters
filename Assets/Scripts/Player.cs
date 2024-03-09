@@ -16,9 +16,10 @@ public partial class PlayerMovement : NetworkBehaviour
     private Rigidbody rb;
 
     // Start is called before the first frame update
-    private void Start()
+    public override void OnNetworkSpawn()
     {
         rb = GetComponent<Rigidbody>();
+        
     }
 
     // Update is called once per frame
