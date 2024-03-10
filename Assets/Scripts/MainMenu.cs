@@ -16,6 +16,7 @@ public class MainMenu : NetworkBehaviour
     public Button startGameBtn;
     public Button exitBtn;
     public TMP_InputField hostIpInput;
+    public TMP_Dropdown WindowModeDropdown;
 
     private PlayerInfo playerInfo;
     private void Start()
@@ -23,6 +24,7 @@ public class MainMenu : NetworkBehaviour
         startGameBtn.onClick.AddListener(StartNewGame);
         exitBtn.onClick.AddListener(QuitGame);
         playerName.onValueChanged.AddListener(PlayerNameChanged);
+        WindowModeDropdown.onValueChanged.AddListener(SetWindowMode);
 
         playerInfo = new PlayerInfo();
         playerName.text = playerInfo.PlayerName;
@@ -63,6 +65,19 @@ public class MainMenu : NetworkBehaviour
         else
         {
             NetworkManager.Singleton.StartClient();
+        }
+    }
+
+    void SetWindowMode(int mode)
+    {
+        switch (mode)
+        {
+            case 0:
+                Screen.fullScreenMode = FullScreenMode.Windowed;
+                break;
+            case 1:
+                Screen.fullScreenMode = FullScreenMode.FullScreenWindow;
+                break;
         }
     }
 }
