@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using Unity.Netcode;
@@ -8,24 +9,32 @@ public partial class PlayerMovement : NetworkBehaviour
     private float horizontalInput;
     private float verticalInput;
     public float speed = 5.0f;
-    public float kickForce = 15.0f;
+    public float kickForce = 0.01f;
     public float ballDistance = 2.0f;
     public float jumpForce = 5.0f;
-    public GameObject ball;
+    private GameObject ball;
 
     private Rigidbody rb;
 
     // Start is called before the first frame update
     public override void OnNetworkSpawn()
     {
+        if(!IsOwner) return;
+        Debug.Log("Player spawned");
         rb = GetComponent<Rigidbody>();
-        
     }
 
-    // Update is called once per frame
+    private Vector2 kickMouseStartPos = Vector2.zero;
+    private float kickMouseStartFrame = 0;
     void Update()
     {
         if (!IsOwner) return;
+        if (ball == null)
+        {
+            Debug.Log("Trying to initialize the ball");
+            ball = GameObject.FindWithTag("Ball");
+        }
+
         horizontalInput = Input.GetAxis("Horizontal");
         verticalInput = Input.GetAxis("Vertical");
 
@@ -40,9 +49,19 @@ public partial class PlayerMovement : NetworkBehaviour
         {
             Jump();
         }
-        if(Input.GetKeyDown(KeyCode.Mouse0))
+
+
+        if (Input.GetKeyDown(KeyCode.Mouse0))
         {
-            CickBall();
+            kickMouseStartPos = Input.mousePosition;
+            kickMouseStartFrame = Time.;
+        }
+        else if (Input.GetKeyUp(KeyCode.Mouse0))
+        {
+            Vector2 kickMouseEndPos = Input.mousePosition;
+            float kickMouseEndFrame = Time.deltaTime;
+
+            kickBall(kickMouseEndPos-kickMouseStartPos, (kickMouseEndFrame-kickMouseStartFrame) * kickForce);
         }
     }
 
@@ -51,12 +70,15 @@ public partial class PlayerMovement : NetworkBehaviour
         Application.Quit();
     }
 
-    protected void CickBall()
+    private bool firstkick = true;
+    private void kickBall(Vector2 kickDirection, float kickForce)
     {
         float distance = Vector3.Distance(transform.position, ball.transform.position);
+        Debug.Log("Distance: " + distance);
         if (distance < ballDistance)
         {
             Vector3 direction = ball.transform.position - transform.position;
+            direction = new Vector3(direction.x + kickDirection.x, direction.y, direction.z + kickDirection.y);
             ball.GetComponent<Rigidbody>().AddForce(direction * kickForce, ForceMode.Impulse);
         }
     }
@@ -79,4 +101,4 @@ public partial class PlayerMovement : NetworkBehaviour
             isOnGround = true;
         }
     }
-}
+} 

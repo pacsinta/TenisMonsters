@@ -69,10 +69,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   speed: 5
-  kickForce: 15
+  kickForce: 0.01
   ballDistance: 2
   jumpForce: 5
-  ball: {fileID: 3615773093467541624, guid: 4d878265aa0b0404097233bc870ff062, type: 3}
 --- !u!114 &-6535512337876176762
 MonoBehaviour:
   m_ObjectHideFlags: 0
