@@ -54,12 +54,12 @@ public partial class PlayerMovement : NetworkBehaviour
         if (Input.GetKeyDown(KeyCode.Mouse0))
         {
             kickMouseStartPos = Input.mousePosition;
-            kickMouseStartFrame = Time.;
+            kickMouseStartFrame = Time.realtimeSinceStartup;
         }
         else if (Input.GetKeyUp(KeyCode.Mouse0))
         {
             Vector2 kickMouseEndPos = Input.mousePosition;
-            float kickMouseEndFrame = Time.deltaTime;
+            float kickMouseEndFrame = Time.realtimeSinceStartup;
 
             kickBall(kickMouseEndPos-kickMouseStartPos, (kickMouseEndFrame-kickMouseStartFrame) * kickForce);
         }
