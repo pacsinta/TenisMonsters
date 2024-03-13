@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using Unity.Netcode;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public partial class PlayerMovement : NetworkBehaviour
@@ -28,7 +29,7 @@ public partial class PlayerMovement : NetworkBehaviour
     private float kickMouseStartFrame = 0;
     void Update()
     {
-        if (!IsOwner) return;
+        //if (!IsOwner) return;
         if (ball == null)
         {
             Debug.Log("Trying to initialize the ball");
@@ -96,9 +97,19 @@ public partial class PlayerMovement : NetworkBehaviour
 
     private void OnCollisionEnter(Collision collision)
     {
+
+        ContactPoint contact = collision.GetContact(0);
+        var c = contact.point;
+        
+        
         if (collision.gameObject.CompareTag("Ground"))
         {
             isOnGround = true;
+            Debug.Log("Gound Contact: " + c.x + " " + c.y + " " + c.z);
+        }
+        else
+        {
+            Debug.Log("Contact: " + c.x + " " + c.y + " " + c.z);
         }
     }
 } 
