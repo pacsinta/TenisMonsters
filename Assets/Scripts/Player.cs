@@ -13,16 +13,15 @@ public partial class PlayerMovement : NetworkBehaviour
     public float kickForce = 0.01f;
     public float ballDistance = 2.0f;
     public float jumpForce = 5.0f;
+
     private GameObject ball;
-
     private Rigidbody rb;
+    private Animator animator;
 
-    // Start is called before the first frame update
-    public override void OnNetworkSpawn()
+    private void Start()
     {
-        if(!IsOwner) return;
-        Debug.Log("Player spawned");
         rb = GetComponent<Rigidbody>();
+        animator = GetComponentInChildren<Animator>();
     }
 
     private Vector2 kickMouseStartPos = Vector2.zero;
@@ -30,11 +29,6 @@ public partial class PlayerMovement : NetworkBehaviour
     void Update()
     {
         //if (!IsOwner) return;
-        if (ball == null)
-        {
-            Debug.Log("Trying to initialize the ball");
-            ball = GameObject.FindWithTag("Ball");
-        }
 
         horizontalInput = Input.GetAxis("Horizontal");
         verticalInput = Input.GetAxis("Vertical");
@@ -45,10 +39,6 @@ public partial class PlayerMovement : NetworkBehaviour
         if(Input.GetKeyDown(KeyCode.Escape))
         {
             PauseGame();
-        }
-        if(Input.GetKeyDown(KeyCode.Space))
-        {
-            Jump();
         }
 
 
@@ -64,6 +54,12 @@ public partial class PlayerMovement : NetworkBehaviour
 
             kickBall(kickMouseEndPos-kickMouseStartPos, (kickMouseEndFrame-kickMouseStartFrame) * kickForce);
         }
+
+        if (Input.GetKeyDown(KeyCode.Q))
+        {
+            Debug.Log("Q Pressed");
+            kickBall(Vector2.left, kickForce);
+        }
     }
 
     void PauseGame()
@@ -74,26 +70,10 @@ public partial class PlayerMovement : NetworkBehaviour
     private bool firstkick = true;
     private void kickBall(Vector2 kickDirection, float kickForce)
     {
-        float distance = Vector3.Distance(transform.position, ball.transform.position);
-        Debug.Log("Distance: " + distance);
-        if (distance < ballDistance)
-        {
-            Vector3 direction = ball.transform.position - transform.position;
-            direction = new Vector3(direction.x + kickDirection.x, direction.y, direction.z + kickDirection.y);
-            ball.GetComponent<Rigidbody>().AddForce(direction * kickForce, ForceMode.Impulse);
-        }
+        animator.SetTrigger("Kick");
     }
 
     private bool isOnGround = false; // true if the player is on the ground otherwise false
-
-    protected void Jump()
-    {
-        if (isOnGround)
-        {
-            rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
-            isOnGround = false;
-        }
-    }
 
     private void OnCollisionEnter(Collision collision)
     {
@@ -101,15 +81,20 @@ public partial class PlayerMovement : NetworkBehaviour
         ContactPoint contact = collision.GetContact(0);
         var c = contact.point;
         
-        
-        if (collision.gameObject.CompareTag("Ground"))
+        GameObject collidedWithObject = collision.gameObject;
+        if (collidedWithObject.CompareTag("Ground"))
         {
             isOnGround = true;
-            Debug.Log("Gound Contact: " + c.x + " " + c.y + " " + c.z);
+            Debug.Log("Gound Contact");
+        }
+        else if(collidedWithObject.CompareTag("Ball"))
+        {
+            Debug.Log("Ball contact");
         }
         else
         {
-            Debug.Log("Contact: " + c.x + " " + c.y + " " + c.z);
+            Debug.Log("Contact with: " + collidedWithObject.name);
         }
+
     }
 } 

@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Unity.Collections;
+using Unity.Netcode;
 using UnityEngine;
 
 namespace Assets.Scripts
@@ -12,21 +14,21 @@ namespace Assets.Scripts
         Left,
         Right
     }
-    public class PlayerInfo
+    public class PlayerInfo : INetworkSerializable
     {
-        public string PlayerName { get; set; }
-        public int Score { get; set; }
-        public PlayerSide Side { get; set; }
+        public FixedString32Bytes PlayerName;
+        public int Score;
+        public PlayerSide Side;
 
         public PlayerInfo()
         {
             LoadPlayerInfo();
         }
 
-        public void StorePlayerInfo()
+        public void StorePlayerInfo(string id = "")
         {
-            PlayerPrefs.SetString("PlayerName", PlayerName);
-            PlayerPrefs.SetInt("Score", Score);
+            PlayerPrefs.SetString("PlayerName"+id, PlayerName);
+            PlayerPrefs.SetInt("Score"+id, Score);
         }
 
         public void LoadPlayerInfo()
@@ -34,6 +36,13 @@ namespace Assets.Scripts
             PlayerName = PlayerPrefs.GetString("PlayerName");
             Score = PlayerPrefs.GetInt("Score");
             Side = PlayerSide.Left;
+        }
+
+        public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
+        {
+            serializer.SerializeValue(ref PlayerName);
+            serializer.SerializeValue(ref Score);
+            serializer.SerializeValue(ref Side);
         }
     }
 }

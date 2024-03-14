@@ -27,7 +27,7 @@ public class MainMenu : NetworkBehaviour
         WindowModeDropdown.onValueChanged.AddListener(SetWindowMode);
 
         playerInfo = new PlayerInfo();
-        playerName.text = playerInfo.PlayerName;
+        playerName.text = playerInfo.PlayerName.ToSafeString();
     }
     void StartNewGame()
     {
@@ -47,6 +47,7 @@ public class MainMenu : NetworkBehaviour
     }
     private void PlayerNameChanged(string newName)
     {
+        if (newName.Length > 32) return;
         playerInfo.PlayerName = newName;
         playerInfo.StorePlayerInfo();
     }

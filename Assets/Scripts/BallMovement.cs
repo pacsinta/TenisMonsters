@@ -11,11 +11,21 @@ public class BallMovement : MonoBehaviour
     void Start()
     {
         rb = GetComponent<Rigidbody>();
-        rb.AddForce(Vector3.forward * -initialUpForce, ForceMode.Impulse);
+        rb.useGravity = false;
     }
 
-    // Update is called once per frame
+    private bool firstKick = true;
     void Update()
+    {
+        if(firstKick && Input.GetKeyDown(KeyCode.Space))
+        {
+            rb.useGravity = true;
+            rb.AddForce(Vector3.up * initialUpForce, ForceMode.Impulse);
+            firstKick = false;
+        }
+    }
+
+    private void OnCollisionEnter(Collision collision)
     {
         
     }

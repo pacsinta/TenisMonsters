@@ -8,7 +8,7 @@ using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class Lobby : NetworkBehaviour
+public class LobbyController : NetworkBehaviour
 {
     public TextMeshProUGUI clientsText;
     public Button startGameBtn;
@@ -69,7 +69,7 @@ public class Lobby : NetworkBehaviour
     {
         if(NetworkManager.Singleton.LocalClientId == clientId)
         {
-            RegisterPlayerOnServerRpc(playerInfo.PlayerName);
+            RegisterPlayerOnServerRpc(playerInfo);
         }
     }
 
@@ -86,17 +86,18 @@ public class Lobby : NetworkBehaviour
     }
 
     [ServerRpc(RequireOwnership = false)]
-    void RegisterPlayerOnServerRpc(string playerName,ServerRpcParams serverRpcParams = default)
+    void RegisterPlayerOnServerRpc(PlayerInfo clientPlayerInfo,ServerRpcParams serverRpcParams = default)
     {
         var clientId = serverRpcParams.Receive.SenderClientId;
         if (NetworkManager.ConnectedClients.ContainsKey(clientId))
         {
-            if (playerName.Length > 32) playerName = playerName.Substring(0, 32);
-            playerNames.Value = new PlayerNames
+            var clientPlayerName = clientPlayerInfo.PlayerName;
+            playerNames.Value = new PlayersData
             {
                 hostPlayerName = playerInfo.PlayerName,
-                clientPlayerName = playerName
+                clientPlayerName = clientPlayerName
             };
+            clientPlayerInfo.StorePlayerInfo(clientId.ToString());
         }
     }
 
@@ -106,19 +107,5 @@ public class Lobby : NetworkBehaviour
         SceneLoader.LoadScene(SceneLoader.Scene.GameScene, NetworkManager.Singleton);
     }
 
-    struct PlayerNames : INetworkSerializable
-    {
-        public FixedString32Bytes hostPlayerName;
-        public bool HostOnLeftSide;
-        public FixedString32Bytes clientPlayerName;
-
-        public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
-        {
-            serializer.SerializeValue(ref hostPlayerName);
-            serializer.SerializeValue(ref clientPlayerName);
-            serializer.SerializeValue(ref HostOnLeftSide);
-        }
-    }
-
-    NetworkVariable<PlayerNames> playerNames = new NetworkVariable<PlayerNames>();
+    NetworkVariable<PlayersData> playerNames = new NetworkVariable<PlayersData>();
 }
