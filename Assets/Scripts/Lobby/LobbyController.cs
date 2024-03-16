@@ -46,7 +46,7 @@ public class LobbyController : NetworkBehaviour
 
     private void Update()
     {
-        if(string.IsNullOrEmpty(_clientPlayerInfo.Value.PlayerName.ToString()))
+        if(string.IsNullOrEmpty(_clientPlayerInfo.Value?.PlayerName.ToString()))
         {
             clientsText.text = "No clients connected";
         }
