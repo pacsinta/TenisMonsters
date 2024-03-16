@@ -17,4 +17,8 @@ public class SceneLoader
     {
         networkManager.SceneManager.LoadScene(scene.ToString(), LoadSceneMode.Single);
     }
+    public static void LoadScene(Scene scene)
+    {
+        SceneManager.LoadScene(scene.ToString());
+    }
 }
