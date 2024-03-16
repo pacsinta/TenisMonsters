@@ -1,9 +1,10 @@
 using Assets.Scripts;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Netcode;
 using UnityEngine;
 
-public class BallController : MonoBehaviour
+public class BallController : NetworkBehaviour
 {
     public float initialUpForce = 15.0f;
     public GameController gameController;
@@ -39,6 +40,7 @@ public class BallController : MonoBehaviour
     }
     private void OnCollisionEnter(Collision collision)
     {
+        if (!IsServer) return;
         if (collision.gameObject.CompareTag("Ground"))
         {
             if(bounced)
@@ -55,6 +57,7 @@ public class BallController : MonoBehaviour
     private int collisionFrameCount = 0;
     private void OnCollisionStay(Collision collision)
     {
+        if (!IsServer) return;
         if (collision.gameObject.CompareTag("Ground"))
         {
             collisionFrameCount++;
@@ -66,12 +69,17 @@ public class BallController : MonoBehaviour
     }
     private void OnCollisionExit(Collision collision)
     {
+        if (!IsServer) return;
         if (collision.gameObject.CompareTag("Ground"))
         {
             collisionFrameCount = 0;
         }
     }
 
+    /// <summary>
+    /// Gets the current side of the ball based on its position.
+    /// </summary>
+    /// <returns>The current side of the ball.</returns>
     private PlayerSide CurrentSide
     {
         get { return transform.position.z > 0 ? PlayerSide.Left : PlayerSide.Right; }
