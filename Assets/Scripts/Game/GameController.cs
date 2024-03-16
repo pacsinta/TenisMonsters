@@ -16,12 +16,12 @@ public class GameController : NetworkBehaviour
     public Vector3 PlayerStartPosition;
     public float ZOffsetOfNet;
 
-    private PlayerInfo hostPlayerInfo;
-    private PlayerInfo clientPlayerInfo;
+    NetworkVariable<PlayerInfo> _hostPlayerInfo = new NetworkVariable<PlayerInfo>();
+    NetworkVariable<PlayerInfo> _clientPlayerInfo = new NetworkVariable<PlayerInfo>();
     private uint time = 0;
     public override void OnNetworkSpawn()
     {
-        hostPlayerInfo = new PlayerInfo();
+        _hostPlayerInfo.Value = new PlayerInfo();
 
         if (!IsServer) return;
         var clients = NetworkManager.Singleton.ConnectedClientsList;
@@ -36,7 +36,7 @@ public class GameController : NetworkBehaviour
                 spawnRotation = Quaternion.Euler(0, 180, 0);
             }
             NetworkManager.Singleton.SpawnManager.InstantiateAndSpawn(playerObject, client.ClientId, false, true, false, spawnPosition, spawnRotation);
-            clientPlayerInfo = new PlayerInfo(client.ClientId.ToString());
+            _clientPlayerInfo.Value = new PlayerInfo(client.ClientId.ToString());
         }
     }
 
@@ -53,23 +53,25 @@ public class GameController : NetworkBehaviour
     {
         time += (uint)Time.deltaTime;
         debugText.text = time.ToString();
-        /*if (time >= MaxGameTime || hostPlayerInfo.Score >= MaxScore || clientPlayerInfo.Score >= MaxScore)
+
+        if(!IsServer) return;
+        if (time >= MaxGameTime || _hostPlayerInfo.Value.Score >= MaxScore || _clientPlayerInfo.Value.Score >= MaxScore)
         {
             EndGame();
-        }*/
+        }
     }
 
     public void EndTurn(bool hostWon)
     {
         if (hostWon)
         {
-            hostPlayerInfo.Score++;
+            _hostPlayerInfo.Value.Score++;
         }
         else
         {
-            clientPlayerInfo.Score++;
+            _clientPlayerInfo.Value.Score++;
         }
-        scoreText.text = "Host: " + hostPlayerInfo.Score + " Client: " + clientPlayerInfo.Score;
+        scoreText.text = "Host: " + _hostPlayerInfo.Value.Score + " Client: " + _clientPlayerInfo.Value.Score;
     }
 
     private void EndGame()
