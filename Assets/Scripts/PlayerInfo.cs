@@ -20,6 +20,11 @@ namespace Assets.Scripts
         public int Score;
         public PlayerSide Side;
 
+        public PlayerInfo(string id)
+        {
+            LoadPlayerInfo(id);
+        }
+
         public PlayerInfo()
         {
             LoadPlayerInfo();
@@ -27,14 +32,14 @@ namespace Assets.Scripts
 
         public void StorePlayerInfo(string id = "")
         {
-            PlayerPrefs.SetString("PlayerName"+id, PlayerName);
+            PlayerPrefs.SetString("PlayerName"+id, PlayerName.ToString());
             PlayerPrefs.SetInt("Score"+id, Score);
         }
 
-        public void LoadPlayerInfo()
+        public void LoadPlayerInfo(string id = "")
         {
-            PlayerName = PlayerPrefs.GetString("PlayerName");
-            Score = PlayerPrefs.GetInt("Score");
+            PlayerName = PlayerPrefs.GetString("PlayerName"+id);
+            Score = PlayerPrefs.GetInt("Score"+id);
             Side = PlayerSide.Left;
         }
 
