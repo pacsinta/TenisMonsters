@@ -30,10 +30,13 @@ public class GameController : NetworkBehaviour
         {
             Vector3 spawnPosition = PlayerStartPosition;
             Quaternion spawnRotation = Quaternion.identity;
-            if (NetworkManager.Singleton.LocalClientId == client.ClientId)
+            if (NetworkManager.Singleton.LocalClientId == client.ClientId) // The local client is the host here
             {
                 spawnPosition = new Vector3(PlayerStartPosition.x, PlayerStartPosition.y, PlayerStartPosition.z * -1);
-                spawnRotation = Quaternion.Euler(0, 180, 0);
+            }
+            else
+            {
+                spawnRotation = Quaternion.Euler(0, -180, 0);
             }
             NetworkManager.Singleton.SpawnManager.InstantiateAndSpawn(playerObject, client.ClientId, false, true, false, spawnPosition, spawnRotation);
             _clientPlayerInfo.Value = new PlayerInfo(client.ClientId.ToString());
