@@ -28,7 +28,7 @@ public partial class PlayerController : NetworkBehaviour
     private float kickMouseStartFrame = 0;
     void Update()
     {
-        //if (!IsOwner) return;
+        if (!IsOwner) return;
 
         horizontalInput = Input.GetAxis("Horizontal");
         verticalInput = Input.GetAxis("Vertical");
