@@ -19,10 +19,13 @@ public class LobbyController : NetworkBehaviour
 
     public override void OnNetworkSpawn()
     {
+        playerInfo = new PlayerInfo();
+
         clientsText.text = "No clients connected";
         if(IsServer)
         {
             IsHostText.text = "Host";
+            _hostPlayerInfo.Value = playerInfo;
         }
         else
         {
@@ -34,7 +37,7 @@ public class LobbyController : NetworkBehaviour
 
         startGameBtn.onClick.AddListener(StartGame);
 
-        playerInfo = new PlayerInfo();
+        
         if(IsClient)
         {
             playerInfo.Side = PlayerSide.Right;
@@ -43,13 +46,13 @@ public class LobbyController : NetworkBehaviour
 
     private void Update()
     {
-        if(string.IsNullOrEmpty(playerNames.Value.clientPlayerName.ToString()))
+        if(string.IsNullOrEmpty(_clientPlayerInfo.Value.PlayerName.ToString()))
         {
             clientsText.text = "No clients connected";
         }
         else
         {
-            clientsText.text = "Host: " + playerNames.Value.hostPlayerName + "\nClient: " + playerNames.Value.clientPlayerName;
+            clientsText.text = "Host: " + _hostPlayerInfo.Value.PlayerName + "\nClient: " + _clientPlayerInfo.Value.PlayerName;
         }
     }
 
@@ -92,11 +95,7 @@ public class LobbyController : NetworkBehaviour
         if (NetworkManager.ConnectedClients.ContainsKey(clientId))
         {
             var clientPlayerName = clientPlayerInfo.PlayerName;
-            playerNames.Value = new PlayersData
-            {
-                hostPlayerName = playerInfo.PlayerName,
-                clientPlayerName = clientPlayerName
-            };
+            _clientPlayerInfo.Value = clientPlayerInfo;
             clientPlayerInfo.StorePlayerInfo(clientId.ToString());
         }
     }
@@ -107,5 +106,6 @@ public class LobbyController : NetworkBehaviour
         SceneLoader.LoadScene(SceneLoader.Scene.GameScene, NetworkManager.Singleton);
     }
 
-    NetworkVariable<PlayersData> playerNames = new NetworkVariable<PlayersData>();
+    NetworkVariable<PlayerInfo> _hostPlayerInfo = new NetworkVariable<PlayerInfo>();
+    NetworkVariable<PlayerInfo> _clientPlayerInfo = new NetworkVariable<PlayerInfo>();
 }
