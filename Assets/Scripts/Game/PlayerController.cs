@@ -5,12 +5,12 @@ using Unity.Netcode;
 using Unity.VisualScripting;
 using UnityEngine;
 
-public partial class PlayerMovement : NetworkBehaviour
+public partial class PlayerController : NetworkBehaviour
 {
     private float horizontalInput;
     private float verticalInput;
     public float speed = 5.0f;
-    public float kickForce = 0.01f;
+    public float kickForce = 100.0f;
     public float ballDistance = 2.0f;
     public float jumpForce = 5.0f;
 
@@ -89,7 +89,9 @@ public partial class PlayerMovement : NetworkBehaviour
         }
         else if(collidedWithObject.CompareTag("Ball"))
         {
-            Debug.Log("Ball contact");
+            BallController ballMovement = collidedWithObject.GetComponent<BallController>();
+            ballMovement.ResetBounced();
+            collidedWithObject.GetComponent<Rigidbody>().AddForce(0,300,800);
         }
         else
         {
