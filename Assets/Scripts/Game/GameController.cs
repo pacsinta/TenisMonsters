@@ -42,7 +42,7 @@ public class GameController : NetworkBehaviour
 
     private void Start()
     {
-        if(!IsServer && !IsClient && !IsHost)
+        if(NetworkManager.Singleton == null)
         {
             Debug.LogError("Netcode is not initialized");
             SceneLoader.LoadScene(SceneLoader.Scene.MenuScene);
