@@ -25,6 +25,7 @@ public class BallController : NetworkBehaviour
         if(firstKick && Input.GetKeyDown(KeyCode.Space))
         {
             rb.useGravity = true;
+            rb.constraints = RigidbodyConstraints.None;
             rb.AddForce(Vector3.up * initialUpForce, ForceMode.Impulse);
             firstKick = false;
         }
@@ -91,6 +92,7 @@ public class BallController : NetworkBehaviour
     {
         transform.position = startLocation;
         rb.useGravity = false;
+        rb.constraints = RigidbodyConstraints.FreezeAll;
         ResetBounced();
         firstKick = true;
         collisionFrameCount = 0;

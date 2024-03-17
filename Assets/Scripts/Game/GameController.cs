@@ -12,18 +12,18 @@ public class GameController : NetworkBehaviour
     public NetworkObject playerObject;
     public GameObject ballObject;
 
-    public uint MaxGameTime = 60 * 5;
-    public uint MaxScore = 5;
     public Vector3 PlayerStartPosition;
     public float ZOffsetOfNet;
 
     NetworkVariable<PlayerInfo> _hostPlayerInfo = new NetworkVariable<PlayerInfo>();
     NetworkVariable<PlayerInfo> _clientPlayerInfo = new NetworkVariable<PlayerInfo>();
+    GameInfo GameInfo;
     private float time = 0;
     public override void OnNetworkSpawn()
     {
         if (!IsServer) return;
         _hostPlayerInfo.Value = new PlayerInfo();
+        GameInfo = new GameInfo();
         var clients = NetworkManager.Singleton.ConnectedClientsList;
 
         foreach (var client in clients)
@@ -56,13 +56,24 @@ public class GameController : NetworkBehaviour
     {
         time += Time.deltaTime;
         debugText.text = ((uint)time).ToString();
-        scoreText.text = "Host: " + _hostPlayerInfo.Value.Score + " Client: " + _clientPlayerInfo.Value.Score;
+        scoreText.text = "Host: " + _hostPlayerInfo.Value?.Score + " Client: " + _clientPlayerInfo.Value?.Score;
 
         if (!IsServer) return;
-        if (time >= MaxGameTime || _hostPlayerInfo.Value.Score >= MaxScore || _clientPlayerInfo.Value.Score >= MaxScore)
+        if (TimeEnded() || ScoreReached())
         {
             EndGame();
         }
+    }
+
+    private bool TimeEnded()
+    {
+        uint maxTime = GameInfo.GetMaxTime;
+        return maxTime != 0 && time >= maxTime;
+    }
+    private bool ScoreReached()
+    {
+        uint maxScore = GameInfo.GetMaxScore;
+        return maxScore != 0 && (_hostPlayerInfo.Value.Score >= maxScore || _clientPlayerInfo.Value.Score >= maxScore);
     }
 
     public void EndTurn(bool hostWon)
