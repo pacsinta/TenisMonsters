@@ -22,9 +22,8 @@ public class GameController : NetworkBehaviour
     private float time = 0;
     public override void OnNetworkSpawn()
     {
-        _hostPlayerInfo.Value = new PlayerInfo();
-
         if (!IsServer) return;
+        _hostPlayerInfo.Value = new PlayerInfo();
         var clients = NetworkManager.Singleton.ConnectedClientsList;
 
         foreach (var client in clients)
@@ -57,8 +56,9 @@ public class GameController : NetworkBehaviour
     {
         time += Time.deltaTime;
         debugText.text = ((uint)time).ToString();
+        scoreText.text = "Host: " + _hostPlayerInfo.Value.Score + " Client: " + _clientPlayerInfo.Value.Score;
 
-        if(!IsServer) return;
+        if (!IsServer) return;
         if (time >= MaxGameTime || _hostPlayerInfo.Value.Score >= MaxScore || _clientPlayerInfo.Value.Score >= MaxScore)
         {
             EndGame();
@@ -75,7 +75,6 @@ public class GameController : NetworkBehaviour
         {
             _clientPlayerInfo.Value.Score++;
         }
-        scoreText.text = "Host: " + _hostPlayerInfo.Value.Score + " Client: " + _clientPlayerInfo.Value.Score;
         
         ResetEnvironment();
     }
