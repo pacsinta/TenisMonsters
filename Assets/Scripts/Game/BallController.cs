@@ -11,10 +11,12 @@ public class BallController : NetworkBehaviour
     // Start is called before the first frame update
 
     private Rigidbody rb;
+    private Vector3 startLocation;
     void Start()
     {
         rb = GetComponent<Rigidbody>();
         rb.useGravity = false;
+        startLocation = transform.position;
     }
 
     private bool firstKick = true;
@@ -83,5 +85,14 @@ public class BallController : NetworkBehaviour
     private PlayerSide CurrentSide
     {
         get { return transform.position.z > 0 ? PlayerSide.Left : PlayerSide.Right; }
+    }
+
+    public void Reset()
+    {
+        transform.position = startLocation;
+        rb.useGravity = false;
+        ResetBounced();
+        firstKick = true;
+        collisionFrameCount = 0;
     }
 }
