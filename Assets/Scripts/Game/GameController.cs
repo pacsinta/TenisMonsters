@@ -24,6 +24,7 @@ public class GameController : NetworkBehaviour
         if (!IsServer) return;
         _hostPlayerInfo.Value = new PlayerInfo();
         GameInfo = new GameInfo();
+        Debug.Log("Game mode: " + (GameMode)GameInfo.gameMode);
         var clients = NetworkManager.Singleton.ConnectedClientsList;
 
         foreach (var client in clients)

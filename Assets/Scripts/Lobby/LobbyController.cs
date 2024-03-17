@@ -13,7 +13,7 @@ public class LobbyController : NetworkBehaviour
     public TextMeshProUGUI clientsText;
     public Button startGameBtn;
     public TextMeshProUGUI IsHostText;
-    public Dropdown gameModeDropdown;
+    public TMP_Dropdown gameModeDropdown;
 
     private int maxPlayerCount = 2;
     private PlayerInfo playerInfo;
@@ -23,27 +23,23 @@ public class LobbyController : NetworkBehaviour
         playerInfo = new PlayerInfo();
 
         clientsText.text = "No clients connected";
-        if(IsServer)
+        if(IsHost)
         {
             IsHostText.text = "Host";
             _hostPlayerInfo.Value = playerInfo;
+            gameModeDropdown.onValueChanged.AddListener(ChangeGameMode);
         }
         else
         {
             IsHostText.text = "Client";
+            gameModeDropdown.interactable = false;
+            playerInfo.Side = PlayerSide.Right;
         }
 
         NetworkManager.Singleton.OnClientConnectedCallback += HandleClientConnect;
         NetworkManager.Singleton.ConnectionApprovalCallback += ApprovalCheck;
 
         startGameBtn.onClick.AddListener(StartGame);
-        gameModeDropdown.onValueChanged.AddListener(ChangeGameMode);
-
-        
-        if(IsClient)
-        {
-            playerInfo.Side = PlayerSide.Right;
-        }
     }
 
     private void Update()
@@ -116,20 +112,7 @@ public class LobbyController : NetworkBehaviour
 
     void ChangeGameMode(int mode)
     {
-        if(IsServer)
-        {
-            _gameInfo.Value.gameMode = mode;
-            _gameInfo.Value.SaveGameInfo();
-        }
-        else
-        {
-            ChangeGameModeServerRpc(mode); 
-        }
-    }
-
-    [ServerRpc(RequireOwnership = false)]
-    void ChangeGameModeServerRpc(int mode, ServerRpcParams serverRpcParams = default)
-    {
+        _gameInfo.Value = new GameInfo();
         _gameInfo.Value.gameMode = mode;
         _gameInfo.Value.SaveGameInfo();
     }
