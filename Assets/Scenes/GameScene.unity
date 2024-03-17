@@ -135,7 +135,7 @@ GameObject:
   - component: {fileID: 101502188}
   - component: {fileID: 101502187}
   m_Layer: 5
-  m_Name: Text (TMP)
+  m_Name: ScoreText
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -752,7 +752,7 @@ GameObject:
   - component: {fileID: 1054594143}
   - component: {fileID: 1054594142}
   m_Layer: 5
-  m_Name: DebugText
+  m_Name: TimeText
   m_TagString: DebugText
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1149,8 +1149,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   debugText: {fileID: 1054594142}
-  scoreText: {fileID: 0}
+  scoreText: {fileID: 101502187}
   playerObject: {fileID: 6314719177498053234, guid: fe59c1e19fdb6694b8f94ffb71983d98, type: 3}
+  ballObject: {fileID: 0}
   MaxGameTime: 300
   MaxScore: 5
   PlayerStartPosition: {x: 0, y: 2, z: 5}

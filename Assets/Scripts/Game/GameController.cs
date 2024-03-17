@@ -10,6 +10,7 @@ public class GameController : NetworkBehaviour
     public TextMeshProUGUI debugText;
     public TextMeshProUGUI scoreText;
     public NetworkObject playerObject;
+    public GameObject ballObject;
 
     public uint MaxGameTime = 60 * 5;
     public uint MaxScore = 5;
@@ -18,7 +19,7 @@ public class GameController : NetworkBehaviour
 
     NetworkVariable<PlayerInfo> _hostPlayerInfo = new NetworkVariable<PlayerInfo>();
     NetworkVariable<PlayerInfo> _clientPlayerInfo = new NetworkVariable<PlayerInfo>();
-    private uint time = 0;
+    private float time = 0;
     public override void OnNetworkSpawn()
     {
         _hostPlayerInfo.Value = new PlayerInfo();
@@ -54,8 +55,8 @@ public class GameController : NetworkBehaviour
 
     private void Update()
     {
-        time += (uint)Time.deltaTime;
-        debugText.text = time.ToString();
+        time += Time.deltaTime;
+        debugText.text = ((uint)time).ToString();
 
         if(!IsServer) return;
         if (time >= MaxGameTime || _hostPlayerInfo.Value.Score >= MaxScore || _clientPlayerInfo.Value.Score >= MaxScore)
@@ -75,6 +76,14 @@ public class GameController : NetworkBehaviour
             _clientPlayerInfo.Value.Score++;
         }
         scoreText.text = "Host: " + _hostPlayerInfo.Value.Score + " Client: " + _clientPlayerInfo.Value.Score;
+        
+        ResetEnvironment();
+    }
+
+    private void ResetEnvironment()
+    {
+        var ballController = ballObject.GetComponent<BallController>();
+        ballController.Reset();
     }
 
     private void EndGame()
