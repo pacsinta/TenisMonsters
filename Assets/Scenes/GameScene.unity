@@ -1151,7 +1151,7 @@ MonoBehaviour:
   debugText: {fileID: 1054594142}
   scoreText: {fileID: 101502187}
   playerObject: {fileID: 6314719177498053234, guid: fe59c1e19fdb6694b8f94ffb71983d98, type: 3}
-  ballObject: {fileID: 0}
+  ballObject: {fileID: 4421508085897310989}
   MaxGameTime: 300
   MaxScore: 5
   PlayerStartPosition: {x: 0, y: 2, z: 5}
