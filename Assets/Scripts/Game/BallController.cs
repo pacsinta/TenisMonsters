@@ -15,7 +15,8 @@ public class BallController : NetworkBehaviour
     void Start()
     {
         rb = GetComponent<Rigidbody>();
-        rb.useGravity = false;
+        ResetObject();
+        rb.constraints = RigidbodyConstraints.None;
         startLocation = transform.position;
     }
 
@@ -24,6 +25,7 @@ public class BallController : NetworkBehaviour
     {
         if(firstKick && Input.GetKeyDown(KeyCode.Space))
         {
+            rb.isKinematic = false;
             rb.useGravity = true;
             rb.constraints = RigidbodyConstraints.None;
             rb.AddForce(Vector3.up * initialUpForce, ForceMode.Impulse);
@@ -85,14 +87,15 @@ public class BallController : NetworkBehaviour
     /// <returns>The current side of the ball.</returns>
     private PlayerSide CurrentSide
     {
-        get { return transform.position.z > 0 ? PlayerSide.Left : PlayerSide.Right; }
+        get { return transform.position.z > 0 ? PlayerSide.Host : PlayerSide.Client; }
     }
 
-    public void Reset()
+    public void ResetObject()
     {
         transform.position = startLocation;
         rb.useGravity = false;
         rb.constraints = RigidbodyConstraints.FreezeAll;
+        rb.isKinematic = true;
         ResetBounced();
         firstKick = true;
         collisionFrameCount = 0;

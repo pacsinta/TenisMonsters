@@ -33,7 +33,7 @@ public class LobbyController : NetworkBehaviour
         {
             IsHostText.text = "Client";
             gameModeDropdown.interactable = false;
-            playerInfo.Side = PlayerSide.Right;
+            playerInfo.Side = PlayerSide.Client;
         }
 
         NetworkManager.Singleton.OnClientConnectedCallback += HandleClientConnect;

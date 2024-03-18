@@ -9,10 +9,15 @@ using UnityEngine;
 
 namespace Assets.Scripts
 {
+    /*
+     * Enum to represent the side of the player
+     * The host side position is in the negative z axis
+     * The client side position is in the positive z axis 
+     */
     public enum PlayerSide
     {
-        Left,
-        Right
+        Host,
+        Client
     }
     public class PlayerInfo : INetworkSerializable
     {
@@ -40,7 +45,7 @@ namespace Assets.Scripts
         {
             PlayerName = PlayerPrefs.GetString("PlayerName"+id);
             Score = PlayerPrefs.GetInt("Score"+id);
-            Side = PlayerSide.Left;
+            Side = PlayerSide.Host;
         }
 
         public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
