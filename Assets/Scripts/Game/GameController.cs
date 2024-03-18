@@ -9,7 +9,8 @@ public class GameController : NetworkBehaviour
 {
     public TextMeshProUGUI debugText;
     public TextMeshProUGUI scoreText;
-    public NetworkObject playerObject;
+    public NetworkObject playerPrefab;
+    public NetworkObject powerBallPrefab;
     public GameObject ballObject;
 
     public Vector3 PlayerStartPosition;
@@ -39,22 +40,15 @@ public class GameController : NetworkBehaviour
             {
                 spawnRotation = Quaternion.Euler(0, -180, 0);
             }
-            NetworkManager.Singleton.SpawnManager.InstantiateAndSpawn(playerObject, client.ClientId, false, true, false, spawnPosition, spawnRotation);
+            NetworkManager.Singleton.SpawnManager.InstantiateAndSpawn(playerPrefab, client.ClientId, true, true, true, spawnPosition, spawnRotation);
             _clientPlayerInfo.Value = new PlayerInfo(client.ClientId.ToString());
-        }
-    }
-
-    private void Start()
-    {
-        if(NetworkManager.Singleton == null)
-        {
-            Debug.LogError("Netcode is not initialized");
-            SceneLoader.LoadScene(SceneLoader.Scene.MenuScene);
         }
     }
 
     private void Update()
     {
+        //HandleNotConnected();
+
         time += Time.deltaTime;
         debugText.text = ((uint)time).ToString();
         scoreText.text = "Host: " + _hostPlayerInfo.Value?.Score + " Client: " + _clientPlayerInfo.Value?.Score;
@@ -63,6 +57,26 @@ public class GameController : NetworkBehaviour
         if (TimeEnded() || ScoreReached())
         {
             EndGame();
+        }
+
+        if(time % 60 == 0)
+        {
+            SpawnPowerBall(PlayerSide.Host);
+            SpawnPowerBall(PlayerSide.Client);
+        }
+    }
+
+    private void HandleNotConnected()
+    {
+        if (NetworkManager.Singleton == null)
+        {
+            Debug.LogError("Netcode is not initialized");
+            SceneLoader.LoadScene(SceneLoader.Scene.MenuScene);
+        }
+        else if (!NetworkManager.Singleton.IsConnectedClient)
+        {
+            Debug.LogError("Player is not connected to the server!");
+            SceneLoader.LoadScene(SceneLoader.Scene.MenuScene);
         }
     }
 
@@ -94,12 +108,24 @@ public class GameController : NetworkBehaviour
     private void ResetEnvironment()
     {
         var ballController = ballObject.GetComponent<BallController>();
-        ballController.Reset();
+        ballController.ResetObject();
     }
 
     private void EndGame()
     {
         // TODO: Implement
         Debug.Log("Game Over");
+    }
+
+    private void SpawnPowerBall(PlayerSide side)
+    {
+        // create random position
+        Vector3 spawnPosition = new Vector3(Random.Range(0, 10), 0.5f, Random.Range(0, 10));
+        if(side == PlayerSide.Host)
+        {
+            spawnPosition.z *= -1;
+        }
+
+        NetworkManager.Singleton.SpawnManager.InstantiateAndSpawn(powerBallPrefab, 0, true, false, true, spawnPosition);
     }
 }
