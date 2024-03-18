@@ -1151,8 +1151,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   debugText: {fileID: 1054594142}
   scoreText: {fileID: 101502187}
-  playerPrefab: {fileID: 0}
-  powerBallPrefab: {fileID: 0}
+  playerPrefab: {fileID: 6314719177498053234, guid: fe59c1e19fdb6694b8f94ffb71983d98, type: 3}
+  powerBallPrefab: {fileID: 5794774724872399557, guid: 8cd5637372bbdc44080e2ceaa358433e, type: 3}
   ballObject: {fileID: 4421508085897310989}
   PlayerStartPosition: {x: 0, y: 2, z: 15}
   ZOffsetOfNet: 0
@@ -1491,7 +1491,7 @@ Transform:
   m_GameObject: {fileID: 4421508085897310989}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 2.76, y: 1.174, z: -8.76}
+  m_LocalPosition: {x: 3.3, y: 1.174, z: -12.3}
   m_LocalScale: {x: 0.5, y: 0.5, z: 0.5}
   m_ConstrainProportionsScale: 1
   m_Children: []

@@ -47,7 +47,7 @@ public class GameController : NetworkBehaviour
 
     private void Update()
     {
-        //HandleNotConnected();
+        HandleNotConnected();
 
         time += Time.deltaTime;
         debugText.text = ((uint)time).ToString();

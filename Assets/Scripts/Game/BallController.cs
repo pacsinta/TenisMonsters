@@ -17,7 +17,8 @@ public class BallController : NetworkBehaviour
         rb = GetComponent<Rigidbody>();
         ResetObject();
         rb.constraints = RigidbodyConstraints.None;
-        startLocation = transform.position;
+        startLocation = gameController.PlayerStartPosition;
+        startLocation.z = -startLocation.z + 3;
     }
 
     private bool firstKick = true;
