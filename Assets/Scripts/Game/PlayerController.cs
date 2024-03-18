@@ -14,7 +14,6 @@ public partial class PlayerController : NetworkBehaviour
     public float ballDistance = 2.0f;
     public float jumpForce = 5.0f;
 
-    private GameObject ball;
     private Rigidbody rb;
     private Animator animator;
 
@@ -38,7 +37,7 @@ public partial class PlayerController : NetworkBehaviour
 
         if(Input.GetKeyDown(KeyCode.Escape))
         {
-            PauseGame();
+            ExitGame();
         }
 
 
@@ -62,19 +61,18 @@ public partial class PlayerController : NetworkBehaviour
         }
     }
 
-    void PauseGame()
+    void ExitGame()
     {
-        Application.Quit();
+        SceneLoader.LoadScene(SceneLoader.Scene.MenuScene);
     }
 
-    private bool firstkick = true;
     private void kickBall(Vector2 kickDirection, float kickForce)
     {
         animator.SetTrigger("Kick");
     }
 
     private bool isOnGround = false; // true if the player is on the ground otherwise false
-
+    public bool PlayerIsReady { get {  return isOnGround; } }
     private void OnCollisionEnter(Collision collision)
     {
 
@@ -85,13 +83,8 @@ public partial class PlayerController : NetworkBehaviour
         if (collidedWithObject.CompareTag("Ground"))
         {
             isOnGround = true;
+            rb.isKinematic = true;
             Debug.Log("Gound Contact");
-        }
-        else if(collidedWithObject.CompareTag("Ball"))
-        {
-            BallController ballMovement = collidedWithObject.GetComponent<BallController>();
-            ballMovement.ResetBounced();
-            collidedWithObject.GetComponent<Rigidbody>().AddForce(0,300,800);
         }
         else
         {
