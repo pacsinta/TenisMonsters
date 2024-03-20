@@ -1,3 +1,4 @@
+using Cinemachine;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -16,6 +17,22 @@ public partial class PlayerController : NetworkBehaviour
 
     private Rigidbody rb;
     private Animator animator;
+
+    public override void OnNetworkSpawn()
+    {
+        CinemachineVirtualCamera vcam = transform.Find("Virtual Camera").gameObject.GetComponent<CinemachineVirtualCamera>();
+        AudioListener audioListener = transform.Find("Camera").gameObject.GetComponent<AudioListener>();
+        if (IsOwner)
+        {
+            vcam.Priority = 1;
+            audioListener.enabled = true;
+        }
+        else
+        {
+            vcam.Priority = 0;
+            audioListener.enabled = false;
+        }
+    }
 
     private void Start()
     {
@@ -66,30 +83,41 @@ public partial class PlayerController : NetworkBehaviour
         SceneLoader.LoadScene(SceneLoader.Scene.MenuScene);
     }
 
+    private bool kicked = false;
     private void kickBall(Vector2 kickDirection, float kickForce)
     {
+        //rb.isKinematic = true;
         animator.SetTrigger("Kick");
+        kicked = true;
     }
 
-    private bool isOnGround = false; // true if the player is on the ground otherwise false
-    public bool PlayerIsReady { get {  return isOnGround; } }
+    private GameObject ball;
     private void OnCollisionEnter(Collision collision)
     {
-
-        ContactPoint contact = collision.GetContact(0);
-        var c = contact.point;
-        
         GameObject collidedWithObject = collision.gameObject;
-        if (collidedWithObject.CompareTag("Ground"))
-        {
-            isOnGround = true;
-            rb.isKinematic = true;
-            Debug.Log("Gound Contact");
-        }
-        else
+        if(kicked && collidedWithObject.CompareTag("Ball") && collision.GetContact(0).thisCollider.gameObject.name == "monster")
         {
             Debug.Log("Contact with: " + collidedWithObject.name);
+            ball = collidedWithObject;
+            animator.enabled = false;
+            collidedWithObject.GetComponent<Rigidbody>().velocity = Vector3.zero;
+            collidedWithObject.GetComponent<Rigidbody>().angularVelocity = Vector3.zero;
+            collidedWithObject.GetComponent<Rigidbody>().AddForce(0, 4, 15, ForceMode.Impulse);
+            //collidedWithObject.GetComponent<BallController>().Kicked(IsHost);
         }
+    }
 
+    private void OnCollisionExit(Collision collision)
+    {
+        GameObject collidedWithObject = collision.gameObject;
+        if (collidedWithObject.CompareTag("Ball"))
+        {
+            animator.enabled = true;
+        }
+    }
+
+    public void ResetObject(Vector3 position)
+    {
+        transform.position = position;
     }
 } 

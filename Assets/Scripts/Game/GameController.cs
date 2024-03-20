@@ -16,6 +16,9 @@ public class GameController : NetworkBehaviour
     public Vector3 PlayerStartPosition;
     public float ZOffsetOfNet;
 
+    private GameObject hostPlayerObject;
+    private GameObject clientPlayerObject;
+
     NetworkVariable<PlayerInfo> _hostPlayerInfo = new NetworkVariable<PlayerInfo>();
     NetworkVariable<PlayerInfo> _clientPlayerInfo = new NetworkVariable<PlayerInfo>();
     GameInfo GameInfo;
@@ -30,18 +33,31 @@ public class GameController : NetworkBehaviour
 
         foreach (var client in clients)
         {
-            Vector3 spawnPosition = PlayerStartPosition;
-            Quaternion spawnRotation = Quaternion.identity;
-            if (NetworkManager.Singleton.LocalClientId == client.ClientId) // The local client is the host here
-            {
-                spawnPosition = new Vector3(PlayerStartPosition.x, PlayerStartPosition.y, PlayerStartPosition.z * -1);
-            }
-            else
-            {
-                spawnRotation = Quaternion.Euler(0, -180, 0);
-            }
-            NetworkManager.Singleton.SpawnManager.InstantiateAndSpawn(playerPrefab, client.ClientId, true, true, true, spawnPosition, spawnRotation);
+            instantiatePlayerObject(client);
             _clientPlayerInfo.Value = new PlayerInfo(client.ClientId.ToString());
+        }
+    }
+
+    private void instantiatePlayerObject(NetworkClient client)
+    {
+        Vector3 spawnPosition = PlayerStartPosition;
+        Quaternion spawnRotation = Quaternion.identity;
+        if (NetworkManager.Singleton.LocalClientId == client.ClientId) // The local client is the host here
+        {
+            spawnPosition = new Vector3(PlayerStartPosition.x, PlayerStartPosition.y, PlayerStartPosition.z * -1);
+        }
+        else
+        {
+            spawnRotation = Quaternion.Euler(0, -180, 0);
+        }
+        var playerObject = NetworkManager.Singleton.SpawnManager.InstantiateAndSpawn(playerPrefab, client.ClientId, false, true, true, spawnPosition, spawnRotation);
+        if (NetworkManager.Singleton.LocalClientId == client.ClientId)
+        {
+            hostPlayerObject = playerObject.gameObject;
+        }
+        else
+        {
+            clientPlayerObject = playerObject.gameObject;
         }
     }
 
@@ -78,6 +94,11 @@ public class GameController : NetworkBehaviour
             Debug.LogError("Player is not connected to the server!");
             SceneLoader.LoadScene(SceneLoader.Scene.MenuScene);
         }
+        else if (IsHost && NetworkManager.Singleton.ConnectedClients.Count != 2)
+        {
+            Debug.LogError("No opponent is connected");
+            SceneLoader.LoadScene(SceneLoader.Scene.MenuScene);
+        }
     }
 
     private bool TimeEnded()
@@ -109,6 +130,10 @@ public class GameController : NetworkBehaviour
     {
         var ballController = ballObject.GetComponent<BallController>();
         ballController.ResetObject();
+        var position = PlayerStartPosition;
+        clientPlayerObject.GetComponent<PlayerController>().ResetObject(position);
+        position.z *= -1;
+        hostPlayerObject.GetComponent<PlayerController>().ResetObject(position);
     }
 
     private void EndGame()
@@ -126,6 +151,6 @@ public class GameController : NetworkBehaviour
             spawnPosition.z *= -1;
         }
 
-        NetworkManager.Singleton.SpawnManager.InstantiateAndSpawn(powerBallPrefab, 0, true, false, true, spawnPosition);
+        NetworkManager.Singleton.SpawnManager.InstantiateAndSpawn(powerBallPrefab, 0, true, false, false, spawnPosition);
     }
 }

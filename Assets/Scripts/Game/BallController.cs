@@ -8,17 +8,20 @@ public class BallController : NetworkBehaviour
 {
     public float initialUpForce = 15.0f;
     public GameController gameController;
-    // Start is called before the first frame update
+
 
     private Rigidbody rb;
     private Vector3 startLocation;
+    private bool IsHostTurn = true;
+
     void Start()
     {
         rb = GetComponent<Rigidbody>();
-        ResetObject();
         rb.constraints = RigidbodyConstraints.None;
         startLocation = gameController.PlayerStartPosition;
-        startLocation.z = -startLocation.z + 3;
+        startLocation.z = -startLocation.z + 1.2f;
+        startLocation.x += 3.0f;
+        ResetObject();
     }
 
     private bool firstKick = true;
@@ -43,6 +46,11 @@ public class BallController : NetworkBehaviour
     public void ResetBounced()
     {
         bounced = false;
+    }
+    public void Kicked(bool hostKick)
+    {
+        IsHostTurn = !hostKick;
+        ResetBounced();
     }
     private void OnCollisionEnter(Collision collision)
     {
@@ -96,9 +104,26 @@ public class BallController : NetworkBehaviour
         transform.position = startLocation;
         rb.useGravity = false;
         rb.constraints = RigidbodyConstraints.FreezeAll;
-        rb.isKinematic = true;
+        //rb.isKinematic = true;
         ResetBounced();
         firstKick = true;
         collisionFrameCount = 0;
+    }
+
+    private bool GetWinner()
+    {
+        if(CurrentSide == PlayerSide.Host)
+        {
+            
+        }
+        else
+        {
+            if(bounced)
+            {
+                
+            }
+        }
+
+        return false;
     }
 }

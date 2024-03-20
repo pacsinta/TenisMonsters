@@ -15,6 +15,7 @@ public class MainMenu : NetworkBehaviour
     public TMP_InputField playerName;
     public Button startGameBtn;
     public Button exitBtn;
+    public Button openLeaderboardBtn;
     public TMP_InputField hostIpInput;
     public TMP_Dropdown WindowModeDropdown;
 
