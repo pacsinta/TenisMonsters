@@ -14,6 +14,7 @@ public class LobbyController : NetworkBehaviour
     public Button startGameBtn;
     public TextMeshProUGUI IsHostText;
     public TMP_Dropdown gameModeDropdown;
+    public TextMeshProUGUI titleText;
 
     private int maxPlayerCount = 2;
     private PlayerInfo playerInfo;
@@ -74,6 +75,7 @@ public class LobbyController : NetworkBehaviour
         {
             RegisterPlayerOnServerRpc(playerInfo);
         }
+        titleText.text = "Ready for game";
     }
 
     void StartGame()
@@ -94,7 +96,6 @@ public class LobbyController : NetworkBehaviour
         var clientId = serverRpcParams.Receive.SenderClientId;
         if (NetworkManager.ConnectedClients.ContainsKey(clientId))
         {
-            var clientPlayerName = clientPlayerInfo.PlayerName;
             _clientPlayerInfo.Value = clientPlayerInfo;
             clientPlayerInfo.StorePlayerInfo(clientId.ToString());
         }

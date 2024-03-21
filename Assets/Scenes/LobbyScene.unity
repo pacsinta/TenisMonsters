@@ -787,7 +787,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -7.500038, y: -0.5000019}
+  m_AnchoredPosition: {x: -7.5000305, y: -0.5}
   m_SizeDelta: {x: -35, y: -13}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &486910147
@@ -1357,10 +1357,10 @@ RectTransform:
   - {fileID: 287877259}
   m_Father: {fileID: 1379749805}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.5, y: 0.5}
-  m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 488.7585, y: 252.34}
-  m_SizeDelta: {x: 168.4828, y: 39.321}
+  m_AnchorMin: {x: 1, y: 1}
+  m_AnchorMax: {x: 1, y: 1}
+  m_AnchoredPosition: {x: -113, y: -109.66}
+  m_SizeDelta: {x: 168.48279, y: 39.320984}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1027419234
 MonoBehaviour:
@@ -1852,6 +1852,7 @@ MonoBehaviour:
   startGameBtn: {fileID: 1055067057}
   IsHostText: {fileID: 1225306182}
   gameModeDropdown: {fileID: 1027419234}
+  titleText: {fileID: 1467871942}
 --- !u!114 &1379749807
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1916,7 +1917,7 @@ GameObject:
   - component: {fileID: 1467871943}
   - component: {fileID: 1467871942}
   m_Layer: 5
-  m_Name: Text (TMP)
+  m_Name: TitleText
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2209,8 +2210,8 @@ Camera:
   m_GameObject: {fileID: 1889283340}
   m_Enabled: 1
   serializedVersion: 2
-  m_ClearFlags: 1
-  m_BackGroundColor: {r: 0.21960786, g: 0.21960786, b: 0.21960786, a: 0}
+  m_ClearFlags: 2
+  m_BackGroundColor: {r: 1, g: 0.63529414, b: 0.16470589, a: 0}
   m_projectionMatrixMode: 1
   m_GateFitMode: 2
   m_FOVAxisMode: 0
