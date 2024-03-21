@@ -19,6 +19,11 @@ public class MainMenu : NetworkBehaviour
     public TMP_InputField hostIpInput;
     public TMP_Dropdown WindowModeDropdown;
 
+    // monster show variables
+    public GameObject monster;
+    public float rotationSpeed = 10.0f;
+    public float rotationAngleLimit = 15.0f;
+
     private PlayerInfo playerInfo;
     private void Start()
     {
@@ -46,6 +51,35 @@ public class MainMenu : NetworkBehaviour
     {
         Application.Quit();
     }
+
+    private void Update()
+    {
+        RotateMonster();
+    }
+
+    private bool rotateRight = true;
+    void RotateMonster()
+    { 
+        if(rotateRight)
+        {
+            monster.transform.Rotate(Vector3.up * Time.deltaTime * rotationSpeed);
+            if(monster.transform.rotation.eulerAngles.y - 180 >= rotationAngleLimit)
+            {
+                rotateRight = false;
+            }
+        }
+        else
+        {
+            monster.transform.Rotate(Vector3.down * Time.deltaTime * rotationSpeed);
+            if(monster.transform.rotation.eulerAngles.y - 180 < -rotationAngleLimit)
+            {
+                rotateRight = true;
+            }
+        }
+
+        
+    }
+
     private void PlayerNameChanged(string newName)
     {
         if (newName.Length > 32) return;
