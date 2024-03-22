@@ -604,6 +604,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: monster
       objectReference: {fileID: 0}
+    - target: {fileID: 2664098864995057252, guid: beffbed0098bd624b8ac1162665239ac, type: 3}
+      propertyPath: m_Materials.Array.data[0]
+      value: 
+      objectReference: {fileID: 2100000, guid: e200365cf67a6874aab3196e07ffe3f9, type: 2}
     - target: {fileID: 6833710407382012335, guid: beffbed0098bd624b8ac1162665239ac, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
       value: 0.3189124
@@ -616,6 +620,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 179.37173
       objectReference: {fileID: 0}
+    - target: {fileID: 7485242654619041881, guid: beffbed0098bd624b8ac1162665239ac, type: 3}
+      propertyPath: m_Materials.Array.data[0]
+      value: 
+      objectReference: {fileID: 2100000, guid: 88ed422e07c595441bab4009484421e7, type: 2}
     - target: {fileID: 8879528566716807029, guid: beffbed0098bd624b8ac1162665239ac, type: 3}
       propertyPath: m_LocalPosition.z
       value: -0.65

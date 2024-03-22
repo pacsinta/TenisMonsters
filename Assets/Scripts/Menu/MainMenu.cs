@@ -18,6 +18,9 @@ public class MainMenu : NetworkBehaviour
     public Button openLeaderboardBtn;
     public TMP_InputField hostIpInput;
     public TMP_Dropdown WindowModeDropdown;
+    public Canvas mainCanvas;
+    public Canvas leaderBoardCanvas;
+    public TextMeshProUGUI myPontsText;
 
     // monster show variables
     public GameObject monster;
@@ -25,16 +28,56 @@ public class MainMenu : NetworkBehaviour
     public float rotationAngleLimit = 15.0f;
 
     private PlayerInfo playerInfo;
+    private ConnectionCoroutine<LeaderBoardElement> myPointCoroutine;
     private void Start()
     {
         startGameBtn.onClick.AddListener(StartNewGame);
-        exitBtn.onClick.AddListener(QuitGame);
         playerName.onValueChanged.AddListener(PlayerNameChanged);
         WindowModeDropdown.onValueChanged.AddListener(SetWindowMode);
 
+        openLeaderboardBtn.onClick.AddListener(() => { 
+            mainCanvas.gameObject.SetActive(false);
+            leaderBoardCanvas.gameObject.SetActive(true);
+        });
+        exitBtn.onClick.AddListener(() => { Application.Quit(); });
+
         playerInfo = new PlayerInfo();
         playerName.text = playerInfo.PlayerName.ToSafeString();
+
+        mainCanvas.gameObject.SetActive(true);
+        leaderBoardCanvas.gameObject.SetActive(false);
+
+        myPointCoroutine = DatabaseHandler.GetMyPoints(playerInfo.PlayerName.ToSafeString());
+        StartCoroutine(myPointCoroutine.coroutine());
     }
+
+    private float time = 0;
+    private void Update()
+    {
+        time += Time.deltaTime;
+        if(myPointCoroutine.state == LoadingState.DataAvailable)
+        {
+            Debug.Log("MyPoints loaded: " + myPointCoroutine.Result.ToString());
+            myPontsText.text = "MyScore: " + myPointCoroutine.Result.Score;
+        }
+        else if(myPointCoroutine.state == LoadingState.Error || myPointCoroutine.state == LoadingState.NotLoaded)
+        {
+            myPontsText.text = "MyScore: 0";
+            if(time >= 10)
+            {
+                if(myPointCoroutine.coroutine() != null)
+                {
+                    StopCoroutine(myPointCoroutine.coroutine());
+                }
+                myPointCoroutine = DatabaseHandler.GetMyPoints(playerInfo.PlayerName.ToSafeString());
+                StartCoroutine(myPointCoroutine.coroutine());
+                time = 0;
+            }
+        }
+
+        RotateMonster();
+    }
+
     void StartNewGame()
     {
         if (string.IsNullOrEmpty(playerName.text)) return;
@@ -45,16 +88,6 @@ public class MainMenu : NetworkBehaviour
         {
             SceneLoader.LoadScene(SceneLoader.Scene.LobbyScene, NetworkManager.Singleton);
         }
-        
-    }
-    void QuitGame()
-    {
-        Application.Quit();
-    }
-
-    private void Update()
-    {
-        RotateMonster();
     }
 
     private bool rotateRight = true;
@@ -76,8 +109,6 @@ public class MainMenu : NetworkBehaviour
                 rotateRight = true;
             }
         }
-
-        
     }
 
     private void PlayerNameChanged(string newName)
