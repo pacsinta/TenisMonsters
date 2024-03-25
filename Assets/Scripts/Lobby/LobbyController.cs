@@ -13,8 +13,15 @@ public class LobbyController : NetworkBehaviour
     public TextMeshProUGUI clientsText;
     public Button startGameBtn;
     public TextMeshProUGUI IsHostText;
-    public TMP_Dropdown gameModeDropdown;
     public TextMeshProUGUI titleText;
+
+    // Game mode panel
+    public TMP_Dropdown gameModeDropdown;
+    public Toggle gravityPowerBallToggle;
+    public Toggle speedPowerBallToggle;
+    public Toggle rotationKickPowerBallToggle;
+    public Slider powerBallSpawnTimeSlider;
+    public TextMeshProUGUI powerBallSpawnTimeText;
 
     private int maxPlayerCount = 2;
     private PlayerInfo playerInfo;
@@ -26,14 +33,38 @@ public class LobbyController : NetworkBehaviour
         clientsText.text = "No clients connected";
         if(IsHost)
         {
+            _gameInfo.Value = new GameInfo();
+
             IsHostText.text = "Host";
             _hostPlayerInfo.Value = playerInfo;
-            gameModeDropdown.onValueChanged.AddListener(ChangeGameMode);
+
+            gameModeDropdown.onValueChanged.AddListener( (mode) => { _gameInfo.Value.SetGameMode(mode); });
+            gameModeDropdown.value = _gameInfo.Value.GetGameMode();
+
+            gravityPowerBallToggle.onValueChanged.AddListener( (enabled) => { _gameInfo.Value.SetGravityPowerballEnabled(enabled); });
+            gravityPowerBallToggle.isOn = _gameInfo.Value.GetGravityPowerballEnabled();
+
+            speedPowerBallToggle.onValueChanged.AddListener( (enabled) => { _gameInfo.Value.SetSpeedPowerballEnabled(enabled); });
+            speedPowerBallToggle.isOn = _gameInfo.Value.GetSpeedPowerballEnabled();
+
+            rotationKickPowerBallToggle.onValueChanged.AddListener( (enabled) => { _gameInfo.Value.SetRotationKickPowerballEnabled(enabled); });
+            rotationKickPowerBallToggle.isOn = _gameInfo.Value.GetRotationKickPowerballEnabled();
+
+            powerBallSpawnTimeSlider.onValueChanged.AddListener( (time) => {
+                _gameInfo.Value.SetPowerBallSpawnTime((int)time);
+                powerBallSpawnTimeText.text = "Powerball spawn time: " + (int)time * 10 + "s";
+            });
+            powerBallSpawnTimeSlider.value = _gameInfo.Value.GetPowerBallSpawnTime();
+            
         }
         else
         {
             IsHostText.text = "Client";
             gameModeDropdown.interactable = false;
+            gravityPowerBallToggle.interactable = false;
+            speedPowerBallToggle.interactable = false;
+            rotationKickPowerBallToggle.interactable = false;
+            powerBallSpawnTimeSlider.interactable = false;
             playerInfo.Side = PlayerSide.Client;
         }
 
@@ -54,7 +85,7 @@ public class LobbyController : NetworkBehaviour
             clientsText.text = "Host: " + _hostPlayerInfo.Value.PlayerName + "\nClient: " + _clientPlayerInfo.Value.PlayerName;
         }
 
-        gameModeDropdown.value = _gameInfo.Value == null ? 0 : _gameInfo.Value.gameMode;
+        gameModeDropdown.value = _gameInfo.Value.GetGameMode();
     }
 
     void ApprovalCheck(NetworkManager.ConnectionApprovalRequest request, NetworkManager.ConnectionApprovalResponse response)
@@ -110,11 +141,4 @@ public class LobbyController : NetworkBehaviour
     NetworkVariable<PlayerInfo> _hostPlayerInfo = new NetworkVariable<PlayerInfo>();
     NetworkVariable<PlayerInfo> _clientPlayerInfo = new NetworkVariable<PlayerInfo>();
     NetworkVariable<GameInfo> _gameInfo = new NetworkVariable<GameInfo>();
-
-    void ChangeGameMode(int mode)
-    {
-        _gameInfo.Value = new GameInfo();
-        _gameInfo.Value.gameMode = mode;
-        _gameInfo.Value.SaveGameInfo();
-    }
 }

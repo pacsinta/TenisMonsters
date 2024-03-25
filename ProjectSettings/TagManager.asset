@@ -8,6 +8,7 @@ TagManager:
   - Ball
   - DebugText
   - Lava
+  - PowerBall
   layers:
   - Default
   - TransparentFX

@@ -15,7 +15,6 @@ public class MainMenu : NetworkBehaviour
     public TMP_InputField playerName;
     public Button startGameBtn;
     public Button exitBtn;
-    public Button openLeaderboardBtn;
     public TMP_InputField hostIpInput;
     public TMP_Dropdown WindowModeDropdown;
     public Canvas mainCanvas;
@@ -35,10 +34,6 @@ public class MainMenu : NetworkBehaviour
         playerName.onValueChanged.AddListener(PlayerNameChanged);
         WindowModeDropdown.onValueChanged.AddListener(SetWindowMode);
 
-        openLeaderboardBtn.onClick.AddListener(() => { 
-            mainCanvas.gameObject.SetActive(false);
-            leaderBoardCanvas.gameObject.SetActive(true);
-        });
         exitBtn.onClick.AddListener(() => { Application.Quit(); });
 
         playerInfo = new PlayerInfo();
@@ -146,5 +141,11 @@ public class MainMenu : NetworkBehaviour
                 Screen.fullScreenMode = FullScreenMode.FullScreenWindow;
                 break;
         }
+    }
+
+    public void SwitchCanvas()
+    {
+        mainCanvas.gameObject.SetActive(!mainCanvas.gameObject.activeSelf);
+        leaderBoardCanvas.gameObject.SetActive(!leaderBoardCanvas.gameObject.activeSelf);
     }
 }

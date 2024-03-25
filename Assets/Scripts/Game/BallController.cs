@@ -7,6 +7,7 @@ using UnityEngine;
 public class BallController : NetworkBehaviour
 {
     public float initialUpForce = 15.0f;
+    public float initialMass = 1.0f;
     public GameController gameController;
 
 
@@ -51,6 +52,7 @@ public class BallController : NetworkBehaviour
     {
         IsHostTurn = !hostKick;
         ResetBounced();
+        resetWeight();
     }
     private void OnCollisionEnter(Collision collision)
     {
@@ -66,6 +68,15 @@ public class BallController : NetworkBehaviour
                 bounced = true;
             }
         }
+    }
+
+    public void decreaseWeight()
+    {
+        rb.mass = rb.mass * 0.7f;
+    }
+    public void resetWeight()
+    {
+        rb.mass = initialMass;
     }
 
     private int collisionFrameCount = 0;

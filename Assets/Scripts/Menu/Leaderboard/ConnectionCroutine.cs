@@ -32,7 +32,7 @@ public class ConnectionCoroutine<T>
 
         if (www.result != UnityWebRequest.Result.Success)
         {
-            Debug.LogError(www.error);
+            Debug.LogError("BackendError: " + www.error);
             state = LoadingState.Error;
         }
         else

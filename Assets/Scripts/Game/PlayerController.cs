@@ -17,6 +17,7 @@ public partial class PlayerController : NetworkBehaviour
 
     private Rigidbody rb;
     private Animator animator;
+    private PowerEffects powerEffect;
 
     public override void OnNetworkSpawn()
     {
@@ -38,10 +39,12 @@ public partial class PlayerController : NetworkBehaviour
     {
         rb = GetComponent<Rigidbody>();
         animator = GetComponentInChildren<Animator>();
+        currSpeed = speed;
     }
 
     private Vector2 kickMouseStartPos = Vector2.zero;
-    private float kickMouseStartFrame = 0;
+    private float kickMouseStartTime = 0;
+    private float currSpeed;
     void Update()
     {
         if (!IsOwner) return;
@@ -49,8 +52,8 @@ public partial class PlayerController : NetworkBehaviour
         horizontalInput = Input.GetAxis("Horizontal");
         verticalInput = Input.GetAxis("Vertical");
 
-        transform.Translate(Vector3.forward * Time.deltaTime * speed * verticalInput);
-        transform.Translate(Vector3.right * Time.deltaTime * speed * horizontalInput);
+        transform.Translate(Vector3.forward * Time.deltaTime * currSpeed * verticalInput);
+        transform.Translate(Vector3.right * Time.deltaTime * currSpeed * horizontalInput);
 
         if(Input.GetKeyDown(KeyCode.Escape))
         {
@@ -61,14 +64,14 @@ public partial class PlayerController : NetworkBehaviour
         if (Input.GetKeyDown(KeyCode.Mouse0))
         {
             kickMouseStartPos = Input.mousePosition;
-            kickMouseStartFrame = Time.realtimeSinceStartup;
+            kickMouseStartTime = Time.realtimeSinceStartup;
         }
         else if (Input.GetKeyUp(KeyCode.Mouse0))
         {
             Vector2 kickMouseEndPos = Input.mousePosition;
-            float kickMouseEndFrame = Time.realtimeSinceStartup;
+            float kickMouseEndTime = Time.realtimeSinceStartup;
 
-            kickBall(kickMouseEndPos-kickMouseStartPos, (kickMouseEndFrame-kickMouseStartFrame) * kickForce);
+            kickBall(kickMouseEndPos-kickMouseStartPos, (kickMouseEndTime-kickMouseStartTime) * kickForce);
         }
 
         if (Input.GetKeyDown(KeyCode.Q))
@@ -76,6 +79,10 @@ public partial class PlayerController : NetworkBehaviour
             Debug.Log("Q Pressed");
             kickBall(Vector2.left, kickForce);
         }
+
+
+        currSpeed = powerEffect == PowerEffects.SpeedIncrease ? speed * 1.5f : speed;
+
     }
 
     void ExitGame()
@@ -89,21 +96,39 @@ public partial class PlayerController : NetworkBehaviour
         //rb.isKinematic = true;
         animator.SetTrigger("Kick");
         kicked = true;
+
     }
 
-    private GameObject ball;
     private void OnCollisionEnter(Collision collision)
     {
         GameObject collidedWithObject = collision.gameObject;
         if(kicked && collidedWithObject.CompareTag("Ball") && collision.GetContact(0).thisCollider.gameObject.name == "monster")
         {
             Debug.Log("Contact with: " + collidedWithObject.name);
-            ball = collidedWithObject;
             animator.enabled = false;
             collidedWithObject.GetComponent<Rigidbody>().velocity = Vector3.zero;
             collidedWithObject.GetComponent<Rigidbody>().angularVelocity = Vector3.zero;
             collidedWithObject.GetComponent<Rigidbody>().AddForce(0, 4, 15, ForceMode.Impulse);
             //collidedWithObject.GetComponent<BallController>().Kicked(IsHost);
+
+            kicked = false;
+        }
+        else if(collidedWithObject.CompareTag("PowerBall"))
+        {
+            var powerBall = collidedWithObject.GetComponent<PowerBallController>();
+            powerEffect = powerBall.PowerEffect;
+
+            Destroy(collidedWithObject);
+        }
+    }
+
+    private void OnCollisionStay(Collision collision)
+    {
+        GameObject collidedWithObject = collision.gameObject;
+        if (collidedWithObject.CompareTag("Ball"))
+        {
+            var distance = Vector3.Distance(transform.position, GetRocketColliderFrontPosition());
+            print("Distance: " + distance);
         }
     }
 
@@ -114,6 +139,16 @@ public partial class PlayerController : NetworkBehaviour
         {
             animator.enabled = true;
         }
+    }
+
+    private Vector3 GetRocketColliderFrontPosition()
+    {
+        var monster = transform.Find("monster");
+        var rocketCollider = monster.GetComponent<BoxCollider>();
+
+        var rocketCenter = transform.position + monster.position + rocketCollider.center;
+        var rocketFront = rocketCenter + monster.forward * rocketCollider.size.z / 2;
+        return rocketFront;
     }
 
     public void ResetObject(Vector3 position)
