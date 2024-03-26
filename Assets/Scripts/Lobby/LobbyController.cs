@@ -86,6 +86,10 @@ public class LobbyController : NetworkBehaviour
         }
 
         gameModeDropdown.value = _gameInfo.Value.GetGameMode();
+        gravityPowerBallToggle.isOn = _gameInfo.Value.GetGravityPowerballEnabled();
+        speedPowerBallToggle.isOn = _gameInfo.Value.GetSpeedPowerballEnabled();
+        rotationKickPowerBallToggle.isOn = _gameInfo.Value.GetRotationKickPowerballEnabled();
+        powerBallSpawnTimeSlider.value = _gameInfo.Value.GetPowerBallSpawnTime();
     }
 
     void ApprovalCheck(NetworkManager.ConnectionApprovalRequest request, NetworkManager.ConnectionApprovalResponse response)

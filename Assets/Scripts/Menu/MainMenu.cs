@@ -114,11 +114,6 @@ public class MainMenu : NetworkBehaviour
     }
     void startNetworkManager(bool isHost)
     {
-        /*NetworkManager.Singleton.GetComponent<UnityTransport>().SetConnectionData(
-            hostIpInput.text,
-            (ushort)7777,
-            "0.0.0.0"
-        );*/
         
         if (isHost)
         {
@@ -126,6 +121,10 @@ public class MainMenu : NetworkBehaviour
         }
         else
         {
+            NetworkManager.Singleton.GetComponent<UnityTransport>().SetConnectionData(
+                string.IsNullOrEmpty(hostIpInput.text) ? "127.0.0.1" : hostIpInput.text,
+                7777
+            );
             NetworkManager.Singleton.StartClient();
         }
     }

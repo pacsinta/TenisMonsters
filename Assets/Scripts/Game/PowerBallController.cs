@@ -10,11 +10,15 @@ public enum PowerEffects
 }
 public class PowerBallController : MonoBehaviour
 {
-    void Start()
+    public void init(bool gravityBallEnabled, bool speedBallEnabled, bool rotateKickBallEnabled)
     {
-        powerEffects = (PowerEffects)Random.Range(0, 3);
-    }
+        var listOfEffects = new List<PowerEffects>();
+        if (gravityBallEnabled) listOfEffects.Add(PowerEffects.Gravitychange);
+        if (speedBallEnabled) listOfEffects.Add(PowerEffects.SpeedIncrease);
+        if (rotateKickBallEnabled) listOfEffects.Add(PowerEffects.BallRotate);
 
+        powerEffects = listOfEffects[Random.Range(0, listOfEffects.Count)];
+    }
     private PowerEffects powerEffects;
     public PowerEffects PowerEffect { get { return powerEffects; } }
 }
