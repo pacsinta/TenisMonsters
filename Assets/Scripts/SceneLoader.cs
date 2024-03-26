@@ -4,7 +4,6 @@ using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-// TODO: Create a LoaderScene while the game is loading
 public class SceneLoader
 {
     public enum Scene
@@ -17,5 +16,9 @@ public class SceneLoader
     public static void LoadScene(Scene scene, NetworkManager networkManager)
     {
         networkManager.SceneManager.LoadScene(scene.ToString(), LoadSceneMode.Single);
+    }
+    public static void LoadScene(Scene scene)
+    {
+        SceneManager.LoadScene(scene.ToString());
     }
 }
