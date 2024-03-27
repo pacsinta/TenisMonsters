@@ -1,6 +1,7 @@
 using Assets.Scripts;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using TMPro;
 using Unity.Netcode;
 using Unity.VisualScripting;
@@ -11,9 +12,14 @@ public class GameController : NetworkBehaviour
     public TextMeshProUGUI timeText;
     public TextMeshProUGUI scoreText;
     public NetworkObject playerPrefab;
-    public NetworkObject powerBallPrefab;
     public GameObject ballObject;
     public GameObject ground;
+    public Canvas endCanvas;
+
+    // Powerball prefabs
+    public NetworkObject gravityPowerBallPrefab;
+    public NetworkObject speedPowerBallPrefab;
+    public NetworkObject rotationKickPowerBallPrefab;
 
     public Vector3 PlayerStartPosition;
     public float ZOffsetOfNet;
@@ -27,6 +33,11 @@ public class GameController : NetworkBehaviour
     GameInfo gameInfo;
     private float time = 0;
     private float remainingTimeToSpawnPowerBall = 0;
+
+    private void Start()
+    {
+        endCanvas.gameObject.SetActive(false);
+    }
     public override void OnNetworkSpawn()
     {
         if (!IsServer) return;
@@ -83,8 +94,8 @@ public class GameController : NetworkBehaviour
 
         if(remainingTimeToSpawnPowerBall >= gameInfo.GetPowerBallSpawnTime())
         {
-            SpawnPowerBall(PlayerSide.Host);
-            SpawnPowerBall(PlayerSide.Client);
+            SpawnPowerBall(PlayerSide.Host, gameInfo.GetAllPowerballEnabled());
+            SpawnPowerBall(PlayerSide.Client, gameInfo.GetAllPowerballEnabled());
             remainingTimeToSpawnPowerBall = 0;
         }
     }
@@ -156,36 +167,53 @@ public class GameController : NetworkBehaviour
         hostPlayerObject.GetComponent<PlayerController>().ResetObject(position);
     }
 
-    private ConnectionCoroutine<LeaderBoardElement> uploadScoreCoroutine;
+    
     private void EndGame()
     {
-        // TODO: Implement
         Debug.Log("Game Over");
         bool hostWon = true;
 
-        int hostScore = hostWon ? 2 : -1;
-        int clientScore = hostWon ? -1 : 2;
-
-        if(IsHost)
-        {
-            uploadScoreCoroutine = DatabaseHandler.SetMyPoints(_hostPlayerInfo.Value.PlayerName.ToSafeString(), hostScore);
-        }
-        else
-        {
-            uploadScoreCoroutine = DatabaseHandler.SetMyPoints(_clientPlayerInfo.Value.PlayerName.ToSafeString(), clientScore);
-        }
+        endCanvas.gameObject.SetActive(true);
     }
 
-    private void SpawnPowerBall(PlayerSide side)
+    private void SpawnPowerBall(PlayerSide side, EnabledPowerBalls enabled)
     {
-        // create random position
+        // Create a shuffled list of rthe enabled power balls
+        var enabledList = new List<PowerEffects>();
+        if (enabled.GravityPowerBall) enabledList.Add(PowerEffects.Gravitychange);
+        if (enabled.RotationPowerBall) enabledList.Add(PowerEffects.BallRotate);
+        if (enabled.SpeedPowerBall) enabledList.Add(PowerEffects.SpeedIncrease);
+        enabledList.OrderBy(x => Random.Range(0, enabledList.Count));
+
+        // Select the correct prefab based on the first element of the shuffled list
+        NetworkObject selectedPowerballPrefab = null;
+        switch (enabledList[0])
+        {
+            case PowerEffects.Gravitychange:
+                selectedPowerballPrefab = gravityPowerBallPrefab;
+                break;
+            case PowerEffects.SpeedIncrease:
+                selectedPowerballPrefab = speedPowerBallPrefab;
+                break;
+            case PowerEffects.BallRotate:
+                selectedPowerballPrefab = rotationKickPowerBallPrefab;
+                break;
+            default:
+                selectedPowerballPrefab = gravityPowerBallPrefab; // Safe value, but should never be reached
+                break;
+        }
+
+        // Create random position for the powerball
         var groundSize = ground.transform.localScale;
-        Vector3 spawnPosition = new Vector3(Random.Range(0, groundSize.x - 1), 0.5f, Random.Range(0, groundSize.z - 1));
+        Vector3 spawnPosition = new Vector3(Random.Range(-groundSize.x + 1, groundSize.x - 1), 
+                                                         0.5f, 
+                                                         Random.Range(-groundSize.z + 1, groundSize.z - 1));
+
         if(side == PlayerSide.Host)
         {
             spawnPosition.z *= -1;
         }
 
-        NetworkManager.Singleton.SpawnManager.InstantiateAndSpawn(powerBallPrefab, 0, true, false, false, spawnPosition);
+        NetworkManager.Singleton.SpawnManager.InstantiateAndSpawn(selectedPowerballPrefab, 0, true, false, false, spawnPosition);
     }
 }

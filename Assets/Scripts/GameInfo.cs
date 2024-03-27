@@ -11,6 +11,13 @@ public enum GameMode
     FirstToWin = 2
 }
 
+public struct EnabledPowerBalls
+{
+    public bool GravityPowerBall;
+    public bool SpeedPowerBall;
+    public bool RotationPowerBall;
+}
+
 public class GameInfo : INetworkSerializable
 {
     private int gameMode;
@@ -25,6 +32,15 @@ public class GameInfo : INetworkSerializable
         serializer.SerializeValue(ref rotationKickPowerballEnabled);
         serializer.SerializeValue(ref speedPowerballEnabled);
         serializer.SerializeValue(ref powerBallSpawnTime);
+    }
+    public EnabledPowerBalls GetAllPowerballEnabled()
+    { 
+        return new EnabledPowerBalls
+        {
+            GravityPowerBall = gravityPowerballEnabled,
+            SpeedPowerBall = speedPowerballEnabled,
+            RotationPowerBall = rotationKickPowerballEnabled
+        };
     }
 
     public void SetGameMode(int mode)
