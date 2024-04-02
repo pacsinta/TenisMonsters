@@ -21,4 +21,16 @@ public class SceneLoader
     {
         SceneManager.LoadScene(scene.ToString());
     }
+    public static void LoadScene(Scene scene, NetworkManager networkManager, bool exit)
+    {
+        if(exit && networkManager != null)
+        {
+            networkManager.Shutdown();
+            LoadScene(scene);
+        }
+        else
+        {
+            LoadScene(scene, networkManager);
+        }
+    }
 }

@@ -15,6 +15,8 @@ public partial class PlayerController : NetworkBehaviour
     public float ballDistance = 2.0f;
     public float jumpForce = 5.0f;
 
+    public GameObject gameController { set; private get; }
+
     private Rigidbody rb;
     private Animator animator;
     private PowerEffects powerEffect;
@@ -115,10 +117,11 @@ public partial class PlayerController : NetworkBehaviour
         }
         else if(collidedWithObject.CompareTag("PowerBall"))
         {
-            var powerBall = collidedWithObject.GetComponent<PowerBallController>();
-            powerEffect = powerBall.PowerEffect;
-
             Destroy(collidedWithObject);
+        }
+        else if(collidedWithObject.CompareTag("Lava"))
+        {
+            gameController.GetComponent<GameController>().EndTurn(IsHost);
         }
     }
 

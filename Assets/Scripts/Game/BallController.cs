@@ -8,12 +8,14 @@ public class BallController : NetworkBehaviour
 {
     public float initialUpForce = 15.0f;
     public float initialMass = 1.0f;
+    public uint groundCollisinMaxTime = 10;
     public GameController gameController;
 
 
     private Rigidbody rb;
     private Vector3 startLocation;
-    private bool IsHostTurn = true;
+    private PlayerSide currentSide;
+    private PlayerSide playerOfLastKick = PlayerSide.Host;
 
     void Start()
     {
@@ -36,6 +38,13 @@ public class BallController : NetworkBehaviour
             rb.AddForce(Vector3.up * initialUpForce, ForceMode.Impulse);
             firstKick = false;
         }
+
+        var newSide = CurrentSide;
+        if(newSide != currentSide)
+        {
+            currentSide = newSide;
+            bounced = false;
+        }
     }
 
     private bool bounced = false; // true if the ball has already bounced on the current turn
@@ -48,28 +57,43 @@ public class BallController : NetworkBehaviour
     {
         bounced = false;
     }
-    public void Kicked(bool hostKick)
+    public void Kicked(PlayerSide player)
     {
-        IsHostTurn = !hostKick;
         ResetBounced();
         resetWeight();
+        playerOfLastKick = player;
     }
     private void OnCollisionEnter(Collision collision)
     {
         if (!IsServer) return;
+
         if (collision.gameObject.CompareTag("Ground"))
         {
             if(bounced)
             {
-                gameController.EndTurn(false);
+                GroundEnd();
             }
             else
             {
                 bounced = true;
             }
         }
+        else if(collision.gameObject.CompareTag("Lava"))
+        {
+            CollisionWithLava();
+        }
     }
-
+    private void CollisionWithLava()
+    {
+        gameController.EndTurn(playerOfLastKick == PlayerSide.Host);
+    }
+    private void GroundEnd()
+    {
+        bool clientWon = (currentSide == PlayerSide.Host && playerOfLastKick == PlayerSide.Host) ||
+                       (currentSide == PlayerSide.Host && playerOfLastKick == PlayerSide.Client);
+        
+        gameController.EndTurn(clientWon);
+    }
     public void decreaseWeight()
     {
         rb.mass = rb.mass * 0.7f;
@@ -79,17 +103,17 @@ public class BallController : NetworkBehaviour
         rb.mass = initialMass;
     }
 
-    private int collisionFrameCount = 0;
+    private float collisionTimeCount = 0;
     private void OnCollisionStay(Collision collision)
     {
         if (!IsServer) return;
         if (collision.gameObject.CompareTag("Ground"))
         {
-            collisionFrameCount++;
+            collisionTimeCount += Time.deltaTime;
         }
-        if(collisionFrameCount > 10)
+        if(collisionTimeCount > groundCollisinMaxTime)
         {
-            gameController.EndTurn(false);
+            GroundEnd();
         }
     }
     private void OnCollisionExit(Collision collision)
@@ -97,7 +121,7 @@ public class BallController : NetworkBehaviour
         if (!IsServer) return;
         if (collision.gameObject.CompareTag("Ground"))
         {
-            collisionFrameCount = 0;
+            collisionTimeCount = 0;
         }
     }
 
@@ -118,23 +142,6 @@ public class BallController : NetworkBehaviour
         //rb.isKinematic = true;
         ResetBounced();
         firstKick = true;
-        collisionFrameCount = 0;
-    }
-
-    private bool GetWinner()
-    {
-        if(CurrentSide == PlayerSide.Host)
-        {
-            
-        }
-        else
-        {
-            if(bounced)
-            {
-                
-            }
-        }
-
-        return false;
+        collisionTimeCount = 0;
     }
 }

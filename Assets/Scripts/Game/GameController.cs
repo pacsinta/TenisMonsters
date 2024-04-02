@@ -126,10 +126,8 @@ public class GameController : NetworkBehaviour
         }
     }
 
-    private void ExitGame()
-    {
-        NetworkManager.Singleton?.Shutdown();
-        SceneLoader.LoadScene(SceneLoader.Scene.MenuScene);
+    private void ExitGame() {
+        SceneLoader.LoadScene(SceneLoader.Scene.MenuScene, NetworkManager.Singleton, true);
     }
 
     private bool TimeEnded()
@@ -171,9 +169,18 @@ public class GameController : NetworkBehaviour
     private void EndGame()
     {
         Debug.Log("Game Over");
-        bool hostWon = true;
+        if(_clientPlayerInfo.Value.Score > _hostPlayerInfo.Value.Score)
+        {
+
+        }
+        else
+        {
+
+        }
 
         endCanvas.gameObject.SetActive(true);
+        //endCanvas.GetComponent<EndHandler>().instantiateGameEnd());
+        
     }
 
     private void SpawnPowerBall(PlayerSide side, EnabledPowerBalls enabled)

@@ -114,7 +114,7 @@ public class MainMenu : NetworkBehaviour
     }
     void startNetworkManager(bool isHost)
     {
-        
+        NetworkManager.Singleton?.Shutdown();
         if (isHost)
         {
             NetworkManager.Singleton.StartHost();
