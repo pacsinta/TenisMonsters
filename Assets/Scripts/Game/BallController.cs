@@ -131,7 +131,7 @@ public class BallController : NetworkBehaviour
     /// <returns>The current side of the ball.</returns>
     private PlayerSide CurrentSide
     {
-        get { return transform.position.z > 0 ? PlayerSide.Host : PlayerSide.Client; }
+        get { return transform.position.z > 0 ? PlayerSide.Client : PlayerSide.Host; }
     }
 
     public void ResetObject()

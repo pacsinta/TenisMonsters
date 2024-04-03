@@ -10,16 +10,17 @@ public partial class PlayerController : NetworkBehaviour
 {
     private float horizontalInput;
     private float verticalInput;
-    public float speed = 5.0f;
+    public float initialSpeed = 5.0f;
     public float kickForce = 100.0f;
     public float ballDistance = 2.0f;
     public float jumpForce = 5.0f;
+    public float powerDuration = 10.0f;
 
     public GameObject gameController { set; private get; }
 
     private Rigidbody rb;
     private Animator animator;
-    private PowerEffects powerEffect;
+    private PlayerPowers currentEffects = new();
 
     public override void OnNetworkSpawn()
     {
@@ -41,7 +42,7 @@ public partial class PlayerController : NetworkBehaviour
     {
         rb = GetComponent<Rigidbody>();
         animator = GetComponentInChildren<Animator>();
-        currSpeed = speed;
+        currSpeed = initialSpeed;
     }
 
     private Vector2 kickMouseStartPos = Vector2.zero;
@@ -56,11 +57,6 @@ public partial class PlayerController : NetworkBehaviour
 
         transform.Translate(Vector3.forward * Time.deltaTime * currSpeed * verticalInput);
         transform.Translate(Vector3.right * Time.deltaTime * currSpeed * horizontalInput);
-
-        if(Input.GetKeyDown(KeyCode.Escape))
-        {
-            ExitGame();
-        }
 
 
         if (Input.GetKeyDown(KeyCode.Mouse0))
@@ -83,14 +79,9 @@ public partial class PlayerController : NetworkBehaviour
         }
 
 
-        currSpeed = powerEffect == PowerEffects.SpeedIncrease ? speed * 1.5f : speed;
-
+        currSpeed = currentEffects.SpeedIncreasePowerDuration > 0 ? initialSpeed * 1.5f : initialSpeed;
     }
 
-    void ExitGame()
-    {
-        SceneLoader.LoadScene(SceneLoader.Scene.MenuScene);
-    }
 
     private bool kicked = false;
     private void kickBall(Vector2 kickDirection, float kickForce)
@@ -117,6 +108,8 @@ public partial class PlayerController : NetworkBehaviour
         }
         else if(collidedWithObject.CompareTag("PowerBall"))
         {
+            var power = Variables.Object(collidedWithObject).Get("PowerEffect");
+            currentEffects.SetPower((PowerEffects)power, powerDuration);
             Destroy(collidedWithObject);
         }
         else if(collidedWithObject.CompareTag("Lava"))
