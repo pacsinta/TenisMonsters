@@ -109,12 +109,6 @@ public class GameController : NetworkBehaviour
         return minutes + ":" + remainingSeconds;
     }
 
-    
-
-    private void ExitGame() {
-        SceneLoader.LoadScene(SceneLoader.Scene.MenuScene, NetworkManager.Singleton, true);
-    }
-
     private bool TimeEnded()
     {
         uint maxTime = gameInfo.GetMaxTime;
@@ -156,18 +150,23 @@ public class GameController : NetworkBehaviour
     {
         Debug.Log("Game Over");
         timeCounting = false;
+
+        PlayerSide? winner = null; // null means draw
         if(_clientPlayerInfo.Value.Score > _hostPlayerInfo.Value.Score)
         {
-
+            winner = PlayerSide.Client;
         }
-        else
+        else if (_hostPlayerInfo.Value.Score > _clientPlayerInfo.Value.Score)
         {
-
+            winner = PlayerSide.Host;
         }
+
+        Destroy(ballObject);
 
         endCanvas.gameObject.SetActive(true);
-        //endCanvas.GetComponent<EndHandler>().instantiateGameEnd());
-        
+        endCanvas.GetComponent<EndHandler>().instantiateGameEnd(winner,
+                                                                _clientPlayerInfo.Value.PlayerName.ToSafeString(),
+                                                                _hostPlayerInfo.Value.PlayerName.ToSafeString());
     }
 
     public void StartGame()
