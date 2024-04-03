@@ -104,6 +104,8 @@ public partial class PlayerController : NetworkBehaviour
 
     private void OnCollisionEnter(Collision collision)
     {
+        if(!IsOwner) return;
+
         GameObject collidedWithObject = collision.gameObject;
         if(kicked && collidedWithObject.CompareTag("Ball") && collision.GetContact(0).thisCollider.gameObject.name == "monster")
         {
@@ -118,9 +120,11 @@ public partial class PlayerController : NetworkBehaviour
             kicked = false;
             kick = new (); // reset kick
 
-            if(currentEffects.GravityPowerDuration > 0)
+            BallController ballController = collidedWithObject.GetComponent<BallController>();
+            ballController.Kicked(IsHost ? PlayerSide.Host : PlayerSide.Client);
+
+            if (currentEffects.GravityPowerDuration > 0)
             {
-                BallController ballController = collidedWithObject.GetComponent<BallController>();
                 ballController.decreaseWeight();
             }
         }
@@ -138,6 +142,8 @@ public partial class PlayerController : NetworkBehaviour
 
     private void OnCollisionExit(Collision collision)
     {
+        if (!IsOwner) return;
+
         GameObject collidedWithObject = collision.gameObject;
         if (collidedWithObject.CompareTag("Ball"))
         {

@@ -62,6 +62,10 @@ public class BallController : NetworkBehaviour
     {
         ResetBounced();
         resetWeight();
+        if(playerOfLastKick == player)
+        {
+            gameController.EndTurn(player == PlayerSide.Host ? PlayerSide.Client : PlayerSide.Client);
+        }
         playerOfLastKick = player;
     }
     private void OnCollisionEnter(Collision collision)
