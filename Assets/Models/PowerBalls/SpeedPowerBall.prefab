@@ -118,7 +118,6 @@ GameObject:
   - component: {fileID: 5794774724872399557}
   - component: {fileID: 8174729970871954931}
   - component: {fileID: 8312643668747217586}
-  - component: {fileID: 6459056862735181586}
   m_Layer: 0
   m_Name: SpeedPowerBall
   m_TagString: PowerBall
@@ -231,17 +230,5 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f6c0be61502bb534f922ebb746851216, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
---- !u!114 &6459056862735181586
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 9187394727495392899}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 641a151ddb3354b4aa44cabd5e52784e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
