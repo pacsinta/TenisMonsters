@@ -85,10 +85,10 @@ public class GameInfoSync : INetworkSerializable
     {
         return speedPowerballEnabled;
     }
-    public void SetPowerBallSpawnTime(int time)
+    public void SetPowerBallSpawnTime(float time)
     {
-        powerBallSpawnTime = time;
-        PlayerPrefs.SetInt("PowerBallSpawnTime", time);
+        powerBallSpawnTime = (int)time;
+        PlayerPrefs.SetInt("PowerBallSpawnTime", (int)time);
     }
     public int GetPowerBallSpawnTime()
     {

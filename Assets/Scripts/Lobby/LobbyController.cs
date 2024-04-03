@@ -5,7 +5,9 @@ using System.Collections.Generic;
 using TMPro;
 using Unity.Collections;
 using Unity.Netcode;
+using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.UI;
 
 public class LobbyController : NetworkBehaviour
@@ -38,24 +40,11 @@ public class LobbyController : NetworkBehaviour
             IsHostText.text = "Host";
             _hostPlayerInfo.Value = playerInfo;
 
-            gameModeDropdown.onValueChanged.AddListener( (mode) => { _gameInfo.Value.SetGameMode(mode); });
-            gameModeDropdown.value = _gameInfo.Value.GetGameMode();
-
-            gravityPowerBallToggle.onValueChanged.AddListener( (enabled) => { _gameInfo.Value.SetGravityPowerballEnabled(enabled); });
-            gravityPowerBallToggle.isOn = _gameInfo.Value.GetGravityPowerballEnabled();
-
-            speedPowerBallToggle.onValueChanged.AddListener( (enabled) => { _gameInfo.Value.SetSpeedPowerballEnabled(enabled); });
-            speedPowerBallToggle.isOn = _gameInfo.Value.GetSpeedPowerballEnabled();
-
-            rotationKickPowerBallToggle.onValueChanged.AddListener( (enabled) => { _gameInfo.Value.SetRotationKickPowerballEnabled(enabled); });
-            rotationKickPowerBallToggle.isOn = _gameInfo.Value.GetRotationKickPowerballEnabled();
-
-            powerBallSpawnTimeSlider.onValueChanged.AddListener( (time) => {
-                _gameInfo.Value.powerBallSpawnTime = (int)time;
-                powerBallSpawnTimeText.text = "Powerball spawn time: " + (int)time * 10 + "s";
-            });
-            powerBallSpawnTimeSlider.value = _gameInfo.Value.powerBallSpawnTime;
-            
+            gameModeDropdown.onValueChanged.AddListener(GameSettingListeners<int>(_gameInfo.Value.SetGameMode));
+            gravityPowerBallToggle.onValueChanged.AddListener(GameSettingListeners<bool>(_gameInfo.Value.SetGravityPowerballEnabled));
+            speedPowerBallToggle.onValueChanged.AddListener(GameSettingListeners<bool>(_gameInfo.Value.SetSpeedPowerballEnabled));
+            rotationKickPowerBallToggle.onValueChanged.AddListener(GameSettingListeners<bool>(_gameInfo.Value.SetRotationKickPowerballEnabled));
+            powerBallSpawnTimeSlider.onValueChanged.AddListener(GameSettingListeners<float>(_gameInfo.Value.SetPowerBallSpawnTime));
         }
         else
         {
@@ -72,6 +61,11 @@ public class LobbyController : NetworkBehaviour
         NetworkManager.Singleton.ConnectionApprovalCallback += ApprovalCheck;
 
         startGameBtn.onClick.AddListener(StartGame);
+    }
+
+    private UnityAction<T> GameSettingListeners<T>(Action<T> func)
+    {
+        return (enabled) => { func(enabled); _gameInfo.IsDirty(); };
     }
 
     private void Update()
@@ -91,8 +85,6 @@ public class LobbyController : NetworkBehaviour
         rotationKickPowerBallToggle.isOn = _gameInfo.Value.GetRotationKickPowerballEnabled();
         powerBallSpawnTimeSlider.value = _gameInfo.Value.powerBallSpawnTime;
         powerBallSpawnTimeText.text = "Powerball spawn time: " + _gameInfo.Value.powerBallSpawnTime * 10 + "s";
-
-        
     }
 
     void ApprovalCheck(NetworkManager.ConnectionApprovalRequest request, NetworkManager.ConnectionApprovalResponse response)
