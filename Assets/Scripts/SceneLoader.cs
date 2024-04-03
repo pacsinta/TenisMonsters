@@ -37,6 +37,7 @@ public class SceneLoader
         if(exit && networkManager != null)
         {
             networkManager.Shutdown();
+            networkManager.ConnectionApprovalCallback = null;
             LoadScene(scene);
         }
         else
