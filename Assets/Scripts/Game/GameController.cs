@@ -78,8 +78,6 @@ public class GameController : NetworkBehaviour
 
     private void Update()
     {
-        
-
         time += Time.deltaTime;
         remainingTimeToSpawnPowerBall += Time.deltaTime;
 
