@@ -1222,8 +1222,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   endText: {fileID: 0}
   errorText: {fileID: 0}
-  exitBtn: {fileID: 0}
-  tryAgainBtn: {fileID: 0}
+  exitBtn: {fileID: 855768204}
+  tryAgainBtn: {fileID: 974463734}
 --- !u!114 &997933180
 MonoBehaviour:
   m_ObjectHideFlags: 0
