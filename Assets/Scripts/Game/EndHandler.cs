@@ -21,15 +21,21 @@ public class EndHandler : NetworkBehaviour
     {
         errorText.text = "Loading...";
         endText.text = "";
-        tryAgainBtn.enabled = false;
-        exitBtn.enabled = false;
+        SetButtonVisibility(tryAgainBtn, ButtonVisibility.Hide);
+        SetButtonVisibility(exitBtn, ButtonVisibility.Disabled);
         exitBtn.onClick.AddListener(()=>SceneLoader.LoadScene(SceneLoader.Scene.MenuScene, NetworkManager.Singleton, true));
+        tryAgainBtn.onClick.AddListener(() => { 
+            time = 0; 
+            if(uploadScoreCoroutine.coroutine() != null) StopCoroutine(uploadScoreCoroutine.coroutine());
+            StartCoroutine(uploadScoreCoroutine.coroutine());
+        });
     }
 
     float time = 0;
     void Update()
     {
         if(!gameEnded) return;
+        time += Time.deltaTime;
         
         if(winnerPlayer == null)
         {
@@ -43,14 +49,18 @@ public class EndHandler : NetworkBehaviour
 
         if(uploadScoreCoroutine.state == LoadingState.DataAvailable)
         {
-            exitBtn.enabled = true;
+            SetButtonVisibility(tryAgainBtn, ButtonVisibility.Hide);
+            SetButtonVisibility(exitBtn, ButtonVisibility.ShowAndEnable);
         }
-        else if(uploadScoreCoroutine.state == LoadingState.NotLoaded)
+        else if(uploadScoreCoroutine.state == LoadingState.NotLoaded && time < 10)
         {
+            SetButtonVisibility(tryAgainBtn, ButtonVisibility.Hide);
+            SetButtonVisibility(exitBtn, ButtonVisibility.Disabled);
         }
-        else if(uploadScoreCoroutine.state == LoadingState.Error)
+        else // error or timeout
         {
-            tryAgainBtn.enabled = true; 
+            SetButtonVisibility(tryAgainBtn, ButtonVisibility.ShowAndEnable);
+            SetButtonVisibility(exitBtn, ButtonVisibility.ShowAndEnable);
         }
     }
 
@@ -69,6 +79,32 @@ public class EndHandler : NetworkBehaviour
         {
             uploadScoreCoroutine = DatabaseHandler.SetMyPoints(clientName, clientScore);
         }
-        
+        StartCoroutine(uploadScoreCoroutine.coroutine());
+    }
+
+    private enum ButtonVisibility
+    {
+        Hide,
+        Disabled,
+        ShowAndEnable
+    }
+
+    private void SetButtonVisibility(Button button, ButtonVisibility visibility)
+    {
+        switch(visibility)
+        {
+            case ButtonVisibility.Hide:
+                button.gameObject.SetActive(false);
+                button.enabled = false;
+                break;
+            case ButtonVisibility.Disabled:
+                button.gameObject.SetActive(true);
+                button.enabled = false;
+                break;
+            case ButtonVisibility.ShowAndEnable:
+                button.gameObject.SetActive(true);
+                button.enabled = true;
+                break;
+        }
     }
 }
