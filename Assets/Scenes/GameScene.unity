@@ -1220,8 +1220,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ce447fadfe4a2e14b800c9c74822e73a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  endText: {fileID: 0}
-  errorText: {fileID: 0}
+  endText: {fileID: 1645077334}
+  errorText: {fileID: 862422705}
   exitBtn: {fileID: 855768204}
   tryAgainBtn: {fileID: 974463734}
 --- !u!114 &997933180
