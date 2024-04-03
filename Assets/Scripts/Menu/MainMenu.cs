@@ -57,7 +57,7 @@ public class MainMenu : NetworkBehaviour
         }
         else if(myPointCoroutine.state == LoadingState.Error || myPointCoroutine.state == LoadingState.NotLoaded)
         {
-            myPontsText.text = "MyScore: 0";
+            myPontsText.text = "MyScore: -";
             if(time >= 10)
             {
                 if(myPointCoroutine.coroutine() != null)
