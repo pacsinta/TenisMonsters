@@ -30,7 +30,7 @@ public class GameController : NetworkBehaviour
 
     NetworkVariable<PlayerInfo> _hostPlayerInfo = new NetworkVariable<PlayerInfo>();
     NetworkVariable<PlayerInfo> _clientPlayerInfo = new NetworkVariable<PlayerInfo>();
-    GameInfo gameInfo;
+    GameInfoSync gameInfo;
     private float time = 0;
     private float remainingTimeToSpawnPowerBall = 0;
 
@@ -42,7 +42,7 @@ public class GameController : NetworkBehaviour
     {
         if (!IsServer) return;
         _hostPlayerInfo.Value = new PlayerInfo();
-        gameInfo = new GameInfo();
+        gameInfo = new GameInfoSync();
 
         var clients = NetworkManager.Singleton.ConnectedClientsList;
 
@@ -78,7 +78,7 @@ public class GameController : NetworkBehaviour
 
     private void Update()
     {
-        HandleNotConnected();
+        
 
         time += Time.deltaTime;
         remainingTimeToSpawnPowerBall += Time.deltaTime;
@@ -107,24 +107,7 @@ public class GameController : NetworkBehaviour
         return minutes + ":" + remainingSeconds;
     }
 
-    private void HandleNotConnected()
-    {
-        if (NetworkManager.Singleton == null)
-        {
-            Debug.LogError("Netcode is not initialized");
-            ExitGame();
-        }
-        else if (!NetworkManager.Singleton.IsConnectedClient)
-        {
-            Debug.LogError("Player is not connected to the server!");
-            ExitGame();
-        }
-        else if (IsHost && NetworkManager.Singleton.ConnectedClients.Count != 2)
-        {
-            Debug.LogError("No opponent is connected");
-            ExitGame();
-        }
-    }
+    
 
     private void ExitGame() {
         SceneLoader.LoadScene(SceneLoader.Scene.MenuScene, NetworkManager.Singleton, true);

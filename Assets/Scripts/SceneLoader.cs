@@ -12,6 +12,10 @@ public class SceneLoader
         GameScene = 1,
         LobbyScene = 2
     }
+    public static Scene GetCurrentScene()
+    {
+        return (Scene)SceneManager.GetActiveScene().buildIndex;
+    }
 
     public static void LoadScene(Scene scene, NetworkManager networkManager)
     {

@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using Unity.Netcode;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.SocialPlatforms.Impl;
 
@@ -18,13 +19,18 @@ public struct EnabledPowerBalls
     public bool RotationPowerBall;
 }
 
-public class GameInfo : INetworkSerializable
+public class GameInfo : MonoBehaviour
 {
-    private int gameMode;
-    private bool gravityPowerballEnabled = true;
-    private bool rotationKickPowerballEnabled = true;
-    private bool speedPowerballEnabled = true;
-    private int powerBallSpawnTime = 10;
+    public static int gameMode; 
+}
+
+public class GameInfoSync : INetworkSerializable
+{
+    public int gameMode;
+    public bool gravityPowerballEnabled = true;
+    public bool rotationKickPowerballEnabled = true;
+    public bool speedPowerballEnabled = true;
+    public int powerBallSpawnTime = 10;
     public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
     {
         serializer.SerializeValue(ref gameMode);
@@ -88,7 +94,7 @@ public class GameInfo : INetworkSerializable
     {
         return powerBallSpawnTime;
     }
-    public GameInfo()
+    public GameInfoSync()
     {
         gameMode = PlayerPrefs.GetInt("GameMode");
         gravityPowerballEnabled = PlayerPrefs.GetInt("GravityPowerballEnabled") == 1;

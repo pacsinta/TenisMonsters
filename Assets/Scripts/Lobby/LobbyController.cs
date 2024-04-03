@@ -33,7 +33,7 @@ public class LobbyController : NetworkBehaviour
         clientsText.text = "No clients connected";
         if(IsHost)
         {
-            _gameInfo.Value = new GameInfo();
+            _gameInfo.Value = new GameInfoSync();
 
             IsHostText.text = "Host";
             _hostPlayerInfo.Value = playerInfo;
@@ -51,10 +51,10 @@ public class LobbyController : NetworkBehaviour
             rotationKickPowerBallToggle.isOn = _gameInfo.Value.GetRotationKickPowerballEnabled();
 
             powerBallSpawnTimeSlider.onValueChanged.AddListener( (time) => {
-                _gameInfo.Value.SetPowerBallSpawnTime((int)time);
+                _gameInfo.Value.powerBallSpawnTime = (int)time;
                 powerBallSpawnTimeText.text = "Powerball spawn time: " + (int)time * 10 + "s";
             });
-            powerBallSpawnTimeSlider.value = _gameInfo.Value.GetPowerBallSpawnTime();
+            powerBallSpawnTimeSlider.value = _gameInfo.Value.powerBallSpawnTime;
             
         }
         else
@@ -89,7 +89,10 @@ public class LobbyController : NetworkBehaviour
         gravityPowerBallToggle.isOn = _gameInfo.Value.GetGravityPowerballEnabled();
         speedPowerBallToggle.isOn = _gameInfo.Value.GetSpeedPowerballEnabled();
         rotationKickPowerBallToggle.isOn = _gameInfo.Value.GetRotationKickPowerballEnabled();
-        powerBallSpawnTimeSlider.value = _gameInfo.Value.GetPowerBallSpawnTime();
+        powerBallSpawnTimeSlider.value = _gameInfo.Value.powerBallSpawnTime;
+        powerBallSpawnTimeText.text = "Powerball spawn time: " + _gameInfo.Value.powerBallSpawnTime * 10 + "s";
+
+        
     }
 
     void ApprovalCheck(NetworkManager.ConnectionApprovalRequest request, NetworkManager.ConnectionApprovalResponse response)
@@ -144,5 +147,5 @@ public class LobbyController : NetworkBehaviour
 
     NetworkVariable<PlayerInfo> _hostPlayerInfo = new NetworkVariable<PlayerInfo>();
     NetworkVariable<PlayerInfo> _clientPlayerInfo = new NetworkVariable<PlayerInfo>();
-    NetworkVariable<GameInfo> _gameInfo = new NetworkVariable<GameInfo>();
+    NetworkVariable<GameInfoSync> _gameInfo = new NetworkVariable<GameInfoSync>();
 }
