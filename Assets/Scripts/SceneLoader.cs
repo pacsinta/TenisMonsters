@@ -15,7 +15,14 @@ public class SceneLoader
 
     public static void LoadScene(Scene scene, NetworkManager networkManager)
     {
-        networkManager.SceneManager.LoadScene(scene.ToString(), LoadSceneMode.Single);
+        if(networkManager != null)
+        {
+            networkManager.SceneManager.LoadScene(scene.ToString(), LoadSceneMode.Single);
+        }
+        else
+        {
+            LoadScene(scene);
+        }
     }
     public static void LoadScene(Scene scene)
     {
