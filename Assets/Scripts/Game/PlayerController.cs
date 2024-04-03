@@ -84,13 +84,22 @@ public partial class PlayerController : NetworkBehaviour
     }
 
 
+    struct Kick
+    {
+        public float Xdirection;
+        public float force;
+    }
     private bool kicked = false;
+    private Kick kick = new();
     private void kickBall(Vector2 kickDirection, float kickForce)
     {
-        //rb.isKinematic = true;
         animator.SetTrigger("Kick");
         kicked = true;
-
+        kick = new Kick
+        {
+            force = kickForce,
+            Xdirection = kickDirection.x
+        };
     }
 
     private void OnCollisionEnter(Collision collision)
@@ -101,10 +110,12 @@ public partial class PlayerController : NetworkBehaviour
             animator.enabled = false;
             collidedWithObject.GetComponent<Rigidbody>().velocity = Vector3.zero;
             collidedWithObject.GetComponent<Rigidbody>().angularVelocity = Vector3.zero;
-            collidedWithObject.GetComponent<Rigidbody>().AddForce(0, 4, 15, ForceMode.Impulse);
-            //collidedWithObject.GetComponent<BallController>().Kicked(IsHost);
-
+            collidedWithObject.GetComponent<Rigidbody>().AddForce(kick.Xdirection / 100, 
+                                                                  kick.force / 2, 
+                                                                  kick.force, 
+                                                                  ForceMode.Impulse);
             kicked = false;
+            kick = new (); // reset kick
         }
         else if(collidedWithObject.CompareTag("PowerBall"))
         {

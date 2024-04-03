@@ -97,7 +97,7 @@ public class BallController : NetworkBehaviour
     }
     public void decreaseWeight()
     {
-        rb.mass = rb.mass * 0.7f;
+        rb.mass = initialMass * 0.7f;
     }
     public void resetWeight()
     {
