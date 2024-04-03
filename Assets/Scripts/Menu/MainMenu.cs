@@ -71,6 +71,15 @@ public class MainMenu : NetworkBehaviour
         }
 
         RotateMonster();
+
+        if(IsHostToggle.isOn)
+        {
+            hostIpInput.interactable = false;
+        }
+        else
+        {
+            hostIpInput.interactable = true;
+        }
     }
 
     void StartNewGame()

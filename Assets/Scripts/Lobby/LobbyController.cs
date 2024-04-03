@@ -59,7 +59,7 @@ public class LobbyController : NetworkBehaviour
 
         NetworkManager.Singleton.OnClientConnectedCallback += HandleClientConnect;
         NetworkManager.Singleton.ConnectionApprovalCallback += ApprovalCheck;
-
+        
         startGameBtn.onClick.AddListener(StartGame);
     }
 
