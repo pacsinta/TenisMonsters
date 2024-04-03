@@ -18,6 +18,7 @@ public partial class PlayerController : NetworkBehaviour
     public float powerDuration = 10.0f;
 
     public GameObject gameController { set; private get; }
+    public AudioSource kickSound { set; private get; }
 
     private Rigidbody rb;
     private Animator animator;
@@ -70,15 +71,8 @@ public partial class PlayerController : NetworkBehaviour
             Vector2 kickMouseEndPos = Input.mousePosition;
             float kickMouseEndTime = Time.realtimeSinceStartup;
 
-            kickBall(kickMouseEndPos-kickMouseStartPos, (kickMouseEndTime-kickMouseStartTime) * kickForce);
+            kickBall(kickMouseStartPos, kickMouseEndPos, kickMouseEndTime, kickMouseStartTime);
         }
-
-        if (Input.GetKeyDown(KeyCode.Q))
-        {
-            Debug.Log("Q Pressed");
-            kickBall(Vector2.left, kickForce);
-        }
-
 
         currSpeed = currentEffects.SpeedIncreasePowerDuration > 0 ? initialSpeed * 1.5f : initialSpeed;
     }
@@ -91,13 +85,19 @@ public partial class PlayerController : NetworkBehaviour
     }
     private bool kicked = false;
     private Kick kick = new();
-    private void kickBall(Vector2 kickDirection, float kickForce)
+    private void kickBall(Vector2 kickMouseStartPos, Vector2 kickMouseEndPos, float kickMouseEndTime, float kickMouseStartTime)
     {
         animator.SetTrigger("Kick");
         kicked = true;
+        float mouseDistance = Vector2.Distance(kickMouseStartPos, kickMouseEndPos);
+        float mouseTime = kickMouseEndTime - kickMouseStartTime;
+        float mouseSpeed = mouseDistance / mouseTime;
+
+        float force = mouseSpeed * kickForce;
+        Vector2 kickDirection = kickMouseEndPos - kickMouseStartPos;
         kick = new Kick
         {
-            force = kickForce,
+            force = force,
             Xdirection = kickDirection.x
         };
     }
@@ -110,12 +110,19 @@ public partial class PlayerController : NetworkBehaviour
             animator.enabled = false;
             collidedWithObject.GetComponent<Rigidbody>().velocity = Vector3.zero;
             collidedWithObject.GetComponent<Rigidbody>().angularVelocity = Vector3.zero;
+            collidedWithObject.transform.position += new Vector3(0, 0, 0.5f * transform.forward.z); // move ball a bit forward to avoid animation clipping
             collidedWithObject.GetComponent<Rigidbody>().AddForce(kick.Xdirection / 100, 
                                                                   kick.force / 2, 
                                                                   kick.force, 
                                                                   ForceMode.Impulse);
             kicked = false;
             kick = new (); // reset kick
+
+            if(currentEffects.GravityPowerDuration > 0)
+            {
+                BallController ballController = collidedWithObject.GetComponent<BallController>();
+                ballController.decreaseWeight();
+            }
         }
         else if(collidedWithObject.CompareTag("PowerBall"))
         {
@@ -129,16 +136,6 @@ public partial class PlayerController : NetworkBehaviour
         }
     }
 
-    private void OnCollisionStay(Collision collision)
-    {
-        GameObject collidedWithObject = collision.gameObject;
-        if (collidedWithObject.CompareTag("Ball"))
-        {
-            var distance = Vector3.Distance(transform.position, GetRocketColliderFrontPosition());
-            print("Distance: " + distance);
-        }
-    }
-
     private void OnCollisionExit(Collision collision)
     {
         GameObject collidedWithObject = collision.gameObject;
@@ -146,16 +143,6 @@ public partial class PlayerController : NetworkBehaviour
         {
             animator.enabled = true;
         }
-    }
-
-    private Vector3 GetRocketColliderFrontPosition()
-    {
-        var monster = transform.Find("monster");
-        var rocketCollider = monster.GetComponent<BoxCollider>();
-
-        var rocketCenter = transform.position + monster.position + rocketCollider.center;
-        var rocketFront = rocketCenter + monster.forward * rocketCollider.size.z / 2;
-        return rocketFront;
     }
 
     public void ResetObject(Vector3 position)
