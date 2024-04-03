@@ -16,17 +16,17 @@ public class ConnectionHandler : NetworkBehaviour
     {
         if (NetworkManager.Singleton == null)
         {
-            Debug.LogError("Netcode is not initialized");
+            Debug.LogWarning("Netcode is not initialized");
             SceneLoader.LoadScene(SceneLoader.Scene.MenuScene, NetworkManager.Singleton, true);
         }
         else if (!NetworkManager.Singleton.IsConnectedClient)
         {
-            Debug.LogError("Player is not connected to the server!");
+            Debug.LogWarning("Player is not connected to the server!");
             SceneLoader.LoadScene(SceneLoader.Scene.MenuScene, NetworkManager.Singleton, true);
         }
         else if (IsHost && NetworkManager.Singleton.ConnectedClients.Count != 2 && SceneLoader.GetCurrentScene() == SceneLoader.Scene.GameScene)
         {
-            Debug.LogError("No opponent is connected");
+            Debug.LogWarning("No opponent is connected");
             SceneLoader.LoadScene(SceneLoader.Scene.MenuScene, NetworkManager.Singleton, true);
         }
     }
