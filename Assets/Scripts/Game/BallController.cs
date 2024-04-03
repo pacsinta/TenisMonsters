@@ -37,6 +37,7 @@ public class BallController : NetworkBehaviour
             rb.constraints = RigidbodyConstraints.None;
             rb.AddForce(Vector3.up * initialUpForce, ForceMode.Impulse);
             firstKick = false;
+            gameController.StartGame();
         }
 
         var newSide = CurrentSide;
@@ -85,14 +86,14 @@ public class BallController : NetworkBehaviour
     }
     private void CollisionWithLava()
     {
-        gameController.EndTurn(playerOfLastKick == PlayerSide.Host);
+        gameController.EndTurn(playerOfLastKick);
     }
     private void GroundEnd()
     {
         bool clientWon = (currentSide == PlayerSide.Host && playerOfLastKick == PlayerSide.Host) ||
                        (currentSide == PlayerSide.Host && playerOfLastKick == PlayerSide.Client);
         
-        gameController.EndTurn(clientWon);
+        gameController.EndTurn(clientWon ? PlayerSide.Client : PlayerSide.Host);
     }
     public void decreaseWeight()
     {

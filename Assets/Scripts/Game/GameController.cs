@@ -32,6 +32,7 @@ public class GameController : NetworkBehaviour
     NetworkVariable<PlayerInfo> _clientPlayerInfo = new NetworkVariable<PlayerInfo>();
     GameInfoSync gameInfo;
     private float time = 0;
+    private bool timeCounting = false;
     private float remainingTimeToSpawnPowerBall = 0;
 
     private void Start()
@@ -78,10 +79,13 @@ public class GameController : NetworkBehaviour
 
     private void Update()
     {
-        time += Time.deltaTime;
-        remainingTimeToSpawnPowerBall += Time.deltaTime;
-
-        timeText.text = gameInfo.GetMaxTime != 0 ? ConvertSecondsToTimeString(gameInfo.GetMaxTime - ((uint)time)) : "";
+        if(timeCounting)
+        {
+            time += Time.deltaTime;
+            remainingTimeToSpawnPowerBall += Time.deltaTime;
+            timeText.text = gameInfo.GetMaxTime != 0 ? ConvertSecondsToTimeString(gameInfo.GetMaxTime - ((uint)time)) : "";
+        }
+        
         scoreText.text = _hostPlayerInfo.Value?.Score + " - " + _clientPlayerInfo.Value?.Score;
 
         if (!IsServer) return;
@@ -122,9 +126,9 @@ public class GameController : NetworkBehaviour
         return maxScore != 0 && (_hostPlayerInfo.Value.Score >= maxScore || _clientPlayerInfo.Value.Score >= maxScore);
     }
 
-    public void EndTurn(bool hostWon)
+    public void EndTurn(PlayerSide winner)
     {
-        if (hostWon)
+        if (winner == PlayerSide.Host)
         {
             _hostPlayerInfo.Value.Score++;
         }
@@ -134,6 +138,7 @@ public class GameController : NetworkBehaviour
         }
         
         ResetEnvironment();
+        timeCounting = false;
     }
 
     private void ResetEnvironment()
@@ -150,6 +155,7 @@ public class GameController : NetworkBehaviour
     private void EndGame()
     {
         Debug.Log("Game Over");
+        timeCounting = false;
         if(_clientPlayerInfo.Value.Score > _hostPlayerInfo.Value.Score)
         {
 
@@ -162,6 +168,11 @@ public class GameController : NetworkBehaviour
         endCanvas.gameObject.SetActive(true);
         //endCanvas.GetComponent<EndHandler>().instantiateGameEnd());
         
+    }
+
+    public void StartGame()
+    {
+        timeCounting = true;
     }
 
     private void SpawnPowerBall(PlayerSide side, EnabledPowerBalls enabled)

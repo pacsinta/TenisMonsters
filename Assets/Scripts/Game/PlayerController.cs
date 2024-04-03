@@ -1,3 +1,4 @@
+using Assets.Scripts;
 using Cinemachine;
 using System;
 using System.Collections;
@@ -97,7 +98,6 @@ public partial class PlayerController : NetworkBehaviour
         GameObject collidedWithObject = collision.gameObject;
         if(kicked && collidedWithObject.CompareTag("Ball") && collision.GetContact(0).thisCollider.gameObject.name == "monster")
         {
-            Debug.Log("Contact with: " + collidedWithObject.name);
             animator.enabled = false;
             collidedWithObject.GetComponent<Rigidbody>().velocity = Vector3.zero;
             collidedWithObject.GetComponent<Rigidbody>().angularVelocity = Vector3.zero;
@@ -114,7 +114,7 @@ public partial class PlayerController : NetworkBehaviour
         }
         else if(collidedWithObject.CompareTag("Lava"))
         {
-            gameController.GetComponent<GameController>().EndTurn(IsHost);
+            gameController.GetComponent<GameController>().EndTurn(IsHost ? PlayerSide.Host : PlayerSide.Client);
         }
     }
 
