@@ -87,8 +87,9 @@ public class GameInfoSync : INetworkSerializable
     }
     public void SetPowerBallSpawnTime(float time)
     {
-        powerBallSpawnTime = (int)time;
-        PlayerPrefs.SetInt("PowerBallSpawnTime", (int)time);
+        int seconds = (int)time * 10;
+        powerBallSpawnTime = seconds;
+        PlayerPrefs.SetInt("PowerBallSpawnTime", seconds);
     }
     public int GetPowerBallSpawnTime()
     {
