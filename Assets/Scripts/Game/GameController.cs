@@ -190,7 +190,7 @@ public class GameController : NetworkBehaviour
         if (enabled.GravityPowerBall) enabledList.Add(PowerEffects.Gravitychange);
         if (enabled.RotationPowerBall) enabledList.Add(PowerEffects.BallRotate);
         if (enabled.SpeedPowerBall) enabledList.Add(PowerEffects.SpeedIncrease);
-        enabledList.OrderBy(x => Random.Range(0, enabledList.Count));
+        enabledList = enabledList.OrderBy(x => Random.Range(0, enabledList.Count)).ToList();
 
         // Select the correct prefab based on the first element of the shuffled list
         NetworkObject selectedPowerballPrefab = null;
