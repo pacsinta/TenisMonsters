@@ -19,12 +19,7 @@ public struct EnabledPowerBalls
     public bool RotationPowerBall;
 }
 
-public class GameInfo : MonoBehaviour
-{
-    public static int gameMode; 
-}
-
-public class GameInfoSync : INetworkSerializable
+public class GameInfo : INetworkSerializable
 {
     public int gameMode;
     public bool gravityPowerballEnabled = true;
@@ -95,13 +90,15 @@ public class GameInfoSync : INetworkSerializable
     {
         return powerBallSpawnTime;
     }
-    public GameInfoSync()
+    public GameInfo()
     {
         gameMode = PlayerPrefs.GetInt("GameMode");
         gravityPowerballEnabled = PlayerPrefs.GetInt("GravityPowerballEnabled") == 1;
         rotationKickPowerballEnabled = PlayerPrefs.GetInt("RotationKickPowerballEnabled") == 1;
         speedPowerballEnabled = PlayerPrefs.GetInt("SpeedPowerballEnabled") == 1;
         powerBallSpawnTime = PlayerPrefs.GetInt("PowerBallSpawnTime");
+
+        powerBallSpawnTime = powerBallSpawnTime == 0 ? 10 : powerBallSpawnTime;
     }
 
     public uint GetMaxTime
