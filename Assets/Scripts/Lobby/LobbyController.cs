@@ -35,7 +35,7 @@ public class LobbyController : NetworkBehaviour
         clientsText.text = "No clients connected";
         if(IsHost)
         {
-            _gameInfo.Value = new GameInfoSync();
+            _gameInfo.Value = new GameInfo();
 
             IsHostText.text = "Host";
             _hostPlayerInfo.Value = playerInfo;
@@ -139,5 +139,5 @@ public class LobbyController : NetworkBehaviour
 
     NetworkVariable<PlayerInfo> _hostPlayerInfo = new NetworkVariable<PlayerInfo>();
     NetworkVariable<PlayerInfo> _clientPlayerInfo = new NetworkVariable<PlayerInfo>();
-    NetworkVariable<GameInfoSync> _gameInfo = new NetworkVariable<GameInfoSync>();
+    NetworkVariable<GameInfo> _gameInfo = new NetworkVariable<GameInfo>();
 }

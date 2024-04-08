@@ -28,6 +28,7 @@ public class BallController : NetworkBehaviour
     }
 
     private bool firstKick = true;
+    private float time = 0;
     void Update()
     {
         if(firstKick && Input.GetKeyDown(KeyCode.Space))
@@ -40,12 +41,24 @@ public class BallController : NetworkBehaviour
             gameController.StartGame();
         }
 
+        //if (!IsHost) return;
+
         var newSide = CurrentSide;
         if(newSide != currentSide)
         {
             currentSide = newSide;
             bounced = false;
         }
+        time += Time.deltaTime;
+
+        int updateTime = 2;
+        /*if(rotationKick && time % updateTime == 0) 
+        {
+            float force = time % (updateTime*2) == 0 ? 1 : -1;
+            Vector3 direction = new Vector3(force, 0, 0);
+
+            rb.AddForce(direction, ForceMode.Impulse);
+        }*/
     }
 
     private bool bounced = false; // true if the ball has already bounced on the current turn
@@ -58,7 +71,8 @@ public class BallController : NetworkBehaviour
     {
         bounced = false;
     }
-    public void Kicked(PlayerSide player)
+    private bool rotationKick = false;
+    public void Kicked(PlayerSide player, bool rotationKick = false)
     {
         ResetBounced();
         resetWeight();
@@ -67,6 +81,7 @@ public class BallController : NetworkBehaviour
             gameController.EndTurn(player == PlayerSide.Host ? PlayerSide.Client : PlayerSide.Client);
         }
         playerOfLastKick = player;
+        this.rotationKick = rotationKick;
     }
     private void OnCollisionEnter(Collision collision)
     {
