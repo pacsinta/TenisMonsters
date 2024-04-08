@@ -30,7 +30,7 @@ public class GameController : NetworkBehaviour
 
     NetworkVariable<PlayerInfo> _hostPlayerInfo = new NetworkVariable<PlayerInfo>();
     NetworkVariable<PlayerInfo> _clientPlayerInfo = new NetworkVariable<PlayerInfo>();
-    GameInfoSync gameInfo;
+    NetworkVariable<GameInfo> _gameInfo = new NetworkVariable<GameInfo>();
     private float time = 0;
     private bool timeCounting = false;
     private float remainingTimeToSpawnPowerBall = 0;
@@ -43,7 +43,7 @@ public class GameController : NetworkBehaviour
     {
         if (!IsServer) return;
         _hostPlayerInfo.Value = new PlayerInfo();
-        gameInfo = new GameInfoSync();
+        _gameInfo.Value = new GameInfo();
 
         var clients = NetworkManager.Singleton.ConnectedClientsList;
 
@@ -67,7 +67,6 @@ public class GameController : NetworkBehaviour
             spawnRotation = Quaternion.Euler(0, -180, 0);
         }
         var playerObject = NetworkManager.Singleton.SpawnManager.InstantiateAndSpawn(playerPrefab, client.ClientId, false, true, true, spawnPosition, spawnRotation);
-        //playerObject.gameObject = this;
         if (NetworkManager.Singleton.LocalClientId == client.ClientId)
         {
             hostPlayerObject = playerObject.gameObject;
@@ -84,21 +83,21 @@ public class GameController : NetworkBehaviour
         {
             time += Time.deltaTime;
             remainingTimeToSpawnPowerBall += Time.deltaTime;
-            timeText.text = gameInfo.GetMaxTime != 0 ? ConvertSecondsToTimeString(gameInfo.GetMaxTime - ((uint)time)) : "";
         }
-        
+        timeText.text = _gameInfo.Value.GetMaxTime != 0 ? ConvertSecondsToTimeString(_gameInfo.Value.GetMaxTime - ((uint)time)) : "";
+
         scoreText.text = _hostPlayerInfo.Value?.Score + " - " + _clientPlayerInfo.Value?.Score;
 
-        if (!IsServer) return;
+        if (!IsServer || _gameInfo.Value == null) return;
         if (TimeEnded() || ScoreReached())
         {
             EndGame();
         }
 
-        if(remainingTimeToSpawnPowerBall >= gameInfo.GetPowerBallSpawnTime())
+        if(remainingTimeToSpawnPowerBall >= _gameInfo.Value.GetPowerBallSpawnTime())
         {
-            SpawnPowerBall(PlayerSide.Host, gameInfo.GetAllPowerballEnabled());
-            SpawnPowerBall(PlayerSide.Client, gameInfo.GetAllPowerballEnabled());
+            SpawnPowerBall(PlayerSide.Host, _gameInfo.Value.GetAllPowerballEnabled());
+            SpawnPowerBall(PlayerSide.Client, _gameInfo.Value.GetAllPowerballEnabled());
             remainingTimeToSpawnPowerBall = 0;
         }
     }
@@ -112,12 +111,12 @@ public class GameController : NetworkBehaviour
 
     private bool TimeEnded()
     {
-        uint maxTime = gameInfo.GetMaxTime;
+        uint maxTime = _gameInfo.Value.GetMaxTime;
         return maxTime != 0 && time >= maxTime;
     }
     private bool ScoreReached()
     {
-        uint maxScore = gameInfo.GetMaxScore;
+        uint maxScore = _gameInfo.Value.GetMaxScore;
         return maxScore != 0 && (_hostPlayerInfo.Value.Score >= maxScore || _clientPlayerInfo.Value.Score >= maxScore);
     }
 
@@ -126,10 +125,12 @@ public class GameController : NetworkBehaviour
         if (winner == PlayerSide.Host)
         {
             _hostPlayerInfo.Value.Score++;
+            _hostPlayerInfo.IsDirty();
         }
         else
         {
             _clientPlayerInfo.Value.Score++;
+            _clientPlayerInfo.IsDirty();
         }
         
         ResetEnvironment();
@@ -182,6 +183,11 @@ public class GameController : NetworkBehaviour
         if (enabled.GravityPowerBall) enabledList.Add(PowerEffects.Gravitychange);
         if (enabled.RotationPowerBall) enabledList.Add(PowerEffects.BallRotate);
         if (enabled.SpeedPowerBall) enabledList.Add(PowerEffects.SpeedIncrease);
+        if (enabledList.Count == 0)
+        {
+            print("No power balls enabled");
+            return;
+        }
         enabledList = enabledList.OrderBy(x => Random.Range(0, enabledList.Count)).ToList();
 
         // Select the correct prefab based on the first element of the shuffled list
