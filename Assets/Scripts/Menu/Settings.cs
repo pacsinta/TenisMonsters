@@ -27,6 +27,7 @@ public class Settings : MonoBehaviour
         refreshRateDropdown.value = 3;
 
         volumeSlider.onValueChanged.AddListener(SetVolume);
+        volumeSlider.value = PlayerPrefs.GetFloat("volume", 1);
     }
 
     void SetWindowMode(int mode)

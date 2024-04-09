@@ -1107,7 +1107,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 29af637345bcc6c43ba5a503f4406c3c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  audioSources:
+  idleSources:
   - {fileID: 1172739899}
 --- !u!4 &229905282
 Transform:
@@ -3999,7 +3999,7 @@ GameObject:
   - component: {fileID: 1172739900}
   - component: {fileID: 1172739899}
   m_Layer: 0
-  m_Name: idleSong
+  m_Name: menuSong
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
