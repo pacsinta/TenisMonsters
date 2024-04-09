@@ -16,11 +16,12 @@ public class MainMenu : NetworkBehaviour
     public Button startGameBtn;
     public Button exitBtn;
     public TMP_InputField hostIpInput;
-    public TMP_Dropdown WindowModeDropdown;
     public Canvas mainCanvas;
     public Canvas leaderBoardCanvas;
     public TextMeshProUGUI myPontsText;
-
+    public Button settingsButton;
+    public GameObject settingsPanel;
+    
     // monster show variables
     public GameObject monster;
     public float rotationSpeed = 10.0f;
@@ -32,7 +33,6 @@ public class MainMenu : NetworkBehaviour
     {
         startGameBtn.onClick.AddListener(StartNewGame);
         playerName.onValueChanged.AddListener(PlayerNameChanged);
-        WindowModeDropdown.onValueChanged.AddListener(SetWindowMode);
 
         exitBtn.onClick.AddListener(() => { Application.Quit(); });
 
@@ -44,6 +44,12 @@ public class MainMenu : NetworkBehaviour
 
         myPointCoroutine = DatabaseHandler.GetMyPoints(playerInfo.PlayerName.ToSafeString());
         StartCoroutine(myPointCoroutine.coroutine());
+
+        var resolution = Screen.resolutions[Screen.resolutions.Length - 2 >= 0 ? Screen.resolutions.Length - 2 : 0];
+        Screen.SetResolution(resolution.width, resolution.height, FullScreenMode.Windowed);
+
+        settingsPanel.SetActive(false);
+        settingsButton.onClick.AddListener(() => { settingsPanel.SetActive(!settingsPanel.activeSelf); });
     }
 
     private float time = 0;
@@ -124,6 +130,7 @@ public class MainMenu : NetworkBehaviour
     void startNetworkManager(bool isHost)
     {
         NetworkManager.Singleton?.Shutdown();
+        
         if (isHost)
         {
             NetworkManager.Singleton.StartHost();
@@ -135,19 +142,6 @@ public class MainMenu : NetworkBehaviour
                 7777
             );
             NetworkManager.Singleton.StartClient();
-        }
-    }
-
-    void SetWindowMode(int mode)
-    {
-        switch (mode)
-        {
-            case 0:
-                Screen.fullScreenMode = FullScreenMode.Windowed;
-                break;
-            case 1:
-                Screen.fullScreenMode = FullScreenMode.FullScreenWindow;
-                break;
         }
     }
 
