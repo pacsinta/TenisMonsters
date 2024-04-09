@@ -24,6 +24,9 @@ public class LobbyController : NetworkBehaviour
     public Toggle rotationKickPowerBallToggle;
     public Slider powerBallSpawnTimeSlider;
     public TextMeshProUGUI powerBallSpawnTimeText;
+    public Toggle multiplePowerBallToggle;
+    public TextMeshProUGUI powerBallLiveTimeText;
+    public Slider powerballLiveTimeSlider;
 
     private int maxPlayerCount = 2;
     private PlayerInfo playerInfo;
@@ -45,6 +48,12 @@ public class LobbyController : NetworkBehaviour
             speedPowerBallToggle.onValueChanged.AddListener(GameSettingListeners<bool>(_gameInfo.Value.SetSpeedPowerballEnabled));
             rotationKickPowerBallToggle.onValueChanged.AddListener(GameSettingListeners<bool>(_gameInfo.Value.SetRotationKickPowerballEnabled));
             powerBallSpawnTimeSlider.onValueChanged.AddListener(GameSettingListeners<float>(_gameInfo.Value.SetPowerBallSpawnTime));
+            powerballLiveTimeSlider.onValueChanged.AddListener(GameSettingListeners<float>(_gameInfo.Value.SetPowerBallLiveTime));
+            multiplePowerBallToggle.onValueChanged.AddListener((isOn) =>
+            {
+                GameSettingListeners<bool>(_gameInfo.Value.SetMultiplePowerBalls)(isOn);
+                powerballLiveTimeSlider.interactable = isOn;
+            });
         }
         else
         {
@@ -54,6 +63,8 @@ public class LobbyController : NetworkBehaviour
             speedPowerBallToggle.interactable = false;
             rotationKickPowerBallToggle.interactable = false;
             powerBallSpawnTimeSlider.interactable = false;
+            multiplePowerBallToggle.interactable = false;
+            powerballLiveTimeSlider.interactable = false;
             playerInfo.Side = PlayerSide.Client;
         }
 
@@ -79,12 +90,15 @@ public class LobbyController : NetworkBehaviour
             clientsText.text = "Host: " + _hostPlayerInfo.Value.PlayerName + "\nClient: " + _clientPlayerInfo.Value.PlayerName;
         }
 
+        multiplePowerBallToggle.isOn = _gameInfo.Value.multiplePowerBalls;
         gameModeDropdown.value = _gameInfo.Value.GetGameMode();
         gravityPowerBallToggle.isOn = _gameInfo.Value.GetGravityPowerballEnabled();
         speedPowerBallToggle.isOn = _gameInfo.Value.GetSpeedPowerballEnabled();
         rotationKickPowerBallToggle.isOn = _gameInfo.Value.GetRotationKickPowerballEnabled();
         powerBallSpawnTimeSlider.value = _gameInfo.Value.powerBallSpawnTime / 10;
         powerBallSpawnTimeText.text = "Powerball spawn time: " + _gameInfo.Value.powerBallSpawnTime + "s";
+        powerballLiveTimeSlider.value = _gameInfo.Value.powerBallLiveTime / 5;
+        powerBallLiveTimeText.text = "Powerball live time: " + (_gameInfo.Value.multiplePowerBalls ? _gameInfo.Value.powerBallLiveTime : "0") + "s";
     }
 
     void ApprovalCheck(NetworkManager.ConnectionApprovalRequest request, NetworkManager.ConnectionApprovalResponse response)

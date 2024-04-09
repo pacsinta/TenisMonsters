@@ -26,6 +26,8 @@ public class GameInfo : INetworkSerializable
     public bool rotationKickPowerballEnabled = true;
     public bool speedPowerballEnabled = true;
     public int powerBallSpawnTime = 10;
+    public int powerBallLiveTime = 5;
+    public bool multiplePowerBalls = true;
     public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
     {
         serializer.SerializeValue(ref gameMode);
@@ -33,6 +35,8 @@ public class GameInfo : INetworkSerializable
         serializer.SerializeValue(ref rotationKickPowerballEnabled);
         serializer.SerializeValue(ref speedPowerballEnabled);
         serializer.SerializeValue(ref powerBallSpawnTime);
+        serializer.SerializeValue(ref powerBallLiveTime);
+        serializer.SerializeValue(ref multiplePowerBalls);
     }
     public EnabledPowerBalls GetAllPowerballEnabled()
     { 
@@ -90,6 +94,17 @@ public class GameInfo : INetworkSerializable
     {
         return powerBallSpawnTime;
     }
+    public void SetPowerBallLiveTime(float time)
+    {
+        int seconds = (int)time * 5;
+        powerBallLiveTime = seconds;
+        PlayerPrefs.SetInt("PowerBallLiveTime", seconds);
+    }
+    public void SetMultiplePowerBalls(bool enabled)
+    {
+        multiplePowerBalls = enabled;
+        PlayerPrefs.SetInt("MultiplePowerBalls", enabled ? 1 : 0);
+    }
     public GameInfo()
     {
         gameMode = PlayerPrefs.GetInt("GameMode");
@@ -97,6 +112,8 @@ public class GameInfo : INetworkSerializable
         rotationKickPowerballEnabled = PlayerPrefs.GetInt("RotationKickPowerballEnabled") == 1;
         speedPowerballEnabled = PlayerPrefs.GetInt("SpeedPowerballEnabled") == 1;
         powerBallSpawnTime = PlayerPrefs.GetInt("PowerBallSpawnTime");
+        powerBallLiveTime = PlayerPrefs.GetInt("PowerBallLiveTime");
+        multiplePowerBalls = PlayerPrefs.GetInt("MultiplePowerBalls") == 1;
 
         powerBallSpawnTime = powerBallSpawnTime == 0 ? 10 : powerBallSpawnTime;
     }
