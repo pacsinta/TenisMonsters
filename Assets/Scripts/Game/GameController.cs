@@ -29,7 +29,7 @@ public class GameController : NetworkBehaviour
     NetworkVariable<PlayerInfo> _hostPlayerInfo = new NetworkVariable<PlayerInfo>();
     NetworkVariable<PlayerInfo> _clientPlayerInfo = new NetworkVariable<PlayerInfo>();
     NetworkVariable<GameInfo> _gameInfo = new NetworkVariable<GameInfo>();
-    private float time = 0;
+    NetworkVariable<float> time = new NetworkVariable<float>();
     private bool timeCounting = false;
     private float remainingTimeToSpawnPowerBall = 0;
 
@@ -77,16 +77,17 @@ public class GameController : NetworkBehaviour
 
     private void Update()
     {
-        if (timeCounting)
-        {
-            time += Time.deltaTime;
-            remainingTimeToSpawnPowerBall += Time.deltaTime;
-        }
-        timeText.text = _gameInfo.Value.GetMaxTime != 0 ? ConvertSecondsToTimeString(_gameInfo.Value.GetMaxTime - ((uint)time)) : "";
-
-        scoreText.text = _hostPlayerInfo.Value?.Score + " - " + _clientPlayerInfo.Value?.Score;
+        updateTexts();
 
         if (!IsServer || _gameInfo.Value == null) return;
+
+
+        if (timeCounting)
+        {
+            time.Value += Time.deltaTime;
+            remainingTimeToSpawnPowerBall += Time.deltaTime;
+        }
+
         if (TimeEnded() || ScoreReached())
         {
             EndGame();
@@ -100,6 +101,12 @@ public class GameController : NetworkBehaviour
         }
     }
 
+    void updateTexts()
+    {
+        timeText.text = _gameInfo.Value.GetMaxTime != 0 ? ConvertSecondsToTimeString(_gameInfo.Value.GetMaxTime - ((uint)time.Value)) : "";
+        scoreText.text = _hostPlayerInfo.Value?.Score + " - " + _clientPlayerInfo.Value?.Score;
+    }
+
     private string ConvertSecondsToTimeString(uint seconds)
     {
         int minutes = (int)seconds / 60;
@@ -110,7 +117,7 @@ public class GameController : NetworkBehaviour
     private bool TimeEnded()
     {
         uint maxTime = _gameInfo.Value.GetMaxTime;
-        return maxTime != 0 && time >= maxTime;
+        return maxTime != 0 && time.Value >= maxTime;
     }
     private bool ScoreReached()
     {
