@@ -1,7 +1,4 @@
-using System.Collections;
-using System.Collections.Generic;
 using Unity.Netcode;
-using UnityEngine;
 using UnityEngine.SceneManagement;
 
 public class SceneLoader
@@ -19,7 +16,7 @@ public class SceneLoader
 
     public static void LoadScene(Scene scene, NetworkManager networkManager)
     {
-        if(networkManager != null)
+        if (networkManager != null)
         {
             networkManager.SceneManager.LoadScene(scene.ToString(), LoadSceneMode.Single);
         }
@@ -34,7 +31,7 @@ public class SceneLoader
     }
     public static void LoadScene(Scene scene, NetworkManager networkManager, bool exit)
     {
-        if(exit && networkManager != null)
+        if (exit && networkManager != null)
         {
             networkManager.Shutdown();
             networkManager.ConnectionApprovalCallback = null;

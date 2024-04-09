@@ -1,12 +1,7 @@
 using Assets.Scripts;
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using TMPro;
-using Unity.Collections;
 using Unity.Netcode;
-using Unity.VisualScripting;
-using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.UI;
 
@@ -36,7 +31,7 @@ public class LobbyController : NetworkBehaviour
         playerInfo = new PlayerInfo();
 
         clientsText.text = "No clients connected";
-        if(IsHost)
+        if (IsHost)
         {
             _gameInfo.Value = new GameInfo();
 
@@ -70,7 +65,7 @@ public class LobbyController : NetworkBehaviour
 
         NetworkManager.Singleton.OnClientConnectedCallback += HandleClientConnect;
         NetworkManager.Singleton.ConnectionApprovalCallback += ApprovalCheck;
-        
+
         startGameBtn.onClick.AddListener(StartGame);
     }
 
@@ -81,7 +76,7 @@ public class LobbyController : NetworkBehaviour
 
     private void Update()
     {
-        if(string.IsNullOrEmpty(_clientPlayerInfo.Value?.PlayerName.ToString()))
+        if (string.IsNullOrEmpty(_clientPlayerInfo.Value?.PlayerName.ToString()))
         {
             clientsText.text = "No clients connected";
         }
@@ -103,7 +98,7 @@ public class LobbyController : NetworkBehaviour
 
     void ApprovalCheck(NetworkManager.ConnectionApprovalRequest request, NetworkManager.ConnectionApprovalResponse response)
     {
-        if(NetworkManager.Singleton.ConnectedClients.Count > maxPlayerCount - 1)
+        if (NetworkManager.Singleton.ConnectedClients.Count > maxPlayerCount - 1)
         {
             response.Approved = false;
         }
@@ -115,7 +110,7 @@ public class LobbyController : NetworkBehaviour
 
     void HandleClientConnect(ulong clientId)
     {
-        if(NetworkManager.Singleton.LocalClientId == clientId)
+        if (NetworkManager.Singleton.LocalClientId == clientId)
         {
             RegisterPlayerOnServerRpc(playerInfo);
         }
@@ -124,7 +119,7 @@ public class LobbyController : NetworkBehaviour
 
     void StartGame()
     {
-        if(IsServer)
+        if (IsServer)
         {
             SceneLoader.LoadScene(SceneLoader.Scene.GameScene, NetworkManager.Singleton);
         }
@@ -135,7 +130,7 @@ public class LobbyController : NetworkBehaviour
     }
 
     [ServerRpc(RequireOwnership = false)]
-    void RegisterPlayerOnServerRpc(PlayerInfo clientPlayerInfo,ServerRpcParams serverRpcParams = default)
+    void RegisterPlayerOnServerRpc(PlayerInfo clientPlayerInfo, ServerRpcParams serverRpcParams = default)
     {
         var clientId = serverRpcParams.Receive.SenderClientId;
         if (NetworkManager.ConnectedClients.ContainsKey(clientId))

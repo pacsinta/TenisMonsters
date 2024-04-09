@@ -1,10 +1,8 @@
 using Assets.Scripts;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using TMPro;
 using Unity.Netcode;
-using Unity.VisualScripting;
 using UnityEngine;
 
 public class GameController : NetworkBehaviour
@@ -79,7 +77,7 @@ public class GameController : NetworkBehaviour
 
     private void Update()
     {
-        if(timeCounting)
+        if (timeCounting)
         {
             time += Time.deltaTime;
             remainingTimeToSpawnPowerBall += Time.deltaTime;
@@ -94,7 +92,7 @@ public class GameController : NetworkBehaviour
             EndGame();
         }
 
-        if(remainingTimeToSpawnPowerBall >= _gameInfo.Value.GetPowerBallSpawnTime())
+        if (remainingTimeToSpawnPowerBall >= _gameInfo.Value.GetPowerBallSpawnTime())
         {
             SpawnPowerBall(PlayerSide.Host, _gameInfo.Value.GetAllPowerballEnabled());
             SpawnPowerBall(PlayerSide.Client, _gameInfo.Value.GetAllPowerballEnabled());
@@ -132,7 +130,7 @@ public class GameController : NetworkBehaviour
             _clientPlayerInfo.Value.Score++;
             _clientPlayerInfo.IsDirty();
         }
-        
+
         ResetEnvironment();
         timeCounting = false;
     }
@@ -147,14 +145,14 @@ public class GameController : NetworkBehaviour
         hostPlayerObject.GetComponent<PlayerController>().ResetObject(position);
     }
 
-    
+
     private void EndGame()
     {
         Debug.Log("Game Over");
         timeCounting = false;
 
         PlayerSide? winner = null; // null means draw
-        if(_clientPlayerInfo.Value.Score > _hostPlayerInfo.Value.Score)
+        if (_clientPlayerInfo.Value.Score > _hostPlayerInfo.Value.Score)
         {
             winner = PlayerSide.Client;
         }
@@ -167,8 +165,8 @@ public class GameController : NetworkBehaviour
 
         endCanvas.gameObject.SetActive(true);
         endCanvas.GetComponent<EndHandler>().instantiateGameEnd(winner,
-                                                                _clientPlayerInfo.Value.PlayerName.ToSafeString(),
-                                                                _hostPlayerInfo.Value.PlayerName.ToSafeString());
+                                                                _clientPlayerInfo.Value.PlayerName.ToString(),
+                                                                _hostPlayerInfo.Value.PlayerName.ToString());
     }
 
     public void StartGame()
@@ -210,11 +208,11 @@ public class GameController : NetworkBehaviour
 
         // Create random position for the powerball
         var groundSize = ground.transform.localScale;
-        Vector3 spawnPosition = new Vector3(Random.Range(-groundSize.x + 1, groundSize.x - 1), 
-                                                         0.5f, 
+        Vector3 spawnPosition = new Vector3(Random.Range(-groundSize.x + 1, groundSize.x - 1),
+                                                         0.5f,
                                                          Random.Range(-groundSize.z + 1, groundSize.z - 1));
 
-        if(side == PlayerSide.Host)
+        if (side == PlayerSide.Host)
         {
             spawnPosition.z *= -1;
         }

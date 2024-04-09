@@ -1,9 +1,5 @@
-using System.Collections;
-using System.Collections.Generic;
 using Unity.Netcode;
-using Unity.VisualScripting;
 using UnityEngine;
-using UnityEngine.SocialPlatforms.Impl;
 
 public enum GameMode
 {
@@ -39,7 +35,7 @@ public class GameInfo : INetworkSerializable
         serializer.SerializeValue(ref multiplePowerBalls);
     }
     public EnabledPowerBalls GetAllPowerballEnabled()
-    { 
+    {
         return new EnabledPowerBalls
         {
             GravityPowerBall = gravityPowerballEnabled,
@@ -120,9 +116,9 @@ public class GameInfo : INetworkSerializable
 
     public uint GetMaxTime
     {
-        get 
-        { 
-            switch((GameMode)gameMode)
+        get
+        {
+            switch ((GameMode)gameMode)
             {
                 case GameMode.QuickGame:
                     return 60 * 5;
@@ -140,7 +136,7 @@ public class GameInfo : INetworkSerializable
     {
         get
         {
-            switch((GameMode)gameMode)
+            switch ((GameMode)gameMode)
             {
                 case GameMode.QuickGame:
                     return 0;

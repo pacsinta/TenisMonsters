@@ -1,8 +1,5 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-
-public enum PowerEffects{
+public enum PowerEffects
+{
     Gravitychange = 0,
     BallRotate = 1,
     SpeedIncrease = 2
@@ -20,7 +17,7 @@ struct PlayerPowers
     public float EffectDuration { set; private get; }
     public void SetPower(PowerEffects effect, float duration)
     {
-        switch(effect)
+        switch (effect)
         {
             case PowerEffects.Gravitychange:
                 GravityPowerDuration = duration;

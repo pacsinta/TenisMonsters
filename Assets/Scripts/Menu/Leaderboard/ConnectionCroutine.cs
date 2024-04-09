@@ -41,7 +41,7 @@ public class ConnectionCoroutine<T>
             try
             {
                 result = JsonConvert.DeserializeObject<T>(resultText);
-                if(result == null)
+                if (result == null)
                 {
                     Debug.LogError("Can't parse the result");
                 }

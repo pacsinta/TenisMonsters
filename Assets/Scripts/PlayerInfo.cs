@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Unity.Collections;
+﻿using Unity.Collections;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -39,14 +34,14 @@ namespace Assets.Scripts
 
         public void StorePlayerInfo(string id = "")
         {
-            PlayerPrefs.SetString("PlayerName"+id, PlayerName.ToString());
-            PlayerPrefs.SetInt("Score"+id, Score);
+            PlayerPrefs.SetString("PlayerName" + id, PlayerName.ToString());
+            PlayerPrefs.SetInt("Score" + id, Score);
         }
 
         public void LoadPlayerInfo(string id = "")
         {
-            PlayerName = PlayerPrefs.GetString("PlayerName"+id);
-            Score = PlayerPrefs.GetInt("Score"+id);
+            PlayerName = PlayerPrefs.GetString("PlayerName" + id);
+            Score = PlayerPrefs.GetInt("Score" + id);
             Side = PlayerSide.Host;
         }
 

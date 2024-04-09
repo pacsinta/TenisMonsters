@@ -1,6 +1,4 @@
 using Assets.Scripts;
-using System.Collections;
-using System.Collections.Generic;
 using TMPro;
 using Unity.Netcode;
 using UnityEngine;
@@ -23,10 +21,11 @@ public class EndHandler : NetworkBehaviour
         endText.text = "";
         SetButtonVisibility(tryAgainBtn, ButtonVisibility.Hide);
         SetButtonVisibility(exitBtn, ButtonVisibility.Disabled);
-        exitBtn.onClick.AddListener(()=>SceneLoader.LoadScene(SceneLoader.Scene.MenuScene, NetworkManager.Singleton, true));
-        tryAgainBtn.onClick.AddListener(() => { 
-            time = 0; 
-            if(uploadScoreCoroutine.coroutine() != null) StopCoroutine(uploadScoreCoroutine.coroutine());
+        exitBtn.onClick.AddListener(() => SceneLoader.LoadScene(SceneLoader.Scene.MenuScene, NetworkManager.Singleton, true));
+        tryAgainBtn.onClick.AddListener(() =>
+        {
+            time = 0;
+            if (uploadScoreCoroutine.coroutine() != null) StopCoroutine(uploadScoreCoroutine.coroutine());
             StartCoroutine(uploadScoreCoroutine.coroutine());
         });
     }
@@ -34,25 +33,25 @@ public class EndHandler : NetworkBehaviour
     float time = 0;
     void Update()
     {
-        if(!gameEnded) return;
+        if (!gameEnded) return;
         time += Time.deltaTime;
-        
-        if(winnerPlayer == null)
+
+        if (winnerPlayer == null)
         {
             endText.text = "Draw!";
         }
         else
         {
-            endText.text = (winnerPlayer == PlayerSide.Host && IsHost) || 
+            endText.text = (winnerPlayer == PlayerSide.Host && IsHost) ||
                            (winnerPlayer == PlayerSide.Client && !IsHost) ? "You won!" : "You lost!";
         }
 
-        if(uploadScoreCoroutine.state == LoadingState.DataAvailable)
+        if (uploadScoreCoroutine.state == LoadingState.DataAvailable)
         {
             SetButtonVisibility(tryAgainBtn, ButtonVisibility.Hide);
             SetButtonVisibility(exitBtn, ButtonVisibility.ShowAndEnable);
         }
-        else if(uploadScoreCoroutine.state == LoadingState.NotLoaded && time < 10)
+        else if (uploadScoreCoroutine.state == LoadingState.NotLoaded && time < 10)
         {
             SetButtonVisibility(tryAgainBtn, ButtonVisibility.Hide);
             SetButtonVisibility(exitBtn, ButtonVisibility.Disabled);
@@ -70,8 +69,8 @@ public class EndHandler : NetworkBehaviour
         gameEnded = true;
         int hostScore = winnerPlayer == PlayerSide.Host ? 2 : -1;
         int clientScore = winnerPlayer == PlayerSide.Client ? 2 : -1;
-        
-        if(IsHost)
+
+        if (IsHost)
         {
             uploadScoreCoroutine = DatabaseHandler.SetMyPoints(hostName, hostScore);
         }
@@ -91,7 +90,7 @@ public class EndHandler : NetworkBehaviour
 
     private void SetButtonVisibility(Button button, ButtonVisibility visibility)
     {
-        switch(visibility)
+        switch (visibility)
         {
             case ButtonVisibility.Hide:
                 button.gameObject.SetActive(false);

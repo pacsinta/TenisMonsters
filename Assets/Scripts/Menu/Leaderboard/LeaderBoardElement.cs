@@ -1,7 +1,4 @@
-﻿using UnityEditor;
-using UnityEngine;
-
-namespace Assets.Scripts
+﻿namespace Assets.Scripts
 {
     public struct LeaderBoardElement
     {
