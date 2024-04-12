@@ -18,7 +18,7 @@ public class Settings : MonoBehaviour
         var resolutions = Screen.resolutions.Select(res => res.width + "x" + res.height).ToList();
         resolutions.Reverse();
         resolutionDropdown.AddOptions(resolutions);
-        resolutionDropdown.value = Screen.resolutions.Length - 1 - Screen.resolutions.ToList().FindIndex(res => res.width == Screen.currentResolution.width && res.height == Screen.currentResolution.height);
+        resolutionDropdown.value = Screen.resolutions.Length - 1 - Screen.resolutions.ToList().FindIndex(res => res.width == Screen.width && res.height == Screen.height);
         resolutionDropdown.onValueChanged.AddListener(SetResolution);
 
         refreshRateDropdown.onValueChanged.AddListener(SetWindowRefreshRate);
