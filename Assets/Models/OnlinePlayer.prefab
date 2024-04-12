@@ -237,10 +237,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1eda967bb4a8dcb4082ad252292bb84c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  speed: 5
-  kickForce: 100
+  initialSpeed: 5
+  kickForce: 45
+  maxForce: 15
+  minForce: 5
   ballDistance: 2
   jumpForce: 5
+  powerDuration: 10
 --- !u!114 &1370356921167364366
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -638,6 +641,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: beffbed0098bd624b8ac1162665239ac, type: 3}
       insertIndex: -1
       addedObject: {fileID: 5061320667664829235}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: beffbed0098bd624b8ac1162665239ac, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 108410711665210246}
   m_SourcePrefab: {fileID: 100100000, guid: beffbed0098bd624b8ac1162665239ac, type: 3}
 --- !u!4 &8105295215715886318 stripped
 Transform:
@@ -691,3 +697,17 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 2.4, y: 1.4, z: 0.5}
   m_Center: {x: 2.6, y: 1.2, z: -1}
+--- !u!114 &108410711665210246
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8876625250542648916}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e8d0727d5ae3244e3b569694d3912374, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  TransitionStateInfoList: []
+  m_Animator: {fileID: 1267993256288704848}

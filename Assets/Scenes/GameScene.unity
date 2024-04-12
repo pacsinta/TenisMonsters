@@ -719,7 +719,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0.5, z: 0}
-  m_LocalScale: {x: 100, y: 1.2, z: 0.1}
+  m_LocalScale: {x: 50, y: 1.2, z: 0.1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1537785844}
@@ -1295,8 +1295,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 531, y: -63.26001}
-  m_SizeDelta: {x: 1000, y: 58.6308}
+  m_AnchoredPosition: {x: 124.79, y: -63.26001}
+  m_SizeDelta: {x: 187.58, y: 58.631}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1054594142
 MonoBehaviour:
@@ -1978,7 +1978,7 @@ MonoBehaviour:
   gravityPowerBallPrefab: {fileID: 5794774724872399557, guid: 8cd5637372bbdc44080e2ceaa358433e, type: 3}
   speedPowerBallPrefab: {fileID: 5794774724872399557, guid: e6a17adc42f94bc4da76ca5535c8d6e8, type: 3}
   rotationKickPowerBallPrefab: {fileID: 5794774724872399557, guid: f0e709fdf6c0b6c469b8bcbd677526d1, type: 3}
-  PlayerStartPosition: {x: 0, y: 2, z: 15}
+  PlayerStartPosition: {x: 0, y: 2, z: 20}
   ZOffsetOfNet: 0
   PowerBallSpawnTime: 10
 --- !u!114 &1537785846
@@ -2377,7 +2377,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 10, y: 0.1, z: 10}
+  m_LocalScale: {x: 5, y: 0.05, z: 5}
   m_ConstrainProportionsScale: 1
   m_Children: []
   m_Father: {fileID: 1537785844}
@@ -2518,7 +2518,7 @@ Transform:
   m_GameObject: {fileID: 4421508085897310989}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 3.3, y: 1.174, z: -12.3}
+  m_LocalPosition: {x: 3.3, y: 1.174, z: -17.3}
   m_LocalScale: {x: 0.5, y: 0.5, z: 0.5}
   m_ConstrainProportionsScale: 1
   m_Children: []
@@ -2570,7 +2570,7 @@ Rigidbody:
   m_ImplicitCom: 1
   m_ImplicitTensor: 1
   m_UseGravity: 1
-  m_IsKinematic: 1
+  m_IsKinematic: 0
   m_Interpolate: 0
   m_Constraints: 126
   m_CollisionDetection: 0

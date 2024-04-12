@@ -1,10 +1,7 @@
 using Assets.Scripts;
 using Cinemachine;
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using Unity.Netcode;
-using Unity.VisualScripting;
 using UnityEngine;
 
 public partial class PlayerController : NetworkBehaviour
@@ -12,12 +9,14 @@ public partial class PlayerController : NetworkBehaviour
     private float horizontalInput;
     private float verticalInput;
     public float initialSpeed = 5.0f;
-    public float kickForce = 100.0f;
+    public float kickForce;
+    public float maxForce;
+    public float minForce;
     public float ballDistance = 2.0f;
     public float jumpForce = 5.0f;
     public float powerDuration = 10.0f;
 
-    public GameObject gameController { set; private get; }
+    public GameObject Environment { set; private get; }
     public AudioSource kickSound { set; private get; }
 
     private Rigidbody rb;
@@ -89,36 +88,34 @@ public partial class PlayerController : NetworkBehaviour
     {
         animator.SetTrigger("Kick");
         kicked = true;
-        float mouseDistance = Vector2.Distance(kickMouseStartPos, kickMouseEndPos);
         float mouseTime = kickMouseEndTime - kickMouseStartTime;
-        float mouseSpeed = mouseDistance / mouseTime;
 
-        float force = mouseSpeed * kickForce;
         Vector2 kickDirection = kickMouseEndPos - kickMouseStartPos;
         kick = new Kick
         {
-            force = force,
+            force = Math.Clamp(mouseTime * kickForce, minForce, maxForce),
             Xdirection = kickDirection.x
         };
+        print("Kick with force: " + kick.force + " and direction: " + kick.Xdirection);
     }
 
     private void OnCollisionEnter(Collision collision)
     {
-        if(!IsOwner) return;
+        if (!IsOwner) return;
 
         GameObject collidedWithObject = collision.gameObject;
-        if(kicked && collidedWithObject.CompareTag("Ball") && collision.GetContact(0).thisCollider.gameObject.name == "monster")
+        if (kicked && collidedWithObject.CompareTag("Ball") && collision.GetContact(0).thisCollider.gameObject.name == "monster")
         {
             animator.enabled = false;
             collidedWithObject.GetComponent<Rigidbody>().velocity = Vector3.zero;
             collidedWithObject.GetComponent<Rigidbody>().angularVelocity = Vector3.zero;
             collidedWithObject.transform.position += new Vector3(0, 0, 0.5f * transform.forward.z); // move ball a bit forward to avoid animation clipping
-            collidedWithObject.GetComponent<Rigidbody>().AddForce(kick.Xdirection / 100, 
-                                                                  kick.force / 2, 
-                                                                  kick.force, 
+            collidedWithObject.GetComponent<Rigidbody>().AddForce(kick.Xdirection / 100,
+                                                                  kick.force / 2,
+                                                                  kick.force,
                                                                   ForceMode.Impulse);
             kicked = false;
-            kick = new (); // reset kick
+            kick = new(); // reset kick
 
             BallController ballController = collidedWithObject.GetComponent<BallController>();
             ballController.Kicked(IsHost ? PlayerSide.Host : PlayerSide.Client);
@@ -128,15 +125,15 @@ public partial class PlayerController : NetworkBehaviour
                 ballController.decreaseWeight();
             }
         }
-        else if(collidedWithObject.CompareTag("PowerBall"))
+        else if (collidedWithObject.CompareTag("PowerBall"))
         {
-            var power = Variables.Object(collidedWithObject).Get("PowerEffect");
-            currentEffects.SetPower((PowerEffects)power, powerDuration);
+            var power = collidedWithObject.GetComponent<PowerBallController>().type;
+            currentEffects.SetPower(power, powerDuration);
             Destroy(collidedWithObject);
         }
-        else if(collidedWithObject.CompareTag("Lava"))
+        else if (collidedWithObject.CompareTag("Lava"))
         {
-            gameController.GetComponent<GameController>().EndTurn(IsHost ? PlayerSide.Host : PlayerSide.Client);
+            Environment.GetComponent<GameController>().EndTurn(IsHost ? PlayerSide.Client : PlayerSide.Host);
         }
     }
 
@@ -155,4 +152,4 @@ public partial class PlayerController : NetworkBehaviour
     {
         transform.position = position;
     }
-} 
+}

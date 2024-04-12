@@ -1,6 +1,4 @@
 using Assets.Scripts;
-using System.Collections;
-using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -15,7 +13,7 @@ public class BallController : NetworkBehaviour
     private Rigidbody rb;
     private Vector3 startLocation;
     private PlayerSide currentSide;
-    private PlayerSide playerOfLastKick = PlayerSide.Host;
+    private PlayerSide? playerOfLastKick = null;
 
     void Start()
     {
@@ -25,13 +23,15 @@ public class BallController : NetworkBehaviour
         startLocation.z = -startLocation.z + 1.2f;
         startLocation.x += 3.0f;
         ResetObject();
+
+        rb.isKinematic = true;
     }
 
     private bool firstKick = true;
     private float time = 0;
     void Update()
     {
-        if(firstKick && Input.GetKeyDown(KeyCode.Space))
+        if (firstKick && Input.GetKeyDown(KeyCode.Space))
         {
             rb.isKinematic = false;
             rb.useGravity = true;
@@ -41,10 +41,10 @@ public class BallController : NetworkBehaviour
             gameController.StartGame();
         }
 
-        //if (!IsHost) return;
+        if (!IsHost) return;
 
         var newSide = CurrentSide;
-        if(newSide != currentSide)
+        if (newSide != currentSide)
         {
             currentSide = newSide;
             bounced = false;
@@ -76,10 +76,10 @@ public class BallController : NetworkBehaviour
     {
         ResetBounced();
         resetWeight();
-        if(playerOfLastKick == player)
+        /*if(playerOfLastKick == player && playerOfLastKick != null && firstKick == false)
         {
             gameController.EndTurn(player == PlayerSide.Host ? PlayerSide.Client : PlayerSide.Client);
-        }
+        }*/
         playerOfLastKick = player;
         this.rotationKick = rotationKick;
     }
@@ -89,7 +89,7 @@ public class BallController : NetworkBehaviour
 
         if (collision.gameObject.CompareTag("Ground"))
         {
-            if(bounced)
+            if (bounced)
             {
                 GroundEnd();
             }
@@ -98,20 +98,21 @@ public class BallController : NetworkBehaviour
                 bounced = true;
             }
         }
-        else if(collision.gameObject.CompareTag("Lava"))
+        else if (collision.gameObject.CompareTag("Lava"))
         {
             CollisionWithLava();
         }
     }
     private void CollisionWithLava()
     {
-        gameController.EndTurn(playerOfLastKick);
+        var winner = playerOfLastKick == PlayerSide.Host ? PlayerSide.Client : PlayerSide.Host;
+        gameController.EndTurn(winner);
     }
     private void GroundEnd()
     {
         bool clientWon = (currentSide == PlayerSide.Host && playerOfLastKick == PlayerSide.Host) ||
                        (currentSide == PlayerSide.Host && playerOfLastKick == PlayerSide.Client);
-        
+
         gameController.EndTurn(clientWon ? PlayerSide.Client : PlayerSide.Host);
     }
     public void decreaseWeight()
@@ -131,7 +132,7 @@ public class BallController : NetworkBehaviour
         {
             collisionTimeCount += Time.deltaTime;
         }
-        if(collisionTimeCount > groundCollisinMaxTime)
+        if (collisionTimeCount > groundCollisinMaxTime)
         {
             GroundEnd();
         }
@@ -163,5 +164,6 @@ public class BallController : NetworkBehaviour
         ResetBounced();
         firstKick = true;
         collisionTimeCount = 0;
+        playerOfLastKick = null;
     }
 }

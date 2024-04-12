@@ -65,13 +65,16 @@ public class GameController : NetworkBehaviour
             spawnRotation = Quaternion.Euler(0, -180, 0);
         }
         var playerObject = NetworkManager.Singleton.SpawnManager.InstantiateAndSpawn(playerPrefab, client.ClientId, false, true, true, spawnPosition, spawnRotation);
+        playerObject.GetComponent<PlayerController>().Environment = gameObject;
         if (NetworkManager.Singleton.LocalClientId == client.ClientId)
         {
             hostPlayerObject = playerObject.gameObject;
+            hostPlayerObject.name = "HostPlayer";
         }
         else
         {
             clientPlayerObject = playerObject.gameObject;
+            clientPlayerObject.name = "ClientPlayer";
         }
     }
 

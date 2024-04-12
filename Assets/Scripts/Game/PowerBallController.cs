@@ -1,9 +1,10 @@
 using Unity.Netcode;
+using UnityEngine;
 
 public class PowerBallController : NetworkBehaviour
 {
     public PowerEffects type;
-    public int powerBallLiveTime = -1;
+    public float powerBallLiveTime = -1;
 
     private void Update()
     {
@@ -17,7 +18,7 @@ public class PowerBallController : NetworkBehaviour
             }
             else
             {
-                powerBallLiveTime--;
+                powerBallLiveTime -= Time.deltaTime;
             }
         }
     }
