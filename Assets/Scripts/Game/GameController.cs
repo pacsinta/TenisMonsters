@@ -214,10 +214,10 @@ public class GameController : NetworkBehaviour
         }
 
         // Create random position for the powerball
-        var groundSize = ground.transform.localScale;
-        Vector3 spawnPosition = new Vector3(Random.Range(-groundSize.x + 1, groundSize.x - 1),
+        var groundSize = ground.transform.localScale * 10;
+        Vector3 spawnPosition = new Vector3(Random.Range(-groundSize.x + 10, groundSize.x - 10),
                                                          0.5f,
-                                                         Random.Range(-groundSize.z + 1, groundSize.z - 1));
+                                                         Random.Range(-groundSize.z + 10, groundSize.z - 10));
 
         if (side == PlayerSide.Host)
         {
