@@ -11,20 +11,22 @@ public class BallController : NetworkBehaviour
 
 
     private Rigidbody rb;
+    private SphereCollider colldider;
     private Vector3 startLocation;
     private PlayerSide currentSide;
     private PlayerSide? playerOfLastKick = null;
 
     void Start()
     {
+        colldider = GetComponent<SphereCollider>();
+        colldider.enabled = false;
+
         rb = GetComponent<Rigidbody>();
         rb.constraints = RigidbodyConstraints.None;
         startLocation = gameController.PlayerStartPosition;
         startLocation.z = -startLocation.z + 1.2f;
         startLocation.x += 3.0f;
         ResetObject();
-
-        rb.isKinematic = true;
     }
 
     private bool firstKick = true;
@@ -33,7 +35,7 @@ public class BallController : NetworkBehaviour
     {
         if (firstKick && Input.GetKeyDown(KeyCode.Space))
         {
-            rb.isKinematic = false;
+            colldider.enabled = true;
             rb.useGravity = true;
             rb.constraints = RigidbodyConstraints.None;
             rb.AddForce(Vector3.up * initialUpForce, ForceMode.Impulse);
@@ -160,7 +162,7 @@ public class BallController : NetworkBehaviour
         transform.position = startLocation;
         rb.useGravity = false;
         rb.constraints = RigidbodyConstraints.FreezeAll;
-        //rb.isKinematic = true;
+        colldider.enabled = false;
         ResetBounced();
         firstKick = true;
         collisionTimeCount = 0;
