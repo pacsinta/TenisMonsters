@@ -37,6 +37,16 @@ public partial class PlayerController : NetworkBehaviour
             vcam.Priority = 0;
             audioListener.enabled = false;
         }
+
+        if((IsHost && IsOwner) || (!IsHost && !IsOwner))
+        {
+            gameObject.name = "HostPlayer";
+        }
+        else if ((IsHost && !IsOwner) || (!IsHost && IsOwner))
+        {
+            gameObject.name = "ClientPlayer";
+        }
+
     }
 
     private void Start()
@@ -52,6 +62,7 @@ public partial class PlayerController : NetworkBehaviour
     void Update()
     {
         if (!IsOwner) return;
+        print(Environment);
 
         horizontalInput = Input.GetAxis("Horizontal");
         verticalInput = Input.GetAxis("Vertical");
@@ -101,7 +112,7 @@ public partial class PlayerController : NetworkBehaviour
 
     private void OnCollisionEnter(Collision collision)
     {
-        if (!IsOwner) return;
+         if (!IsOwner) return;
 
         GameObject collidedWithObject = collision.gameObject;
         if (kicked && collidedWithObject.CompareTag("Ball") && collision.GetContact(0).thisCollider.gameObject.name == "monster")
@@ -149,6 +160,20 @@ public partial class PlayerController : NetworkBehaviour
     }
 
     public void ResetObject(Vector3 position)
+    {
+        if(!IsHost) return;
+        if(IsOwner)
+        {
+            transform.position = position;
+        }
+        else
+        {
+            ResetObejctClientRpc(position);
+        }
+    }
+
+    [ClientRpc]
+    void ResetObejctClientRpc(Vector3 position)
     {
         transform.position = position;
     }

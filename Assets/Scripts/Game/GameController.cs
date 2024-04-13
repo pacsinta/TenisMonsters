@@ -69,18 +69,25 @@ public class GameController : NetworkBehaviour
         if (NetworkManager.Singleton.LocalClientId == client.ClientId)
         {
             hostPlayerObject = playerObject.gameObject;
-            hostPlayerObject.name = "HostPlayer";
         }
         else
         {
             clientPlayerObject = playerObject.gameObject;
-            clientPlayerObject.name = "ClientPlayer";
         }
     }
 
     private void Update()
     {
         updateTexts();
+
+        // Pass the environment to the player objects
+        // Because the client object has a separate version on the client side, we need to pass the environment to it as well
+        if(clientPlayerObject == null)
+        {
+            clientPlayerObject = GameObject.Find("ClientPlayer");
+            if(clientPlayerObject != null)
+                clientPlayerObject.GetComponent<PlayerController>().Environment = gameObject;
+        }
 
         if (!IsServer || _gameInfo.Value == null) return;
 
@@ -130,6 +137,12 @@ public class GameController : NetworkBehaviour
 
     public void EndTurn(PlayerSide winner)
     {
+        if(!IsServer)
+        {
+            EndTurnServerRPC(winner);
+            return;
+        }
+
         if (winner == PlayerSide.Host)
         {
             _hostPlayerInfo.Value.Score++;
@@ -151,8 +164,15 @@ public class GameController : NetworkBehaviour
         ballController.ResetObject();
         var position = PlayerStartPosition;
         clientPlayerObject.GetComponent<PlayerController>().ResetObject(position);
+        print(clientPlayerObject.transform.position);
         position.z *= -1;
         hostPlayerObject.GetComponent<PlayerController>().ResetObject(position);
+    }
+
+    [ServerRpc(RequireOwnership = false)]
+    void EndTurnServerRPC(PlayerSide winner)
+    {
+        EndTurn(winner);
     }
 
 
