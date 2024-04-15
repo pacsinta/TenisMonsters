@@ -5,7 +5,7 @@ using Unity.Netcode.Transports.UTP;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class MainMenu : NetworkBehaviour
+public class MainMenu : MonoBehaviour
 {
     public Toggle IsHostToggle;
     public TMP_InputField playerName;
@@ -16,7 +16,9 @@ public class MainMenu : NetworkBehaviour
     public Canvas leaderBoardCanvas;
     public TextMeshProUGUI myPontsText;
     public Button settingsButton;
+    public Button leaderBoardButton;
     public GameObject settingsPanel;
+    public TextMeshProUGUI connectionErrorText;
 
     // monster show variables
     public GameObject monster;
@@ -29,7 +31,7 @@ public class MainMenu : NetworkBehaviour
     {
         startGameBtn.onClick.AddListener(StartNewGame);
         playerName.onValueChanged.AddListener(PlayerNameChanged);
-
+        leaderBoardButton.onClick.AddListener(SwitchCanvas);
         exitBtn.onClick.AddListener(() => { Application.Quit(); });
 
         playerInfo = new PlayerInfo();
@@ -82,17 +84,30 @@ public class MainMenu : NetworkBehaviour
         {
             hostIpInput.interactable = true;
         }
+
+        if(connectingTime < 5 && connecting)
+        {
+            connectingTime += Time.deltaTime;
+            connectionErrorText.text = "";
+        }
+        else if(connecting)
+        {
+            NetworkManager.Singleton?.Shutdown();
+            connecting = false;
+            connectionErrorText.text = "Can't connect to a host!";
+        }
     }
 
     void StartNewGame()
     {
         if (string.IsNullOrEmpty(playerName.text)) return;
 
-        startNetworkManager(IsHostToggle.isOn);
-
-        if (IsHost)
+        if (startNetworkManager(IsHostToggle.isOn))
         {
-            SceneLoader.LoadScene(SceneLoader.Scene.LobbyScene, NetworkManager.Singleton);
+            if (IsHostToggle.isOn)
+            {
+                SceneLoader.LoadScene(SceneLoader.Scene.LobbyScene, NetworkManager.Singleton);
+            }
         }
     }
 
@@ -123,13 +138,15 @@ public class MainMenu : NetworkBehaviour
         playerInfo.PlayerName = newName;
         playerInfo.StorePlayerInfo();
     }
-    void startNetworkManager(bool isHost)
+    private float connectingTime = 0;
+    private bool connecting = false;
+    bool startNetworkManager(bool isHost)
     {
         NetworkManager.Singleton?.Shutdown();
 
         if (isHost)
         {
-            NetworkManager.Singleton.StartHost();
+            return NetworkManager.Singleton.StartHost();
         }
         else
         {
@@ -137,7 +154,9 @@ public class MainMenu : NetworkBehaviour
                 string.IsNullOrEmpty(hostIpInput.text) ? "127.0.0.1" : hostIpInput.text,
                 7777
             );
-            NetworkManager.Singleton.StartClient();
+            connectingTime = 0;
+            connecting = true;
+            return NetworkManager.Singleton.StartClient();
         }
     }
 
