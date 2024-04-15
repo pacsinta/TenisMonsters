@@ -3,6 +3,7 @@ using Cinemachine;
 using System;
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.UI;
 
 public partial class PlayerController : NetworkBehaviour
 {
@@ -17,7 +18,8 @@ public partial class PlayerController : NetworkBehaviour
     public float powerDuration = 10.0f;
 
     public GameObject Environment { set; private get; }
-    public AudioSource kickSound { set; private get; }
+    public AudioSource kickSource;
+    public Slider speedTime;
 
     private Rigidbody rb;
     private Animator animator;
@@ -31,6 +33,7 @@ public partial class PlayerController : NetworkBehaviour
         {
             vcam.Priority = 1;
             audioListener.enabled = true;
+
         }
         else
         {
@@ -67,8 +70,18 @@ public partial class PlayerController : NetworkBehaviour
         horizontalInput = Input.GetAxis("Horizontal");
         verticalInput = Input.GetAxis("Vertical");
 
-        transform.Translate(Vector3.forward * Time.deltaTime * currSpeed * verticalInput);
-        transform.Translate(Vector3.right * Time.deltaTime * currSpeed * horizontalInput);
+        
+        if(horizontalInput != 0 || verticalInput != 0)
+        {
+            animator.SetBool("Running", true);
+            transform.Translate(Vector3.forward * Time.deltaTime * currSpeed * verticalInput);
+            transform.Translate(Vector3.right * Time.deltaTime * currSpeed * horizontalInput);
+        }
+        else
+        {
+            animator.SetBool("Running", false);
+        }
+        
 
 
         if (Input.GetKeyDown(KeyCode.Mouse0))
@@ -85,6 +98,7 @@ public partial class PlayerController : NetworkBehaviour
         }
 
         currSpeed = currentEffects.SpeedIncreasePowerDuration > 0 ? initialSpeed * 1.5f : initialSpeed;
+        speedTime.value = currentEffects.SpeedIncreasePowerDuration;
     }
 
 
@@ -118,6 +132,8 @@ public partial class PlayerController : NetworkBehaviour
         if (kicked && collidedWithObject.CompareTag("Ball") && collision.GetContact(0).thisCollider.gameObject.name == "monster")
         {
             animator.enabled = false;
+            kickSource.Play();
+
             collidedWithObject.GetComponent<Rigidbody>().velocity = Vector3.zero;
             collidedWithObject.GetComponent<Rigidbody>().angularVelocity = Vector3.zero;
             collidedWithObject.transform.position += new Vector3(0, 0, 0.5f * transform.forward.z); // move ball a bit forward to avoid animation clipping

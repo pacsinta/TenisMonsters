@@ -10,6 +10,7 @@ public class EndHandler : NetworkBehaviour
     public TextMeshProUGUI errorText;
     public Button exitBtn;
     public Button tryAgainBtn;
+    public GameObject audioObject;
 
     private ConnectionCoroutine<LeaderBoardElement> uploadScoreCoroutine;
     private bool gameEnded = false;
@@ -42,8 +43,11 @@ public class EndHandler : NetworkBehaviour
         }
         else
         {
-            endText.text = (winnerPlayer == PlayerSide.Host && IsHost) ||
-                           (winnerPlayer == PlayerSide.Client && !IsHost) ? "You won!" : "You lost!";
+            bool isCurrentPlayerWinner = (winnerPlayer == PlayerSide.Host && IsHost) ||
+                                            (winnerPlayer == PlayerSide.Client && !IsHost);
+
+            endText.text = isCurrentPlayerWinner ? "You won!" : "You lost!";
+
         }
 
         if (uploadScoreCoroutine.state == LoadingState.DataAvailable)

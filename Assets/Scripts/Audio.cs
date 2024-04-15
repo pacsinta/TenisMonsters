@@ -1,9 +1,14 @@
 using System.Collections.Generic;
 using UnityEngine;
+using static SceneLoader;
 
 public class Audio : MonoBehaviour
 {
-    public List<AudioSource> idleSources;
+    public AudioSource idleSource;
+    public AudioSource gameSource;
+    public AudioSource winSource;
+    public AudioSource loseSource;
+
     private void Awake()
     {
         DontDestroyOnLoad(gameObject);
@@ -12,14 +17,43 @@ public class Audio : MonoBehaviour
     private void Start()
     {
         volume = PlayerPrefs.GetFloat("volume", 1);
-        SetVolume(volume);
+        SetVolume(volume, false);
     }
-    public void SetVolume(float volume)
+    public void SetVolume(float volume, bool save = true)
     {
-        foreach (var audioSource in idleSources)
+        idleSource.volume = volume;
+        gameSource.volume = volume;
+        winSource.volume = volume;
+        loseSource.volume = volume;
+
+        if(save)
+            PlayerPrefs.SetFloat("volume", volume);
+    }
+
+    private void Update()
+    {
+        // check if currentScene is 1
+        if (GetCurrentScene() == Scene.GameScene)
         {
-            audioSource.volume = volume;
+            idleSource.Stop();
+            if(!gameSource.isPlaying) gameSource.Play();
         }
-        PlayerPrefs.SetFloat("volume", volume);
+        else
+        {
+            gameSource.Stop();
+            if(!idleSource.isPlaying) idleSource.Play();
+        }
+    }
+
+    public void PlayEndingSong(bool winner)
+    {
+        if (winner)
+        {
+            winSource.Play();
+        }
+        else
+        {
+            loseSource.Play();
+        }
     }
 }

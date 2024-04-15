@@ -138,6 +138,10 @@ public class BallController : NetworkBehaviour
         {
             GroundEnd();
         }
+        if(collision.gameObject.CompareTag("Player"))
+        {
+            colldider.enabled = false;
+        }
     }
     private void OnCollisionExit(Collision collision)
     {
@@ -145,6 +149,10 @@ public class BallController : NetworkBehaviour
         if (collision.gameObject.CompareTag("Ground"))
         {
             collisionTimeCount = 0;
+        }
+        else if (collision.gameObject.CompareTag("Player"))
+        {
+            colldider.enabled = true;
         }
     }
 
