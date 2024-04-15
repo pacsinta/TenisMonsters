@@ -30,5 +30,12 @@ struct PlayerPowers
                 break;
         }
     }
+
+    public void DecreaseTime(float deltaTime)
+    {
+        GravityPowerDuration -= deltaTime;
+        BallRotationPowerDuration -= deltaTime;
+        SpeedIncreasePowerDuration -= deltaTime;
+    }
 }
 

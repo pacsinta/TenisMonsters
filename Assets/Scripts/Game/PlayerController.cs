@@ -15,11 +15,14 @@ public partial class PlayerController : NetworkBehaviour
     public float minForce;
     public float ballDistance = 2.0f;
     public float jumpForce = 5.0f;
-    public float powerDuration = 10.0f;
+    public float powerDuration = 15.0f;
 
     public GameObject Environment { set; private get; }
     public AudioSource kickSource;
-    public Slider speedTime;
+
+    private Scrollbar gravityTime;
+    private Scrollbar speedTime;
+    private Scrollbar rotationTime;
 
     private Rigidbody rb;
     private Animator animator;
@@ -34,6 +37,12 @@ public partial class PlayerController : NetworkBehaviour
             vcam.Priority = 1;
             audioListener.enabled = true;
 
+            gravityTime = GameObject.Find("GravityTime").GetComponent<Scrollbar>();
+            gravityTime.size = 0;
+            speedTime = GameObject.Find("SpeedTime").GetComponent<Scrollbar>();
+            speedTime.size = 0;
+            rotationTime = GameObject.Find("RotationTime").GetComponent<Scrollbar>();
+            rotationTime.size = 0;
         }
         else
         {
@@ -65,7 +74,7 @@ public partial class PlayerController : NetworkBehaviour
     void Update()
     {
         if (!IsOwner) return;
-        print(Environment);
+        
 
         horizontalInput = Input.GetAxis("Horizontal");
         verticalInput = Input.GetAxis("Vertical");
@@ -98,7 +107,12 @@ public partial class PlayerController : NetworkBehaviour
         }
 
         currSpeed = currentEffects.SpeedIncreasePowerDuration > 0 ? initialSpeed * 1.5f : initialSpeed;
-        speedTime.value = currentEffects.SpeedIncreasePowerDuration;
+
+        speedTime.size = currentEffects.SpeedIncreasePowerDuration / powerDuration;
+        gravityTime.size = currentEffects.GravityPowerDuration / powerDuration;
+        rotationTime.size = currentEffects.BallRotationPowerDuration / powerDuration;
+
+        currentEffects.DecreaseTime(Time.deltaTime);
     }
 
 
