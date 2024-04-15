@@ -158,6 +158,12 @@ public class GameController : NetworkBehaviour
         timeCounting = false;
     }
 
+    [ServerRpc(RequireOwnership = false)]
+    void EndTurnServerRPC(PlayerSide winner)
+    {
+        EndTurn(winner);
+    }
+
     private void ResetEnvironment()
     {
         var ballController = ballObject.GetComponent<BallController>();
@@ -167,12 +173,6 @@ public class GameController : NetworkBehaviour
         print(clientPlayerObject.transform.position);
         position.z *= -1;
         hostPlayerObject.GetComponent<PlayerController>().ResetObject(position);
-    }
-
-    [ServerRpc(RequireOwnership = false)]
-    void EndTurnServerRPC(PlayerSide winner)
-    {
-        EndTurn(winner);
     }
 
 
@@ -237,10 +237,10 @@ public class GameController : NetworkBehaviour
         }
 
         // Create random position for the powerball
-        var groundSize = ground.transform.localScale * 10;
-        Vector3 spawnPosition = new Vector3(Random.Range(-groundSize.x + 10, groundSize.x - 10),
+        var groundSize = ground.transform.localScale * 10 / 2;
+        Vector3 spawnPosition = new Vector3(Random.Range(-groundSize.x + 1, groundSize.x - 1),
                                                          0.5f,
-                                                         Random.Range(-groundSize.z + 10, groundSize.z - 10));
+                                                         Random.Range(0, groundSize.z - 1));
 
         if (side == PlayerSide.Host)
         {
