@@ -8,9 +8,10 @@ using UnityEngine.UI;
 public class LobbyController : NetworkBehaviour
 {
     public TextMeshProUGUI clientsText;
-    public Button startGameBtn;
+    public Button startGameButton;
     public TextMeshProUGUI IsHostText;
     public TextMeshProUGUI titleText;
+    public Button exitButton;
 
     // Game mode panel
     public TMP_Dropdown gameModeDropdown;
@@ -66,7 +67,8 @@ public class LobbyController : NetworkBehaviour
         NetworkManager.Singleton.OnClientConnectedCallback += HandleClientConnect;
         NetworkManager.Singleton.ConnectionApprovalCallback += ApprovalCheck;
 
-        startGameBtn.onClick.AddListener(StartGame);
+        startGameButton.onClick.AddListener(StartGame);
+        exitButton.onClick.AddListener(() => SceneLoader.LoadScene(SceneLoader.Scene.MenuScene, NetworkManager.Singleton, true));
     }
 
     private UnityAction<T> GameSettingListeners<T>(Action<T> func)
