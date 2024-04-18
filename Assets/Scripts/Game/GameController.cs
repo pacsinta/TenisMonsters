@@ -96,6 +96,12 @@ public class GameController : NetworkBehaviour
 
         if (!IsServer || _gameInfo.Value == null) return;
 
+        // TODO: Clean up this code
+        if(Input.GetKeyDown(KeyCode.P))
+        {
+            EndGame();
+        }
+
 
         if (timeCounting)
         {
@@ -184,6 +190,11 @@ public class GameController : NetworkBehaviour
     private void EndGame()
     {
         Debug.Log("Game Over");
+        if (IsHost)
+        {
+            Destroy(ballObject);
+        }
+
         timeCounting = false;
 
         PlayerSide? winner = null; // null means draw
@@ -195,8 +206,6 @@ public class GameController : NetworkBehaviour
         {
             winner = PlayerSide.Host;
         }
-
-        Destroy(ballObject);
 
         endCanvas.gameObject.SetActive(true);
         endCanvas.GetComponent<EndHandler>().instantiateGameEnd(winner,

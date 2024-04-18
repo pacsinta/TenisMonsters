@@ -56,8 +56,6 @@ public class BallController : NetworkBehaviour
             StartGame();
         }
 
-        if (!IsHost) return;
-
         time += Time.deltaTime;
         UpdateBallRotationForces(time);
     }

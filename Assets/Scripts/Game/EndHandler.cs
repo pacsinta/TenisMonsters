@@ -26,6 +26,7 @@ public class EndHandler : NetworkBehaviour
         tryAgainBtn.onClick.AddListener(() =>
         {
             time = 0;
+            errorText.text = "Loading...";
             if (uploadScoreCoroutine.coroutine() != null) StopCoroutine(uploadScoreCoroutine.coroutine());
             StartCoroutine(uploadScoreCoroutine.coroutine());
         });
@@ -62,6 +63,7 @@ public class EndHandler : NetworkBehaviour
         }
         else // error or timeout
         {
+            errorText.text = "Can't upload the score";
             SetButtonVisibility(tryAgainBtn, ButtonVisibility.ShowAndEnable);
             SetButtonVisibility(exitBtn, ButtonVisibility.ShowAndEnable);
         }
