@@ -25,7 +25,6 @@ public partial class PlayerController : NetworkBehaviour
     private Scrollbar speedTime;
     private Scrollbar rotationTime;
 
-    private Rigidbody rb;
     private Animator animator;
     private PlayerPowers currentEffects = new();
 
@@ -65,7 +64,6 @@ public partial class PlayerController : NetworkBehaviour
 
     private void Start()
     {
-        rb = GetComponent<Rigidbody>();
         animator = GetComponentInChildren<Animator>();
         currSpeed = initialSpeed;
     }
