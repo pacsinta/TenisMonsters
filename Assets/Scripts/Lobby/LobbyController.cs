@@ -110,6 +110,8 @@ public class LobbyController : NetworkBehaviour
         powerBallSpawnTimeText.text = "Powerball spawn time: " + _gameInfo.Value.powerBallSpawnTime + "s";
         powerballLiveTimeSlider.value = _gameInfo.Value.powerBallLiveTime / 5;
         powerBallLiveTimeText.text = "Powerball live time: " + (_gameInfo.Value.multiplePowerBalls ? _gameInfo.Value.powerBallLiveTime : "0") + "s";
+        wallsEnabledToggle.isOn = _gameInfo.Value.wallsEnabled;
+        skyDropdown.value = (int)_gameInfo.Value.skyType;
     }
 
     void ApprovalCheck(NetworkManager.ConnectionApprovalRequest request, NetworkManager.ConnectionApprovalResponse response)
