@@ -13,6 +13,7 @@ public partial class PlayerController : NetworkBehaviour
     public float kickForce;
     public float maxForce;
     public float minForce;
+    public float sideKickForce;
     public float ballDistance = 2.0f;
     public float jumpForce = 5.0f;
     public float powerDuration = 15.0f;
@@ -27,6 +28,13 @@ public partial class PlayerController : NetworkBehaviour
     private Rigidbody rb;
     private Animator animator;
     private PlayerPowers currentEffects = new();
+
+    struct Kick
+    {
+        public float XdirectionForce;
+        public float force;
+    }
+    private Kick kick = new();
 
     public override void OnNetworkSpawn()
     {
@@ -43,6 +51,8 @@ public partial class PlayerController : NetworkBehaviour
             speedTime.size = 0;
             rotationTime = GameObject.Find("RotationTime").GetComponent<Scrollbar>();
             rotationTime.size = 0;
+
+            kickSource.volume = PlayerPrefs.GetFloat("volume", 1);
         }
         else
         {
@@ -75,23 +85,7 @@ public partial class PlayerController : NetworkBehaviour
     {
         if (!IsOwner) return;
         
-
-        horizontalInput = Input.GetAxis("Horizontal");
-        verticalInput = Input.GetAxis("Vertical");
-
-        
-        if(horizontalInput != 0 || verticalInput != 0)
-        {
-            animator.SetBool("Running", true);
-            transform.Translate(Vector3.forward * Time.deltaTime * currSpeed * verticalInput);
-            transform.Translate(Vector3.right * Time.deltaTime * currSpeed * horizontalInput);
-        }
-        else
-        {
-            animator.SetBool("Running", false);
-        }
-        
-
+        MovePlayer();
 
         if (Input.GetKeyDown(KeyCode.Mouse0))
         {
@@ -103,7 +97,7 @@ public partial class PlayerController : NetworkBehaviour
             Vector2 kickMouseEndPos = Input.mousePosition;
             float kickMouseEndTime = Time.realtimeSinceStartup;
 
-            kickBall(kickMouseStartPos, kickMouseEndPos, kickMouseEndTime, kickMouseStartTime);
+            DetermineKickForce(kickMouseStartPos, kickMouseEndPos, kickMouseEndTime, kickMouseStartTime);
         }
 
         currSpeed = currentEffects.SpeedIncreasePowerDuration > 0 ? initialSpeed * 1.5f : initialSpeed;
@@ -115,27 +109,37 @@ public partial class PlayerController : NetworkBehaviour
         currentEffects.DecreaseTime(Time.deltaTime);
     }
 
-
-    struct Kick
+    private void MovePlayer()
     {
-        public float Xdirection;
-        public float force;
+        horizontalInput = Input.GetAxis("Horizontal");
+        verticalInput = Input.GetAxis("Vertical");
+
+        if (horizontalInput != 0 || verticalInput != 0)
+        {
+            animator.SetBool("Running", true);
+            transform.Translate(Vector3.forward * Time.deltaTime * currSpeed * verticalInput);
+            transform.Translate(Vector3.right * Time.deltaTime * currSpeed * horizontalInput);
+        }
+        else
+        {
+            animator.SetBool("Running", false);
+        }
     }
-    private bool kicked = false;
-    private Kick kick = new();
-    private void kickBall(Vector2 kickMouseStartPos, Vector2 kickMouseEndPos, float kickMouseEndTime, float kickMouseStartTime)
+
+    private void DetermineKickForce(Vector2 kickMouseStartPos, Vector2 kickMouseEndPos, float kickMouseEndTime, float kickMouseStartTime)
     {
         animator.SetTrigger("Kick");
-        kicked = true;
         float mouseTime = kickMouseEndTime - kickMouseStartTime;
 
         Vector2 kickDirection = kickMouseEndPos - kickMouseStartPos;
+        kickDirection.Normalize();
+
         kick = new Kick
         {
             force = Math.Clamp(mouseTime * kickForce, minForce, maxForce),
-            Xdirection = kickDirection.x
+            XdirectionForce = kickDirection.x * sideKickForce
         };
-        print("Kick with force: " + kick.force + " and direction: " + kick.Xdirection);
+        print("Kick with force: " + kick.force + " and direction: " + kick.XdirectionForce);
     }
 
     private void OnCollisionEnter(Collision collision)
@@ -143,7 +147,7 @@ public partial class PlayerController : NetworkBehaviour
          if (!IsOwner) return;
 
         GameObject collidedWithObject = collision.gameObject;
-        if (kicked && collidedWithObject.CompareTag("Ball") && collision.GetContact(0).thisCollider.gameObject.name == "monster")
+        if (collidedWithObject.CompareTag("Ball") && collision.GetContact(0).thisCollider.gameObject.name == "monster")
         {
             animator.enabled = false;
             kickSource.Play();
@@ -151,11 +155,10 @@ public partial class PlayerController : NetworkBehaviour
             collidedWithObject.GetComponent<Rigidbody>().velocity = Vector3.zero;
             collidedWithObject.GetComponent<Rigidbody>().angularVelocity = Vector3.zero;
             collidedWithObject.transform.position += new Vector3(0, 0, 0.5f * transform.forward.z); // move ball a bit forward to avoid animation clipping
-            collidedWithObject.GetComponent<Rigidbody>().AddForce(kick.Xdirection / 100,
+            collidedWithObject.GetComponent<Rigidbody>().AddForce(kick.XdirectionForce / 100,
                                                                   kick.force / 2,
                                                                   kick.force,
                                                                   ForceMode.Impulse);
-            kicked = false;
             kick = new(); // reset kick
 
             BallController ballController = collidedWithObject.GetComponent<BallController>();
@@ -163,7 +166,7 @@ public partial class PlayerController : NetworkBehaviour
 
             if (currentEffects.GravityPowerDuration > 0)
             {
-                ballController.decreaseWeight();
+                ballController.DecreaseWeight();
             }
         }
         else if (collidedWithObject.CompareTag("PowerBall"))
