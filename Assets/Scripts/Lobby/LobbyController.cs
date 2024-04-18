@@ -9,7 +9,7 @@ public class LobbyController : NetworkBehaviour
 {
     public TextMeshProUGUI clientsText;
     public Button startGameButton;
-    public TextMeshProUGUI IsHostText;
+    public TMP_Dropdown skyDropdown;
     public TextMeshProUGUI titleText;
     public Button exitButton;
 
@@ -23,6 +23,7 @@ public class LobbyController : NetworkBehaviour
     public Toggle multiplePowerBallToggle;
     public TextMeshProUGUI powerBallLiveTimeText;
     public Slider powerballLiveTimeSlider;
+    public Toggle wallsEnabledToggle;
 
     private int maxPlayerCount = 2;
     private PlayerInfo playerInfo;
@@ -35,33 +36,16 @@ public class LobbyController : NetworkBehaviour
         if (IsHost)
         {
             _gameInfo.Value = new GameInfo();
-
-            IsHostText.text = "Host";
             _hostPlayerInfo.Value = playerInfo;
 
-            gameModeDropdown.onValueChanged.AddListener(GameSettingListeners<int>(_gameInfo.Value.SetGameMode));
-            gravityPowerBallToggle.onValueChanged.AddListener(GameSettingListeners<bool>(_gameInfo.Value.SetGravityPowerballEnabled));
-            speedPowerBallToggle.onValueChanged.AddListener(GameSettingListeners<bool>(_gameInfo.Value.SetSpeedPowerballEnabled));
-            rotationKickPowerBallToggle.onValueChanged.AddListener(GameSettingListeners<bool>(_gameInfo.Value.SetRotationKickPowerballEnabled));
-            powerBallSpawnTimeSlider.onValueChanged.AddListener(GameSettingListeners<float>(_gameInfo.Value.SetPowerBallSpawnTime));
-            powerballLiveTimeSlider.onValueChanged.AddListener(GameSettingListeners<float>(_gameInfo.Value.SetPowerBallLiveTime));
-            multiplePowerBallToggle.onValueChanged.AddListener((isOn) =>
-            {
-                GameSettingListeners<bool>(_gameInfo.Value.SetMultiplePowerBalls)(isOn);
-                powerballLiveTimeSlider.interactable = isOn;
-            });
+            setGameSettingListeners();
         }
         else
         {
-            IsHostText.text = "Client";
-            gameModeDropdown.interactable = false;
-            gravityPowerBallToggle.interactable = false;
-            speedPowerBallToggle.interactable = false;
-            rotationKickPowerBallToggle.interactable = false;
-            powerBallSpawnTimeSlider.interactable = false;
-            multiplePowerBallToggle.interactable = false;
-            powerballLiveTimeSlider.interactable = false;
+            disableGameSettings();
             playerInfo.Side = PlayerSide.Client;
+
+            skyDropdown.onValueChanged.AddListener((skyType) => SetSkyTypeServerRpc(skyType));
         }
 
         NetworkManager.Singleton.OnClientConnectedCallback += HandleClientConnect;
@@ -69,6 +53,34 @@ public class LobbyController : NetworkBehaviour
 
         startGameButton.onClick.AddListener(StartGame);
         exitButton.onClick.AddListener(() => SceneLoader.LoadScene(SceneLoader.Scene.MenuScene, NetworkManager.Singleton, true));
+    }
+
+    private void disableGameSettings()
+    {
+        gameModeDropdown.interactable = false;
+        gravityPowerBallToggle.interactable = false;
+        speedPowerBallToggle.interactable = false;
+        rotationKickPowerBallToggle.interactable = false;
+        powerBallSpawnTimeSlider.interactable = false;
+        multiplePowerBallToggle.interactable = false;
+        powerballLiveTimeSlider.interactable = false;
+    }
+
+    private void setGameSettingListeners()
+    {
+        gameModeDropdown.onValueChanged.AddListener(GameSettingListeners<int>(_gameInfo.Value.SetGameMode));
+        gravityPowerBallToggle.onValueChanged.AddListener(GameSettingListeners<bool>(_gameInfo.Value.SetGravityPowerballEnabled));
+        speedPowerBallToggle.onValueChanged.AddListener(GameSettingListeners<bool>(_gameInfo.Value.SetSpeedPowerballEnabled));
+        rotationKickPowerBallToggle.onValueChanged.AddListener(GameSettingListeners<bool>(_gameInfo.Value.SetRotationKickPowerballEnabled));
+        powerBallSpawnTimeSlider.onValueChanged.AddListener(GameSettingListeners<float>(_gameInfo.Value.SetPowerBallSpawnTime));
+        powerballLiveTimeSlider.onValueChanged.AddListener(GameSettingListeners<float>(_gameInfo.Value.SetPowerBallLiveTime));
+        multiplePowerBallToggle.onValueChanged.AddListener((isOn) =>
+        {
+            GameSettingListeners<bool>(_gameInfo.Value.SetMultiplePowerBalls)(isOn);
+            powerballLiveTimeSlider.interactable = isOn;
+        });
+        wallsEnabledToggle.onValueChanged.AddListener(GameSettingListeners<bool>(_gameInfo.Value.SetWallsEnabled));
+        skyDropdown.onValueChanged.AddListener(GameSettingListeners<int>(_gameInfo.Value.SetSkyType));
     }
 
     private UnityAction<T> GameSettingListeners<T>(Action<T> func)
@@ -84,7 +96,9 @@ public class LobbyController : NetworkBehaviour
         }
         else
         {
-            clientsText.text = "Host: " + _hostPlayerInfo.Value.PlayerName + "\nClient: " + _clientPlayerInfo.Value.PlayerName;
+            var ownerName = IsHost ? _hostPlayerInfo.Value.PlayerName : _clientPlayerInfo.Value.PlayerName;
+            var opponentName = IsHost ? _clientPlayerInfo.Value.PlayerName : _hostPlayerInfo.Value.PlayerName;
+            clientsText.text = "You: " + ownerName + "\nOpponent: " + opponentName;
         }
 
         multiplePowerBallToggle.isOn = _gameInfo.Value.multiplePowerBalls;
@@ -146,6 +160,13 @@ public class LobbyController : NetworkBehaviour
     void StartGameServerRpc(ServerRpcParams serverRpcParams = default)
     {
         SceneLoader.LoadScene(SceneLoader.Scene.GameScene, NetworkManager.Singleton);
+    }
+
+    [ServerRpc(RequireOwnership = false)]
+    void SetSkyTypeServerRpc(int skyType, ServerRpcParams serverRpcParams = default)
+    {
+        _gameInfo.Value.SetSkyType(skyType);
+        _gameInfo.IsDirty();
     }
 
     NetworkVariable<PlayerInfo> _hostPlayerInfo = new NetworkVariable<PlayerInfo>();
