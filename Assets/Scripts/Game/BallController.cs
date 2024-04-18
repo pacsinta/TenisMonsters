@@ -95,11 +95,11 @@ public class BallController : NetworkBehaviour
         if (location == CourtSquare.Out) 
             gameController.EndTurn(~kickData.Player);
         
-        if(kickData.Player == PlayerSide.Host && CourtData.IsHostSide(location) ||
+        else if(kickData.Player == PlayerSide.Host && CourtData.IsHostSide(location) ||
            kickData.Player == PlayerSide.Client && CourtData.IsClientSide(location)) 
             gameController.EndTurn(~kickData.Player);
 
-        if (kickData.bounced) 
+        else if (kickData.bounced) 
             gameController.EndTurn(kickData.Player); // If the ball has already bounced, the player who kicked the ball wins
 
         kickData.bounced = true;
