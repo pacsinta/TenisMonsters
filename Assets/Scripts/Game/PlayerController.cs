@@ -16,7 +16,7 @@ public partial class PlayerController : NetworkBehaviour
     public float sideKickForce;
     public float ballDistance = 2.0f;
     public float jumpForce = 5.0f;
-    public float powerDuration = 15.0f;
+    public float powerDuration = 30.0f;
 
     public GameObject Environment { set; private get; }
     public AudioSource kickSource;
