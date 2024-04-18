@@ -13,6 +13,7 @@ public class GameController : NetworkBehaviour
     public GameObject ballObject;
     public GameObject ground;
     public Canvas endCanvas;
+    public GameObject walls;
 
     // Powerball prefabs
     public NetworkObject gravityPowerBallPrefab;
@@ -39,17 +40,21 @@ public class GameController : NetworkBehaviour
     }
     public override void OnNetworkSpawn()
     {
-        if (!IsServer) return;
-        _hostPlayerInfo.Value = new PlayerInfo();
-        _gameInfo.Value = new GameInfo();
-
-        var clients = NetworkManager.Singleton.ConnectedClientsList;
-
-        foreach (var client in clients)
+        if (IsServer)
         {
-            instantiatePlayerObject(client);
-            _clientPlayerInfo.Value = new PlayerInfo(client.ClientId.ToString());
+            _hostPlayerInfo.Value = new PlayerInfo();
+            _gameInfo.Value = new GameInfo();
+
+            var clients = NetworkManager.Singleton.ConnectedClientsList;
+
+            foreach (var client in clients)
+            {
+                instantiatePlayerObject(client);
+                _clientPlayerInfo.Value = new PlayerInfo(client.ClientId.ToString());
+            }
         }
+        
+        walls.SetActive(_gameInfo.Value.wallsEnabled);
     }
 
     private void instantiatePlayerObject(NetworkClient client)
