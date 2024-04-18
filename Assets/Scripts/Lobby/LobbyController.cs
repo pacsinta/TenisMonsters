@@ -44,8 +44,6 @@ public class LobbyController : NetworkBehaviour
         {
             disableGameSettings();
             playerInfo.Side = PlayerSide.Client;
-
-            skyDropdown.onValueChanged.AddListener((skyType) => SetSkyTypeServerRpc(skyType));
         }
 
         NetworkManager.Singleton.OnClientConnectedCallback += HandleClientConnect;
@@ -64,6 +62,8 @@ public class LobbyController : NetworkBehaviour
         powerBallSpawnTimeSlider.interactable = false;
         multiplePowerBallToggle.interactable = false;
         powerballLiveTimeSlider.interactable = false;
+        wallsEnabledToggle.interactable = false;
+        skyDropdown.interactable = false;
     }
 
     private void setGameSettingListeners()
@@ -162,13 +162,6 @@ public class LobbyController : NetworkBehaviour
     void StartGameServerRpc(ServerRpcParams serverRpcParams = default)
     {
         SceneLoader.LoadScene(SceneLoader.Scene.GameScene, NetworkManager.Singleton);
-    }
-
-    [ServerRpc(RequireOwnership = false)]
-    void SetSkyTypeServerRpc(int skyType, ServerRpcParams serverRpcParams = default)
-    {
-        _gameInfo.Value.SetSkyType(skyType);
-        _gameInfo.IsDirty();
     }
 
     NetworkVariable<PlayerInfo> _hostPlayerInfo = new NetworkVariable<PlayerInfo>();
