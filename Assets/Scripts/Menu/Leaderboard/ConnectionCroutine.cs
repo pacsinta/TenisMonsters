@@ -40,10 +40,13 @@ public class ConnectionCoroutine<T>
             var resultText = www.downloadHandler.text;
             try
             {
-                result = JsonConvert.DeserializeObject<T>(resultText);
-                if (result == null)
+                if(!string.IsNullOrEmpty(resultText))
                 {
-                    Debug.LogError("Can't parse the result");
+                    result = JsonConvert.DeserializeObject<T>(resultText);
+                    if (result == null)
+                    {
+                        Debug.LogError("Can't parse the result");
+                    }
                 }
 
                 state = LoadingState.DataAvailable;
