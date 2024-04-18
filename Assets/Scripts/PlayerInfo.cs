@@ -1,4 +1,5 @@
-﻿using Unity.Collections;
+﻿using System;
+using Unity.Collections;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -11,10 +12,11 @@ namespace Assets.Scripts
      * 
      * The players are differenciated by their Network id
      */
+    [Flags]
     public enum PlayerSide
     {
-        Host,
-        Client
+        Host = 0,
+        Client = 1
     }
     public class PlayerInfo : INetworkSerializable
     {
