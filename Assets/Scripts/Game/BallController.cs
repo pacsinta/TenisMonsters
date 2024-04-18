@@ -17,6 +17,7 @@ public class BallController : NetworkBehaviour
             }
         }
         public bool bounced; // true if the ball has already bounced on the current turn
+        public bool firstKickSuccess; // true after the first kick was successful
     }
 
     public float initialUpForce = 15.0f;
@@ -71,6 +72,7 @@ public class BallController : NetworkBehaviour
     }
     public void Kicked(PlayerSide player, bool rotationKick = false)
     {
+        kickData.firstKickSuccess = true;
         kickData.Player = player;
         ResetWeight();
         this.rotationKick = rotationKick;
@@ -93,11 +95,11 @@ public class BallController : NetworkBehaviour
     private void CollisionWithGround(CourtSquare location)
     {
         if (location == CourtSquare.Out) 
-            gameController.EndTurn(~kickData.Player);
+            gameController.EndTurn(kickData.bounced ? kickData.Player : ~kickData.Player);
         
         else if(kickData.Player == PlayerSide.Host && CourtData.IsHostSide(location) ||
-           kickData.Player == PlayerSide.Client && CourtData.IsClientSide(location)) 
-            gameController.EndTurn(~kickData.Player);
+           kickData.Player == PlayerSide.Client && CourtData.IsClientSide(location))
+            gameController.EndTurn(~kickData.Player); // If the player can't kick the ball to the other side, the other player wins
 
         else if (kickData.bounced) 
             gameController.EndTurn(kickData.Player); // If the ball has already bounced, the player who kicked the ball wins
@@ -106,7 +108,7 @@ public class BallController : NetworkBehaviour
     }
     private void CollisionWithLava()
     {
-        gameController.EndTurn(~kickData.Player);
+        gameController.EndTurn(kickData.bounced ? kickData.Player : ~kickData.Player);
     }
 
     private float collisionTimeCount = 0;
@@ -161,5 +163,6 @@ public class BallController : NetworkBehaviour
         colldider.enabled = false;
         gameStarted = false;
         collisionTimeCount = 0;
+        kickData.firstKickSuccess = false;
     }
 }
