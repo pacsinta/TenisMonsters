@@ -44,14 +44,6 @@ public partial class PlayerController : NetworkBehaviour
         {
             vcam.Priority = 1;
             audioListener.enabled = true;
-
-            gravityTime = GameObject.Find("GravityTime").GetComponent<Scrollbar>();
-            gravityTime.size = 0;
-            speedTime = GameObject.Find("SpeedTime").GetComponent<Scrollbar>();
-            speedTime.size = 0;
-            rotationTime = GameObject.Find("RotationTime").GetComponent<Scrollbar>();
-            rotationTime.size = 0;
-
             kickSource.volume = PlayerPrefs.GetFloat("volume", 1);
         }
         else
@@ -84,7 +76,7 @@ public partial class PlayerController : NetworkBehaviour
     void Update()
     {
         if (!IsOwner) return;
-        
+
         MovePlayer();
 
         if (Input.GetKeyDown(KeyCode.Mouse0))
@@ -100,15 +92,43 @@ public partial class PlayerController : NetworkBehaviour
             DetermineKickForce(kickMouseStartPos, kickMouseEndPos, kickMouseEndTime, kickMouseStartTime);
         }
 
+        if (GetPowerBallTimerInstances())
+        {
+            UpdatePowerBallTimers();
+        }
+
         currSpeed = currentEffects.SpeedIncreasePowerDuration > 0 ? initialSpeed * 1.5f : initialSpeed;
-
-        speedTime.size = currentEffects.SpeedIncreasePowerDuration / powerDuration;
-        gravityTime.size = currentEffects.GravityPowerDuration / powerDuration;
-        rotationTime.size = currentEffects.BallRotationPowerDuration / powerDuration;
-
         currentEffects.DecreaseTime(Time.deltaTime);
     }
 
+    private bool GetPowerBallTimerInstances()
+    {
+        if (gravityTime == null)
+        {
+            gravityTime = GameObject.Find("GravityTime").GetComponent<Scrollbar>();
+            if(gravityTime != null) gravityTime.size = 0;
+            else return false;
+        }
+        if (speedTime == null)
+        {
+            speedTime = GameObject.Find("SpeedTime").GetComponent<Scrollbar>();
+            if(speedTime != null) speedTime.size = 0;
+            else return false;
+        }
+        if (rotationTime == null)
+        {
+            rotationTime = GameObject.Find("RotationTime").GetComponent<Scrollbar>();
+            if(rotationTime != null) rotationTime.size = 0;
+            else return false;
+        }
+        return true;
+    }
+    private void UpdatePowerBallTimers()
+    {
+        speedTime.size = currentEffects.SpeedIncreasePowerDuration / powerDuration;
+        gravityTime.size = currentEffects.GravityPowerDuration / powerDuration;
+        rotationTime.size = currentEffects.BallRotationPowerDuration / powerDuration;
+    }
     private void MovePlayer()
     {
         horizontalInput = Input.GetAxis("Horizontal");
@@ -141,6 +161,19 @@ public partial class PlayerController : NetworkBehaviour
         };
         print("Kick with force: " + kick.force + " and direction: " + kick.XdirectionForce);
     }
+    private void PowerBallCollision(GameObject PowerBall)
+    {
+        var power = PowerBall.GetComponent<PowerBallController>().type;
+        currentEffects.SetPower(power, powerDuration);
+        if (IsHost)
+        {
+            Destroy(PowerBall);
+        }
+        else
+        {
+            DestroyServerRpc(PowerBall);
+        }
+    }
 
     private void OnCollisionEnter(Collision collision)
     {
@@ -171,9 +204,7 @@ public partial class PlayerController : NetworkBehaviour
         }
         else if (collidedWithObject.CompareTag("PowerBall"))
         {
-            var power = collidedWithObject.GetComponent<PowerBallController>().type;
-            currentEffects.SetPower(power, powerDuration);
-            Destroy(collidedWithObject);
+            PowerBallCollision(collidedWithObject);
         }
         else if (collidedWithObject.CompareTag("Lava"))
         {
@@ -209,5 +240,15 @@ public partial class PlayerController : NetworkBehaviour
     void ResetObejctClientRpc(Vector3 position)
     {
         transform.position = position;
+    }
+
+    [ServerRpc(RequireOwnership = false)]
+    void DestroyServerRpc(NetworkObjectReference objectReference)
+    {
+        if (!objectReference.TryGet(out NetworkObject networkObject))
+        {
+            Debug.Log("error");
+        }
+        Destroy(networkObject);
     }
 }
