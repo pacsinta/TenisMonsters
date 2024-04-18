@@ -53,6 +53,7 @@ public class EndHandler : NetworkBehaviour
 
         if (uploadScoreCoroutine.state == LoadingState.DataAvailable)
         {
+            errorText.text = "Score uploaded!";
             SetButtonVisibility(tryAgainBtn, ButtonVisibility.Hide);
             SetButtonVisibility(exitBtn, ButtonVisibility.ShowAndEnable);
         }
