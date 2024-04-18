@@ -49,6 +49,8 @@ public class BallController : NetworkBehaviour
     private float time = 0;
     void Update()
     {
+        if(!IsHost) return;
+
         if (!gameStarted && Input.GetKeyDown(KeyCode.Space))
         {
             StartGame();
@@ -81,7 +83,8 @@ public class BallController : NetworkBehaviour
 
         if (collision.gameObject.CompareTag("Ground"))
         {
-            CourtSquare location = CourtData.GetCurrentCourtSquare(collision.gameObject.transform.position);
+            print(transform.position);
+            CourtSquare location = CourtData.GetCurrentCourtSquare(transform.position);
             CollisionWithGround(location);
         }
         else if (collision.gameObject.CompareTag("Lava"))
@@ -91,12 +94,15 @@ public class BallController : NetworkBehaviour
     }
     private void CollisionWithGround(CourtSquare location)
     {
-        if (location == CourtSquare.Out) gameController.EndTurn(~kickData.Player);
+        if (location == CourtSquare.Out) 
+            gameController.EndTurn(~kickData.Player);
         
         if(kickData.Player == PlayerSide.Host && CourtData.IsHostSide(location) ||
-           kickData.Player == PlayerSide.Client && CourtData.IsClientSide(location)) gameController.EndTurn(~kickData.Player);
+           kickData.Player == PlayerSide.Client && CourtData.IsClientSide(location)) 
+            gameController.EndTurn(~kickData.Player);
 
-        if (kickData.bounced) gameController.EndTurn(kickData.Player); // If the ball has already bounced, the player who kicked the ball wins
+        if (kickData.bounced) 
+            gameController.EndTurn(kickData.Player); // If the ball has already bounced, the player who kicked the ball wins
 
         kickData.bounced = true;
     }
@@ -115,7 +121,7 @@ public class BallController : NetworkBehaviour
         }
         if (collisionTimeCount > groundCollisinMaxTime)
         {
-            CourtSquare location = CourtData.GetCurrentCourtSquare(collision.gameObject.transform.position);
+            CourtSquare location = CourtData.GetCurrentCourtSquare(transform.position);
             CollisionWithGround(location);
         }
     }
