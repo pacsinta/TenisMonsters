@@ -13,7 +13,7 @@ public enum SkyType
 }
 public class SkyChooser : NetworkBehaviour
 {
-    NetworkVariable<SkyType> skyType = new NetworkVariable<SkyType>(SkyType.Sunny);
+    readonly NetworkVariable<SkyType> skyType = new NetworkVariable<SkyType>(SkyType.Sunny);
 
     public List<Material> skyMaterials;
 
@@ -21,7 +21,6 @@ public class SkyChooser : NetworkBehaviour
     {
         if(IsHost)
         {
-            GameInfo gameInfo = new GameInfo();
             skyType.Value = (SkyType)PlayerPrefs.GetInt("skyType", 0);
         }
         var skyMaterial = skyMaterials[(int)skyType.Value];
