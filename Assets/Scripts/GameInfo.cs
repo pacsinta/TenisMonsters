@@ -24,6 +24,8 @@ public class GameInfo : INetworkSerializable
     public int powerBallSpawnTime = 10;
     public int powerBallLiveTime = 5;
     public bool multiplePowerBalls = true;
+    public bool wallsEnabled = true;
+    public SkyType skyType = SkyType.Sunny;
     public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
     {
         serializer.SerializeValue(ref gameMode);
@@ -33,6 +35,8 @@ public class GameInfo : INetworkSerializable
         serializer.SerializeValue(ref powerBallSpawnTime);
         serializer.SerializeValue(ref powerBallLiveTime);
         serializer.SerializeValue(ref multiplePowerBalls);
+        serializer.SerializeValue(ref wallsEnabled);
+        serializer.SerializeValue(ref skyType);
     }
     public EnabledPowerBalls GetAllPowerballEnabled()
     {
@@ -101,6 +105,16 @@ public class GameInfo : INetworkSerializable
         multiplePowerBalls = enabled;
         PlayerPrefs.SetInt("MultiplePowerBalls", enabled ? 1 : 0);
     }
+    public void SetWallsEnabled(bool enabled)
+    {
+        wallsEnabled = enabled;
+        PlayerPrefs.SetInt("WallsEnabled", enabled ? 1 : 0);
+    }
+    public void SetSkyType(int type)
+    {
+        skyType = (SkyType)type;
+        PlayerPrefs.SetInt("skyType", type);
+    }
     public GameInfo()
     {
         gameMode = PlayerPrefs.GetInt("GameMode");
@@ -110,6 +124,8 @@ public class GameInfo : INetworkSerializable
         powerBallSpawnTime = PlayerPrefs.GetInt("PowerBallSpawnTime");
         powerBallLiveTime = PlayerPrefs.GetInt("PowerBallLiveTime");
         multiplePowerBalls = PlayerPrefs.GetInt("MultiplePowerBalls") == 1;
+        wallsEnabled = PlayerPrefs.GetInt("WallsEnabled", 1) == 1;
+        skyType = (SkyType)PlayerPrefs.GetInt("skyType", 0);
 
         powerBallSpawnTime = powerBallSpawnTime == 0 ? 10 : powerBallSpawnTime;
     }
