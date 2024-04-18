@@ -12,7 +12,7 @@ public class EndHandler : NetworkBehaviour
     public Button tryAgainBtn;
     public GameObject audioObject;
 
-    private ConnectionCoroutine<LeaderBoardElement> uploadScoreCoroutine;
+    private ConnectionCoroutine<object> uploadScoreCoroutine;
     private bool gameEnded = false;
     private PlayerSide? winnerPlayer;
 
