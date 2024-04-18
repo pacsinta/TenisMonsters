@@ -114,7 +114,7 @@ public class GameController : NetworkBehaviour
             EndGame();
         }
 
-        if (remainingTimeToSpawnPowerBall >= _gameInfo.Value.GetPowerBallSpawnTime())
+        if (remainingTimeToSpawnPowerBall >= _gameInfo.Value.powerBallSpawnTime)
         {
             SpawnPowerBall(PlayerSide.Host, _gameInfo.Value.GetAllPowerballEnabled());
             SpawnPowerBall(PlayerSide.Client, _gameInfo.Value.GetAllPowerballEnabled());

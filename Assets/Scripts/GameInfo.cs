@@ -1,3 +1,4 @@
+using System;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -53,46 +54,26 @@ public class GameInfo : INetworkSerializable
         gameMode = mode;
         PlayerPrefs.SetInt("GameMode", mode);
     }
-    public int GetGameMode()
-    {
-        return gameMode;
-    }
     public void SetGravityPowerballEnabled(bool enabled)
     {
         gravityPowerballEnabled = enabled;
         PlayerPrefs.SetInt("GravityPowerballEnabled", enabled ? 1 : 0);
-    }
-    public bool GetGravityPowerballEnabled()
-    {
-        return gravityPowerballEnabled;
     }
     public void SetRotationKickPowerballEnabled(bool enabled)
     {
         rotationKickPowerballEnabled = enabled;
         PlayerPrefs.SetInt("RotationKickPowerballEnabled", enabled ? 1 : 0);
     }
-    public bool GetRotationKickPowerballEnabled()
-    {
-        return rotationKickPowerballEnabled;
-    }
     public void SetSpeedPowerballEnabled(bool enabled)
     {
         speedPowerballEnabled = enabled;
         PlayerPrefs.SetInt("SpeedPowerballEnabled", enabled ? 1 : 0);
-    }
-    public bool GetSpeedPowerballEnabled()
-    {
-        return speedPowerballEnabled;
     }
     public void SetPowerBallSpawnTime(float time)
     {
         int seconds = (int)time * 10;
         powerBallSpawnTime = seconds;
         PlayerPrefs.SetInt("PowerBallSpawnTime", seconds);
-    }
-    public int GetPowerBallSpawnTime()
-    {
-        return powerBallSpawnTime;
     }
     public void SetPowerBallLiveTime(float time)
     {

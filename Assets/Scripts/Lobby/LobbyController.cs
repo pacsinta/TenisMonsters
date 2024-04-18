@@ -102,10 +102,10 @@ public class LobbyController : NetworkBehaviour
         }
 
         multiplePowerBallToggle.isOn = _gameInfo.Value.multiplePowerBalls;
-        gameModeDropdown.value = _gameInfo.Value.GetGameMode();
-        gravityPowerBallToggle.isOn = _gameInfo.Value.GetGravityPowerballEnabled();
-        speedPowerBallToggle.isOn = _gameInfo.Value.GetSpeedPowerballEnabled();
-        rotationKickPowerBallToggle.isOn = _gameInfo.Value.GetRotationKickPowerballEnabled();
+        gameModeDropdown.value = _gameInfo.Value.gameMode;
+        gravityPowerBallToggle.isOn = _gameInfo.Value.gravityPowerballEnabled;
+        speedPowerBallToggle.isOn = _gameInfo.Value.speedPowerballEnabled;
+        rotationKickPowerBallToggle.isOn = _gameInfo.Value.rotationKickPowerballEnabled;
         powerBallSpawnTimeSlider.value = _gameInfo.Value.powerBallSpawnTime / 10;
         powerBallSpawnTimeText.text = "Powerball spawn time: " + _gameInfo.Value.powerBallSpawnTime + "s";
         powerballLiveTimeSlider.value = _gameInfo.Value.powerBallLiveTime / 5;
