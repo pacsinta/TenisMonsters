@@ -105,19 +105,19 @@ public partial class PlayerController : NetworkBehaviour
     {
         if (gravityTime == null)
         {
-            gravityTime = GameObject.Find("GravityTime").GetComponent<Scrollbar>();
+            gravityTime = GameObject.Find("GravityTime")?.GetComponent<Scrollbar>();
             if(gravityTime != null) gravityTime.size = 0;
             else return false;
         }
         if (speedTime == null)
         {
-            speedTime = GameObject.Find("SpeedTime").GetComponent<Scrollbar>();
+            speedTime = GameObject.Find("SpeedTime")?.GetComponent<Scrollbar>();
             if(speedTime != null) speedTime.size = 0;
             else return false;
         }
         if (rotationTime == null)
         {
-            rotationTime = GameObject.Find("RotationTime").GetComponent<Scrollbar>();
+            rotationTime = GameObject.Find("RotationTime")?.GetComponent<Scrollbar>();
             if(rotationTime != null) rotationTime.size = 0;
             else return false;
         }
@@ -182,6 +182,7 @@ public partial class PlayerController : NetworkBehaviour
         GameObject collidedWithObject = collision.gameObject;
         if (collidedWithObject.CompareTag("Ball") && collision.GetContact(0).thisCollider.gameObject.name == "monster")
         {
+            print("Kicked the ball");
             animator.enabled = false;
             kickSource.Play();
 
