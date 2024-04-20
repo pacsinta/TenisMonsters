@@ -242,11 +242,14 @@ MonoBehaviour:
   kickForce: 45
   maxForce: 15
   minForce: 5
+  maxKickTime: 1.5
   sideKickForce: 10
   ballDistance: 2
   jumpForce: 5
   powerDuration: 10
   kickSource: {fileID: 263890432673576255}
+  racketMaterial: {fileID: 2100000, guid: 88ed422e07c595441bab4009484421e7, type: 2}
+  racket: {fileID: 1179358951285603451}
 --- !u!114 &1370356921167364366
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1004,6 +1007,11 @@ PrefabInstance:
       insertIndex: -1
       addedObject: {fileID: 108410711665210246}
   m_SourcePrefab: {fileID: 100100000, guid: beffbed0098bd624b8ac1162665239ac, type: 3}
+--- !u!1 &1179358951285603451 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: -1752851586799337602, guid: beffbed0098bd624b8ac1162665239ac, type: 3}
+  m_PrefabInstance: {fileID: 8642814999939924741}
+  m_PrefabAsset: {fileID: 0}
 --- !u!4 &8105295215715886318 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: beffbed0098bd624b8ac1162665239ac, type: 3}

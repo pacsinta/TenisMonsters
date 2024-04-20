@@ -13,6 +13,7 @@ public partial class PlayerController : NetworkBehaviour
     public float kickForce;
     public float maxForce;
     public float minForce;
+    public float maxKickTime;
     public float sideKickForce;
     public float ballDistance = 2.0f;
     public float jumpForce = 5.0f;
@@ -20,6 +21,8 @@ public partial class PlayerController : NetworkBehaviour
 
     public GameObject Environment { set; private get; }
     public AudioSource kickSource;
+    public Material racketMaterial;
+    public GameObject racket;
 
     private Scrollbar gravityTime;
     private Scrollbar speedTime;
@@ -71,6 +74,7 @@ public partial class PlayerController : NetworkBehaviour
     private Vector2 kickMouseStartPos = Vector2.zero;
     private float kickMouseStartTime = 0;
     private float currSpeed;
+    private bool wasInKickState = false;
     void Update()
     {
         if (!IsOwner) return;
@@ -82,12 +86,21 @@ public partial class PlayerController : NetworkBehaviour
             kickMouseStartPos = Input.mousePosition;
             kickMouseStartTime = Time.realtimeSinceStartup;
         }
-        else if (Input.GetKeyUp(KeyCode.Mouse0))
+        else if(Input.GetKeyUp(KeyCode.Mouse0))
+        {
+            StartKick();
+        }
+        else if(Input.GetKey(KeyCode.Mouse0))
         {
             Vector2 kickMouseEndPos = Input.mousePosition;
             float kickMouseEndTime = Time.realtimeSinceStartup;
 
             DetermineKickForce(kickMouseStartPos, kickMouseEndPos, kickMouseEndTime, kickMouseStartTime);
+            setRacketColorByKickForce();
+        }
+        if(wasInKickState && animator.GetCurrentAnimatorStateInfo(0).IsName("IdleAnimation"))
+        {
+            EndKick();
         }
 
         if (GetPowerBallTimerInstances())
@@ -97,6 +110,8 @@ public partial class PlayerController : NetworkBehaviour
 
         currSpeed = currentEffects.SpeedIncreasePowerDuration > 0 ? initialSpeed * 1.5f : initialSpeed;
         currentEffects.DecreaseTime(Time.deltaTime);
+
+        wasInKickState = animator.GetCurrentAnimatorStateInfo(0).IsName("KickAnimation");
     }
 
     private bool GetPowerBallTimerInstances()
@@ -120,6 +135,13 @@ public partial class PlayerController : NetworkBehaviour
             else return false;
         }
         return true;
+    }
+    private void setRacketColorByKickForce()
+    {
+        var color = Color.Lerp(Color.white, Color.red, kick.force / maxForce);
+        Material newRacketMaterial = new Material(racketMaterial);
+        newRacketMaterial.color = color;
+        racket.GetComponent<Renderer>().material = newRacketMaterial;
     }
     private void UpdatePowerBallTimers()
     {
@@ -146,18 +168,29 @@ public partial class PlayerController : NetworkBehaviour
 
     private void DetermineKickForce(Vector2 kickMouseStartPos, Vector2 kickMouseEndPos, float kickMouseEndTime, float kickMouseStartTime)
     {
-        animator.SetTrigger("Kick");
         float mouseTime = kickMouseEndTime - kickMouseStartTime;
+        mouseTime = Mathf.Clamp(mouseTime, 0, maxKickTime);
 
         Vector2 kickDirection = kickMouseEndPos - kickMouseStartPos;
         kickDirection.Normalize();
 
         kick = new Kick
         {
-            force = Math.Clamp(mouseTime * kickForce, minForce, maxForce),
+            force = minForce + (maxForce - minForce) * (mouseTime / maxKickTime),
             XdirectionForce = kickDirection.x * sideKickForce
         };
         print("Kick with force: " + kick.force + " and direction: " + kick.XdirectionForce);
+    }
+    private void StartKick()
+    {
+        animator.SetTrigger("Kick");
+    }
+    private void EndKick()
+    {
+        animator.enabled = false;
+        racket.GetComponent<Renderer>().material = racketMaterial;
+        kick = new(); // reset kick
+        wasInKickState = false;
     }
     private void PowerBallCollision(GameObject PowerBall)
     {
@@ -181,7 +214,7 @@ public partial class PlayerController : NetworkBehaviour
         if (collidedWithObject.CompareTag("Ball") && collision.GetContact(0).thisCollider.gameObject.name == "monster")
         {
             print("Kicked the ball");
-            animator.enabled = false;
+            EndKick();
             kickSource.Play();
 
             collidedWithObject.GetComponent<Rigidbody>().velocity = Vector3.zero;
@@ -191,7 +224,6 @@ public partial class PlayerController : NetworkBehaviour
                                                                   kick.force / 2,
                                                                   kick.force,
                                                                   ForceMode.Impulse);
-            kick = new(); // reset kick
 
             BallController ballController = collidedWithObject.GetComponent<BallController>();
             ballController.Kicked(IsHost ? PlayerSide.Host : PlayerSide.Client);

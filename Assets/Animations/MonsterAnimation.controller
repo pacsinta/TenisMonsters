@@ -76,7 +76,7 @@ AnimatorStateMachine:
     m_Position: {x: 270, y: 480, z: 0}
   - serializedVersion: 1
     m_State: {fileID: 5694728415237659797}
-    m_Position: {x: 130, y: 70, z: 0}
+    m_Position: {x: 130, y: 80, z: 0}
   m_ChildStateMachines: []
   m_AnyStateTransitions:
   - {fileID: -7879589706524664469}
@@ -174,7 +174,7 @@ AnimatorState:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: KickAnimation_001
+  m_Name: KickAnimation
   m_Speed: -8
   m_CycleOffset: 0
   m_Transitions:
