@@ -103,7 +103,7 @@ public class GameInfo : INetworkSerializable
         rotationKickPowerballEnabled = PlayerPrefs.GetInt("RotationKickPowerballEnabled") == 1;
         speedPowerballEnabled = PlayerPrefs.GetInt("SpeedPowerballEnabled") == 1;
         powerBallSpawnTime = PlayerPrefs.GetInt("PowerBallSpawnTime");
-        powerBallLiveTime = PlayerPrefs.GetInt("PowerBallLiveTime");
+        powerBallLiveTime = PlayerPrefs.GetInt("PowerBallLiveTime", 5);
         multiplePowerBalls = PlayerPrefs.GetInt("MultiplePowerBalls") == 1;
         wallsEnabled = PlayerPrefs.GetInt("WallsEnabled", 1) == 1;
         skyType = (SkyType)PlayerPrefs.GetInt("skyType", 0);
