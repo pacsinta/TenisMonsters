@@ -241,8 +241,8 @@ MonoBehaviour:
   initialSpeed: 5
   kickForce: 45
   maxForce: 15
-  minForce: 5
-  maxKickTime: 1.5
+  minForce: 7
+  maxKickTime: 1
   sideKickForce: 10
   ballDistance: 2
   jumpForce: 5
