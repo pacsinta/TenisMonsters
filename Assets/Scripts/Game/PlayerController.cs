@@ -3,6 +3,7 @@ using Cinemachine;
 using System;
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.Assertions;
 using UnityEngine.UI;
 
 public partial class PlayerController : NetworkBehaviour
@@ -10,7 +11,6 @@ public partial class PlayerController : NetworkBehaviour
     private float horizontalInput;
     private float verticalInput;
     public float initialSpeed = 5.0f;
-    public float kickForce;
     public float maxForce;
     public float minForce;
     public float maxKickTime;
@@ -67,6 +67,7 @@ public partial class PlayerController : NetworkBehaviour
 
     private void Start()
     {
+        Debug.Assert(minForce < maxForce, "minForce must be less than maxForce");
         animator = GetComponentInChildren<Animator>();
         currSpeed = initialSpeed;
     }
@@ -179,10 +180,10 @@ public partial class PlayerController : NetworkBehaviour
             force = minForce + (maxForce - minForce) * (mouseTime / maxKickTime),
             XdirectionForce = kickDirection.x * sideKickForce
         };
-        print("Kick with force: " + kick.force + " and direction: " + kick.XdirectionForce);
     }
     private void StartKick()
     {
+        animator.enabled = true;
         animator.SetTrigger("Kick");
     }
     private void EndKick()
@@ -213,8 +214,7 @@ public partial class PlayerController : NetworkBehaviour
         GameObject collidedWithObject = collision.gameObject;
         if (collidedWithObject.CompareTag("Ball") && collision.GetContact(0).thisCollider.gameObject.name == "monster")
         {
-            print("Kicked the ball");
-            EndKick();
+            print("Kick with force: " + kick.force + " and direction: " + kick.XdirectionForce);
             kickSource.Play();
 
             collidedWithObject.GetComponent<Rigidbody>().velocity = Vector3.zero;
@@ -225,6 +225,7 @@ public partial class PlayerController : NetworkBehaviour
                                                                   kick.force,
                                                                   ForceMode.Impulse);
 
+            EndKick();
             BallController ballController = collidedWithObject.GetComponent<BallController>();
             ballController.Kicked(IsHost ? PlayerSide.Host : PlayerSide.Client);
 
