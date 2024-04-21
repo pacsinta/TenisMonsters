@@ -1,6 +1,7 @@
 using Assets.Scripts;
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.Assertions;
 
 public class BallController : NetworkBehaviour
 {
@@ -83,7 +84,6 @@ public class BallController : NetworkBehaviour
 
         if (collision.gameObject.CompareTag("Ground"))
         {
-            print(transform.position);
             CourtSquare location = CourtData.GetCurrentCourtSquare(transform.position);
             CollisionWithGround(location);
         }
@@ -94,20 +94,28 @@ public class BallController : NetworkBehaviour
     }
     private void CollisionWithGround(CourtSquare location)
     {
-        if (location == CourtSquare.Out) 
+        if (location == CourtSquare.Out)
+        {
+            print("End: out");
             gameController.EndTurn(kickData.bounced ? kickData.Player : ~kickData.Player);
-        
+        }
         else if(kickData.Player == PlayerSide.Host && CourtData.IsHostSide(location) ||
            kickData.Player == PlayerSide.Client && CourtData.IsClientSide(location))
+        {
+            print("End: same side");
             gameController.EndTurn(~kickData.Player); // If the player can't kick the ball to the other side, the other player wins
-
-        else if (kickData.bounced) 
+        }
+        else if (kickData.bounced)
+        {
+            print("End: bounced");
             gameController.EndTurn(kickData.Player); // If the ball has already bounced, the player who kicked the ball wins
+        }
 
         kickData.bounced = true;
     }
     private void CollisionWithLava()
     {
+        print("End: lava");
         gameController.EndTurn(kickData.bounced ? kickData.Player : ~kickData.Player);
     }
 
@@ -138,7 +146,7 @@ public class BallController : NetworkBehaviour
     {
         rb.mass = initialMass * 0.7f;
     }
-    public void ResetWeight()
+    private void ResetWeight()
     {
         rb.mass = initialMass;
     }
