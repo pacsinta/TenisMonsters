@@ -179,7 +179,7 @@ public class BallController : NetworkBehaviour
 
         if(IsHost)
         {
-            colliderEnabled.Value = true;
+            colliderEnabled.Value = false;
         }
     }
 }
