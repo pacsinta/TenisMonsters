@@ -1,23 +1,36 @@
+using Assets.Scripts;
 using Cinemachine;
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using Unity.Netcode;
-using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.Assertions;
+using UnityEngine.UI;
 
 public partial class PlayerController : NetworkBehaviour
 {
     private float horizontalInput;
     private float verticalInput;
-    public float speed = 5.0f;
-    public float kickForce = 100.0f;
+    public float initialSpeed = 5.0f;
+    public float maxForce;
+    public float minForce;
+    public float maxKickTime;
+    public float sideKickForce;
     public float ballDistance = 2.0f;
     public float jumpForce = 5.0f;
+    public float powerDuration = 30.0f;
 
-    private Rigidbody rb;
+    public GameObject Environment { set; private get; }
+    public AudioSource kickSource;
+    public Material racketMaterial;
+    public GameObject racket;
+
+    private Scrollbar gravityTime;
+    private Scrollbar speedTime;
+    private Scrollbar rotationTime;
+
     private Animator animator;
-    private PowerEffects powerEffect;
+    private PlayerPowers currentEffects = new();
+    private Kick kick = new();
 
     public override void OnNetworkSpawn()
     {
@@ -27,113 +40,194 @@ public partial class PlayerController : NetworkBehaviour
         {
             vcam.Priority = 1;
             audioListener.enabled = true;
+            kickSource.volume = PlayerPrefs.GetFloat("volume", 1);
         }
         else
         {
             vcam.Priority = 0;
             audioListener.enabled = false;
         }
+
+        if((IsHost && IsOwner) || (!IsHost && !IsOwner))
+        {
+            gameObject.name = "HostPlayer";
+        }
+        else if ((IsHost && !IsOwner) || (!IsHost && IsOwner))
+        {
+            gameObject.name = "ClientPlayer";
+        }
+
     }
 
     private void Start()
     {
-        rb = GetComponent<Rigidbody>();
+        Debug.Assert(minForce < maxForce, "minForce must be less than maxForce");
         animator = GetComponentInChildren<Animator>();
-        currSpeed = speed;
+        currSpeed = initialSpeed;
     }
 
     private Vector2 kickMouseStartPos = Vector2.zero;
     private float kickMouseStartTime = 0;
     private float currSpeed;
+    private bool wasInKickState = false;
     void Update()
     {
         if (!IsOwner) return;
 
-        horizontalInput = Input.GetAxis("Horizontal");
-        verticalInput = Input.GetAxis("Vertical");
-
-        transform.Translate(Vector3.forward * Time.deltaTime * currSpeed * verticalInput);
-        transform.Translate(Vector3.right * Time.deltaTime * currSpeed * horizontalInput);
-
-        if(Input.GetKeyDown(KeyCode.Escape))
-        {
-            ExitGame();
-        }
-
+        MovePlayer();
 
         if (Input.GetKeyDown(KeyCode.Mouse0))
         {
             kickMouseStartPos = Input.mousePosition;
             kickMouseStartTime = Time.realtimeSinceStartup;
         }
-        else if (Input.GetKeyUp(KeyCode.Mouse0))
+        else if(Input.GetKeyUp(KeyCode.Mouse0))
+        {
+            StartKick();
+        }
+        else if(Input.GetKey(KeyCode.Mouse0))
         {
             Vector2 kickMouseEndPos = Input.mousePosition;
             float kickMouseEndTime = Time.realtimeSinceStartup;
 
-            kickBall(kickMouseEndPos-kickMouseStartPos, (kickMouseEndTime-kickMouseStartTime) * kickForce);
+            DetermineKickForce(kickMouseStartPos, kickMouseEndPos, kickMouseEndTime, kickMouseStartTime);
+            setRacketColorByKickForce();
         }
-
-        if (Input.GetKeyDown(KeyCode.Q))
+        if(wasInKickState && animator.GetCurrentAnimatorStateInfo(0).IsName("IdleAnimation"))
         {
-            Debug.Log("Q Pressed");
-            kickBall(Vector2.left, kickForce);
+            EndKick();
         }
 
+        if (GetPowerBallTimerInstances())
+        {
+            UpdatePowerBallTimers();
+        }
 
-        currSpeed = powerEffect == PowerEffects.SpeedIncrease ? speed * 1.5f : speed;
+        currSpeed = currentEffects.SpeedIncreasePowerDuration > 0 ? initialSpeed * 1.5f : initialSpeed;
+        currentEffects.DecreaseTime(Time.deltaTime);
 
+        wasInKickState = animator.GetCurrentAnimatorStateInfo(0).IsName("KickAnimation");
     }
 
-    void ExitGame()
+    private bool GetPowerBallTimerInstances()
     {
-        SceneLoader.LoadScene(SceneLoader.Scene.MenuScene);
+        if (gravityTime == null)
+        {
+            gravityTime = GameObject.Find("GravityTime")?.GetComponent<Scrollbar>();
+            if(gravityTime != null) gravityTime.size = 0;
+            else return false;
+        }
+        if (speedTime == null)
+        {
+            speedTime = GameObject.Find("SpeedTime")?.GetComponent<Scrollbar>();
+            if(speedTime != null) speedTime.size = 0;
+            else return false;
+        }
+        if (rotationTime == null)
+        {
+            rotationTime = GameObject.Find("RotationTime")?.GetComponent<Scrollbar>();
+            if(rotationTime != null) rotationTime.size = 0;
+            else return false;
+        }
+        return true;
+    }
+    private void setRacketColorByKickForce()
+    {
+        var color = Color.Lerp(Color.white, Color.red, kick.force / maxForce);
+        Material newRacketMaterial = new Material(racketMaterial);
+        newRacketMaterial.color = color;
+        racket.GetComponent<Renderer>().material = newRacketMaterial;
+    }
+    private void UpdatePowerBallTimers()
+    {
+        speedTime.size = currentEffects.SpeedIncreasePowerDuration / powerDuration;
+        gravityTime.size = currentEffects.GravityPowerDuration / powerDuration;
+        rotationTime.size = currentEffects.BallRotationPowerDuration / powerDuration;
+    }
+    private void MovePlayer()
+    {
+        horizontalInput = Input.GetAxis("Horizontal");
+        verticalInput = Input.GetAxis("Vertical");
+
+        if (horizontalInput != 0 || verticalInput != 0)
+        {
+            animator.SetBool("Running", true);
+            transform.Translate(Vector3.forward * Time.deltaTime * currSpeed * verticalInput);
+            transform.Translate(Vector3.right * Time.deltaTime * currSpeed * horizontalInput);
+        }
+        else
+        {
+            animator.SetBool("Running", false);
+        }
     }
 
-    private bool kicked = false;
-    private void kickBall(Vector2 kickDirection, float kickForce)
+    private void DetermineKickForce(Vector2 kickMouseStartPos, Vector2 kickMouseEndPos, float kickMouseEndTime, float kickMouseStartTime)
     {
-        //rb.isKinematic = true;
+        float mouseTime = kickMouseEndTime - kickMouseStartTime;
+        mouseTime = Mathf.Clamp(mouseTime, 0, maxKickTime);
+
+        Vector2 kickDirection = kickMouseEndPos - kickMouseStartPos;
+        kickDirection.Normalize();
+
+        kick = new Kick
+        {
+            force = minForce + (maxForce - minForce) * (mouseTime / maxKickTime),
+            XdirectionForce = kickDirection.x * sideKickForce
+        };
+    }
+    private void StartKick()
+    {
+        animator.enabled = true;
         animator.SetTrigger("Kick");
-        kicked = true;
-
+    }
+    private void EndKick()
+    {
+        animator.enabled = false;
+        racket.GetComponent<Renderer>().material = racketMaterial;
+        kick = new(); // reset kick
+        wasInKickState = false;
+    }
+    private void PowerBallCollision(GameObject PowerBall)
+    {
+        var power = PowerBall.GetComponent<PowerBallController>().type;
+        currentEffects.SetPower(power, powerDuration);
+        if (IsHost)
+        {
+            Destroy(PowerBall);
+        }
+        else
+        {
+            DestroyServerRpc(PowerBall);
+        }
     }
 
     private void OnCollisionEnter(Collision collision)
     {
+         if (!IsOwner) return;
+
         GameObject collidedWithObject = collision.gameObject;
-        if(kicked && collidedWithObject.CompareTag("Ball") && collision.GetContact(0).thisCollider.gameObject.name == "monster")
+        if (collidedWithObject.CompareTag("Ball") && collision.GetContact(0).thisCollider.gameObject.name == "monster")
         {
-            Debug.Log("Contact with: " + collidedWithObject.name);
-            animator.enabled = false;
-            collidedWithObject.GetComponent<Rigidbody>().velocity = Vector3.zero;
-            collidedWithObject.GetComponent<Rigidbody>().angularVelocity = Vector3.zero;
-            collidedWithObject.GetComponent<Rigidbody>().AddForce(0, 4, 15, ForceMode.Impulse);
-            //collidedWithObject.GetComponent<BallController>().Kicked(IsHost);
+            print("Kick with force: " + kick.force + " and direction: " + kick.XdirectionForce);
+            kickSource.Play();
 
-            kicked = false;
+            Kicking(collidedWithObject.GetComponent<NetworkObject>(), kick);
+            EndKick();
         }
-        else if(collidedWithObject.CompareTag("PowerBall"))
+        else if (collidedWithObject.CompareTag("PowerBall"))
         {
-            var powerBall = collidedWithObject.GetComponent<PowerBallController>();
-            powerEffect = powerBall.PowerEffect;
-
-            Destroy(collidedWithObject);
+            PowerBallCollision(collidedWithObject);
         }
-    }
-
-    private void OnCollisionStay(Collision collision)
-    {
-        GameObject collidedWithObject = collision.gameObject;
-        if (collidedWithObject.CompareTag("Ball"))
+        else if (collidedWithObject.CompareTag("Lava"))
         {
-            var distance = Vector3.Distance(transform.position, GetRocketColliderFrontPosition());
-            print("Distance: " + distance);
+            Environment.GetComponent<GameController>().EndTurn(IsHost ? PlayerSide.Client : PlayerSide.Host);
         }
     }
 
     private void OnCollisionExit(Collision collision)
     {
+        if (!IsOwner) return;
+
         GameObject collidedWithObject = collision.gameObject;
         if (collidedWithObject.CompareTag("Ball"))
         {
@@ -141,18 +235,68 @@ public partial class PlayerController : NetworkBehaviour
         }
     }
 
-    private Vector3 GetRocketColliderFrontPosition()
+    public void ResetObject(Vector3 position)
     {
-        var monster = transform.Find("monster");
-        var rocketCollider = monster.GetComponent<BoxCollider>();
-
-        var rocketCenter = transform.position + monster.position + rocketCollider.center;
-        var rocketFront = rocketCenter + monster.forward * rocketCollider.size.z / 2;
-        return rocketFront;
+        if(!IsHost) return;
+        if(IsOwner)
+        {
+            transform.position = position;
+        }
+        else
+        {
+            ResetObejctClientRpc(position);
+        }
     }
 
-    public void ResetObject(Vector3 position)
+    [ClientRpc]
+    void ResetObejctClientRpc(Vector3 position)
     {
         transform.position = position;
     }
-} 
+
+    [ServerRpc(RequireOwnership = false)]
+    void DestroyServerRpc(NetworkObjectReference objectReference)
+    {
+        if (!objectReference.TryGet(out NetworkObject networkObject))
+        {
+            Debug.Log("error");
+        }
+        Destroy(networkObject);
+    }
+
+    private void Kicking(NetworkObject ball, Kick kickData, bool clientKick = false)
+    {
+        if(IsHost)
+        {
+            int direction = clientKick ? -1 : 1;
+
+            ball.GetComponent<Rigidbody>().velocity = Vector3.zero;
+            ball.transform.position += new Vector3(0, 0, 0.5f * direction ); // move ball a bit forward to avoid animation clipping
+            ball.GetComponent<Rigidbody>().AddForce(kickData.XdirectionForce / 100,
+                                                    Math.Clamp(kickData.force / 2, 4, 7),
+                                                    direction * kickData.force,
+                                                    ForceMode.Impulse);
+
+            
+            BallController ballController = ball.GetComponent<BallController>();
+            ballController.Kicked(IsHost ? PlayerSide.Host : PlayerSide.Client);
+
+            if (currentEffects.GravityPowerDuration > 0)
+            {
+                ballController.DecreaseWeight();
+            }
+        }
+        else
+        {
+            KickingServerRpc(ball, kickData);
+        }
+    }
+    [ServerRpc(RequireOwnership = false)]
+    private void KickingServerRpc(NetworkObjectReference ballReference, Kick kickData)
+    {
+        if(ballReference.TryGet(out NetworkObject ball))
+        {
+            Kicking(ball, kickData, true);
+        }
+    }
+}

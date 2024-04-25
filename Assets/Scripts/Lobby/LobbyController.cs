@@ -1,19 +1,17 @@
 using Assets.Scripts;
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using TMPro;
-using Unity.Collections;
 using Unity.Netcode;
-using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.UI;
 
 public class LobbyController : NetworkBehaviour
 {
     public TextMeshProUGUI clientsText;
-    public Button startGameBtn;
-    public TextMeshProUGUI IsHostText;
+    public Button startGameButton;
+    public TMP_Dropdown skyDropdown;
     public TextMeshProUGUI titleText;
+    public Button exitButton;
 
     // Game mode panel
     public TMP_Dropdown gameModeDropdown;
@@ -22,6 +20,10 @@ public class LobbyController : NetworkBehaviour
     public Toggle rotationKickPowerBallToggle;
     public Slider powerBallSpawnTimeSlider;
     public TextMeshProUGUI powerBallSpawnTimeText;
+    public Toggle multiplePowerBallToggle;
+    public TextMeshProUGUI powerBallLiveTimeText;
+    public Slider powerballLiveTimeSlider;
+    public Toggle wallsEnabledToggle;
 
     private int maxPlayerCount = 2;
     private PlayerInfo playerInfo;
@@ -31,70 +33,90 @@ public class LobbyController : NetworkBehaviour
         playerInfo = new PlayerInfo();
 
         clientsText.text = "No clients connected";
-        if(IsHost)
+        if (IsHost)
         {
             _gameInfo.Value = new GameInfo();
-
-            IsHostText.text = "Host";
             _hostPlayerInfo.Value = playerInfo;
 
-            gameModeDropdown.onValueChanged.AddListener( (mode) => { _gameInfo.Value.SetGameMode(mode); });
-            gameModeDropdown.value = _gameInfo.Value.GetGameMode();
-
-            gravityPowerBallToggle.onValueChanged.AddListener( (enabled) => { _gameInfo.Value.SetGravityPowerballEnabled(enabled); });
-            gravityPowerBallToggle.isOn = _gameInfo.Value.GetGravityPowerballEnabled();
-
-            speedPowerBallToggle.onValueChanged.AddListener( (enabled) => { _gameInfo.Value.SetSpeedPowerballEnabled(enabled); });
-            speedPowerBallToggle.isOn = _gameInfo.Value.GetSpeedPowerballEnabled();
-
-            rotationKickPowerBallToggle.onValueChanged.AddListener( (enabled) => { _gameInfo.Value.SetRotationKickPowerballEnabled(enabled); });
-            rotationKickPowerBallToggle.isOn = _gameInfo.Value.GetRotationKickPowerballEnabled();
-
-            powerBallSpawnTimeSlider.onValueChanged.AddListener( (time) => {
-                _gameInfo.Value.SetPowerBallSpawnTime((int)time);
-                powerBallSpawnTimeText.text = "Powerball spawn time: " + (int)time * 10 + "s";
-            });
-            powerBallSpawnTimeSlider.value = _gameInfo.Value.GetPowerBallSpawnTime();
-            
+            setGameSettingListeners();
         }
         else
         {
-            IsHostText.text = "Client";
-            gameModeDropdown.interactable = false;
-            gravityPowerBallToggle.interactable = false;
-            speedPowerBallToggle.interactable = false;
-            rotationKickPowerBallToggle.interactable = false;
-            powerBallSpawnTimeSlider.interactable = false;
+            disableGameSettings();
             playerInfo.Side = PlayerSide.Client;
         }
 
         NetworkManager.Singleton.OnClientConnectedCallback += HandleClientConnect;
         NetworkManager.Singleton.ConnectionApprovalCallback += ApprovalCheck;
 
-        startGameBtn.onClick.AddListener(StartGame);
+        startGameButton.onClick.AddListener(StartGame);
+        exitButton.onClick.AddListener(() => SceneLoader.LoadScene(SceneLoader.Scene.MenuScene, NetworkManager.Singleton, true));
+    }
+
+    private void disableGameSettings()
+    {
+        gameModeDropdown.interactable = false;
+        gravityPowerBallToggle.interactable = false;
+        speedPowerBallToggle.interactable = false;
+        rotationKickPowerBallToggle.interactable = false;
+        powerBallSpawnTimeSlider.interactable = false;
+        multiplePowerBallToggle.interactable = false;
+        powerballLiveTimeSlider.interactable = false;
+        wallsEnabledToggle.interactable = false;
+        skyDropdown.interactable = false;
+    }
+
+    private void setGameSettingListeners()
+    {
+        gameModeDropdown.onValueChanged.AddListener(GameSettingListeners<int>(_gameInfo.Value.SetGameMode));
+        gravityPowerBallToggle.onValueChanged.AddListener(GameSettingListeners<bool>(_gameInfo.Value.SetGravityPowerballEnabled));
+        speedPowerBallToggle.onValueChanged.AddListener(GameSettingListeners<bool>(_gameInfo.Value.SetSpeedPowerballEnabled));
+        rotationKickPowerBallToggle.onValueChanged.AddListener(GameSettingListeners<bool>(_gameInfo.Value.SetRotationKickPowerballEnabled));
+        powerBallSpawnTimeSlider.onValueChanged.AddListener(GameSettingListeners<float>(_gameInfo.Value.SetPowerBallSpawnTime));
+        powerballLiveTimeSlider.onValueChanged.AddListener(GameSettingListeners<float>(_gameInfo.Value.SetPowerBallLiveTime));
+        multiplePowerBallToggle.onValueChanged.AddListener((isOn) =>
+        {
+            GameSettingListeners<bool>(_gameInfo.Value.SetMultiplePowerBalls)(isOn);
+            powerballLiveTimeSlider.interactable = isOn;
+        });
+        wallsEnabledToggle.onValueChanged.AddListener(GameSettingListeners<bool>(_gameInfo.Value.SetWallsEnabled));
+        skyDropdown.onValueChanged.AddListener(GameSettingListeners<int>(_gameInfo.Value.SetSkyType));
+    }
+
+    private UnityAction<T> GameSettingListeners<T>(Action<T> func)
+    {
+        return (enabled) => { func(enabled); _gameInfo.IsDirty(); };
     }
 
     private void Update()
     {
-        if(string.IsNullOrEmpty(_clientPlayerInfo.Value?.PlayerName.ToString()))
+        if (string.IsNullOrEmpty(_clientPlayerInfo.Value?.PlayerName.ToString()))
         {
             clientsText.text = "No clients connected";
         }
         else
         {
-            clientsText.text = "Host: " + _hostPlayerInfo.Value.PlayerName + "\nClient: " + _clientPlayerInfo.Value.PlayerName;
+            var ownerName = IsHost ? _hostPlayerInfo.Value.PlayerName : _clientPlayerInfo.Value.PlayerName;
+            var opponentName = IsHost ? _clientPlayerInfo.Value.PlayerName : _hostPlayerInfo.Value.PlayerName;
+            clientsText.text = "You: " + ownerName + "\nOpponent: " + opponentName;
         }
 
-        gameModeDropdown.value = _gameInfo.Value.GetGameMode();
-        gravityPowerBallToggle.isOn = _gameInfo.Value.GetGravityPowerballEnabled();
-        speedPowerBallToggle.isOn = _gameInfo.Value.GetSpeedPowerballEnabled();
-        rotationKickPowerBallToggle.isOn = _gameInfo.Value.GetRotationKickPowerballEnabled();
-        powerBallSpawnTimeSlider.value = _gameInfo.Value.GetPowerBallSpawnTime();
+        multiplePowerBallToggle.isOn = _gameInfo.Value.multiplePowerBalls;
+        gameModeDropdown.value = _gameInfo.Value.gameMode;
+        gravityPowerBallToggle.isOn = _gameInfo.Value.gravityPowerballEnabled;
+        speedPowerBallToggle.isOn = _gameInfo.Value.speedPowerballEnabled;
+        rotationKickPowerBallToggle.isOn = _gameInfo.Value.rotationKickPowerballEnabled;
+        powerBallSpawnTimeSlider.value = _gameInfo.Value.powerBallSpawnTime / 10;
+        powerBallSpawnTimeText.text = "Powerball spawn time: " + _gameInfo.Value.powerBallSpawnTime + "s";
+        powerballLiveTimeSlider.value = _gameInfo.Value.powerBallLiveTime / 5;
+        powerBallLiveTimeText.text = "Powerball live time: " + (_gameInfo.Value.multiplePowerBalls ? _gameInfo.Value.powerBallLiveTime : "0") + "s";
+        wallsEnabledToggle.isOn = _gameInfo.Value.wallsEnabled;
+        skyDropdown.value = (int)_gameInfo.Value.skyType;
     }
 
     void ApprovalCheck(NetworkManager.ConnectionApprovalRequest request, NetworkManager.ConnectionApprovalResponse response)
     {
-        if(NetworkManager.Singleton.ConnectedClients.Count > maxPlayerCount - 1)
+        if (NetworkManager.Singleton.ConnectedClients.Count > maxPlayerCount - 1)
         {
             response.Approved = false;
         }
@@ -106,7 +128,7 @@ public class LobbyController : NetworkBehaviour
 
     void HandleClientConnect(ulong clientId)
     {
-        if(NetworkManager.Singleton.LocalClientId == clientId)
+        if (NetworkManager.Singleton.LocalClientId == clientId)
         {
             RegisterPlayerOnServerRpc(playerInfo);
         }
@@ -115,7 +137,7 @@ public class LobbyController : NetworkBehaviour
 
     void StartGame()
     {
-        if(IsServer)
+        if (IsServer)
         {
             SceneLoader.LoadScene(SceneLoader.Scene.GameScene, NetworkManager.Singleton);
         }
@@ -126,7 +148,7 @@ public class LobbyController : NetworkBehaviour
     }
 
     [ServerRpc(RequireOwnership = false)]
-    void RegisterPlayerOnServerRpc(PlayerInfo clientPlayerInfo,ServerRpcParams serverRpcParams = default)
+    void RegisterPlayerOnServerRpc(PlayerInfo clientPlayerInfo, ServerRpcParams serverRpcParams = default)
     {
         var clientId = serverRpcParams.Receive.SenderClientId;
         if (NetworkManager.ConnectedClients.ContainsKey(clientId))

@@ -1,95 +1,136 @@
 using Assets.Scripts;
-using System.Collections;
-using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.Assertions;
 
 public class BallController : NetworkBehaviour
 {
-    public float initialUpForce = 15.0f;
-    public float initialMass = 1.0f;
+    public float initialUpForce;
+    public float initialMass;
+    public uint groundCollisinMaxTime;
     public GameController gameController;
 
-
     private Rigidbody rb;
+    private SphereCollider colldider;
     private Vector3 startLocation;
-    private bool IsHostTurn = true;
+    private KickData kickData;
+    private readonly NetworkVariable<PlayerSide> serveSide = new (PlayerSide.Host);
 
+    readonly NetworkVariable<bool> colliderEnabled = new (false);
     void Start()
     {
+        colldider = GetComponent<SphereCollider>();
+        colldider.enabled = false;
+
         rb = GetComponent<Rigidbody>();
-        rb.constraints = RigidbodyConstraints.None;
+
         startLocation = gameController.PlayerStartPosition;
         startLocation.z = -startLocation.z + 1.2f;
         startLocation.x += 3.0f;
+
         ResetObject();
     }
 
-    private bool firstKick = true;
+    private bool gameStarted = false;
+    private float time = 0;
     void Update()
     {
-        if(firstKick && Input.GetKeyDown(KeyCode.Space))
+        if (!gameStarted && Input.GetKeyDown(KeyCode.Space) && Utils.IsMyPlayer(serveSide.Value, IsHost))
         {
-            rb.isKinematic = false;
+            StartGame();
+        }
+
+        colldider.enabled = colliderEnabled.Value;
+
+        if (!IsHost) return;
+
+        time += Time.deltaTime;
+        UpdateBallRotationForces(time);
+    }
+    private void StartGame()
+    {
+        if(IsHost)
+        {
+            colliderEnabled.Value = true;
             rb.useGravity = true;
             rb.constraints = RigidbodyConstraints.None;
             rb.AddForce(Vector3.up * initialUpForce, ForceMode.Impulse);
-            firstKick = false;
+            gameStarted = true;
+            kickData.Player = serveSide.Value;
+            serveSide.Value = Utils.Swap(serveSide.Value);
+            gameController.StartGame();
+        }
+        else
+        {
+            StartGameServerRpc();
         }
     }
-
-    private bool bounced = false; // true if the ball has already bounced on the current turn
-
-    /*
-     * This function resets the bounce flag to false
-     * Should be called when the other player kicks the ball
-     */
-    public void ResetBounced()
+    [ServerRpc(RequireOwnership = false)]
+    private void StartGameServerRpc()
     {
-        bounced = false;
+        StartGame();
     }
-    public void Kicked(bool hostKick)
+    public void Kicked(PlayerSide player, bool rotationKick = false)
     {
-        IsHostTurn = !hostKick;
-        ResetBounced();
-        resetWeight();
+        kickData.firstKickSuccess = true;
+        kickData.Player = player;
+        ResetWeight();
+        this.rotationKick = rotationKick;
     }
     private void OnCollisionEnter(Collision collision)
     {
         if (!IsServer) return;
+
         if (collision.gameObject.CompareTag("Ground"))
         {
-            if(bounced)
-            {
-                gameController.EndTurn(false);
-            }
-            else
-            {
-                bounced = true;
-            }
+            print(transform.position);
+            CourtSquare location = CourtData.GetCurrentCourtSquare(transform.position);
+            CollisionWithGround(location);
+        }
+        else if (collision.gameObject.CompareTag("Lava"))
+        {
+            CollisionWithLava();
         }
     }
-
-    public void decreaseWeight()
+    private void CollisionWithGround(CourtSquare location)
     {
-        rb.mass = rb.mass * 0.7f;
+        if (location == CourtSquare.Out)
+        {
+            print("End: out");
+            gameController.EndTurn(kickData.bounced ? kickData.Player : Utils.Swap(kickData.Player));
+        }
+        else if(kickData.Player == PlayerSide.Host && CourtData.IsHostSide(location) ||
+                kickData.Player == PlayerSide.Client && CourtData.IsClientSide(location))
+        {
+            print("End: same side");
+            gameController.EndTurn(Utils.Swap(kickData.Player)); // If the player can't kick the ball to the other side, the other player wins
+        }
+        else if (kickData.bounced)
+        {
+            print("End: bounced");
+            gameController.EndTurn(kickData.Player); // If the ball has already bounced, the player who kicked the ball wins
+        }
+
+        kickData.bounced = true;
     }
-    public void resetWeight()
+    private void CollisionWithLava()
     {
-        rb.mass = initialMass;
+        print("End: lava");
+        gameController.EndTurn(kickData.bounced ? kickData.Player : Utils.Swap(kickData.Player));
     }
 
-    private int collisionFrameCount = 0;
+    private float collisionTimeCount = 0;
     private void OnCollisionStay(Collision collision)
     {
         if (!IsServer) return;
         if (collision.gameObject.CompareTag("Ground"))
         {
-            collisionFrameCount++;
+            collisionTimeCount += Time.deltaTime;
         }
-        if(collisionFrameCount > 10)
+        if (collisionTimeCount > groundCollisinMaxTime)
         {
-            gameController.EndTurn(false);
+            CourtSquare location = CourtData.GetCurrentCourtSquare(transform.position);
+            CollisionWithGround(location);
         }
     }
     private void OnCollisionExit(Collision collision)
@@ -97,44 +138,48 @@ public class BallController : NetworkBehaviour
         if (!IsServer) return;
         if (collision.gameObject.CompareTag("Ground"))
         {
-            collisionFrameCount = 0;
+            collisionTimeCount = 0;
         }
     }
 
-    /// <summary>
-    /// Gets the current side of the ball based on its position.
-    /// </summary>
-    /// <returns>The current side of the ball.</returns>
-    private PlayerSide CurrentSide
+    public void DecreaseWeight()
     {
-        get { return transform.position.z > 0 ? PlayerSide.Host : PlayerSide.Client; }
+        rb.mass = initialMass * 0.7f;
+    }
+    private void ResetWeight()
+    {
+        rb.mass = initialMass;
+    }
+    private bool rotationKick = false;
+    public void UpdateBallRotationForces(float time)
+    {
+        int updateTime = 2;
+        if (rotationKick && time % updateTime == 0)
+        {
+            float force = time % (updateTime * 2) == 0 ? 1 : -1;
+            Vector3 direction = new Vector3(force, 0, 0);
+
+            rb.AddForce(direction, ForceMode.Impulse);
+        }
     }
 
     public void ResetObject()
     {
         transform.position = startLocation;
+        if(PlayerSide.Client == serveSide.Value)
+        {
+            transform.position = new Vector3(-transform.position.x, transform.position.y, -transform.position.z);
+        }
         rb.useGravity = false;
         rb.constraints = RigidbodyConstraints.FreezeAll;
-        //rb.isKinematic = true;
-        ResetBounced();
-        firstKick = true;
-        collisionFrameCount = 0;
-    }
+        gameStarted = false;
+        collisionTimeCount = 0;
+        kickData.firstKickSuccess = false;
+        kickData.Player = serveSide.Value;
 
-    private bool GetWinner()
-    {
-        if(CurrentSide == PlayerSide.Host)
+        if(IsHost)
         {
-            
+            colliderEnabled.Value = true;
         }
-        else
-        {
-            if(bounced)
-            {
-                
-            }
-        }
-
-        return false;
     }
 }

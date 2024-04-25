@@ -1,24 +1,25 @@
-using System.Collections;
-using System.Collections.Generic;
+using Unity.Netcode;
 using UnityEngine;
 
-public enum PowerEffects
+public class PowerBallController : NetworkBehaviour
 {
-    Gravitychange,
-    SpeedIncrease,
-    BallRotate
-}
-public class PowerBallController : MonoBehaviour
-{
-    public void init(bool gravityBallEnabled, bool speedBallEnabled, bool rotateKickBallEnabled)
-    {
-        var listOfEffects = new List<PowerEffects>();
-        if (gravityBallEnabled) listOfEffects.Add(PowerEffects.Gravitychange);
-        if (speedBallEnabled) listOfEffects.Add(PowerEffects.SpeedIncrease);
-        if (rotateKickBallEnabled) listOfEffects.Add(PowerEffects.BallRotate);
+    public PowerEffects type;
+    public float powerBallLiveTime = -1;
 
-        powerEffects = listOfEffects[Random.Range(0, listOfEffects.Count)];
+    private void Update()
+    {
+        if (!IsHost) return;
+
+        if (powerBallLiveTime != -1)
+        {
+            if (powerBallLiveTime == 0)
+            {
+                Destroy(gameObject);
+            }
+            else
+            {
+                powerBallLiveTime -= Time.deltaTime;
+            }
+        }
     }
-    private PowerEffects powerEffects;
-    public PowerEffects PowerEffect { get { return powerEffects; } }
 }

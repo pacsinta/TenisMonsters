@@ -1,18 +1,10 @@
-using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Xml.Linq;
 using TMPro;
-using Unity.Services.Authentication;
-using Unity.VisualScripting;
 using UnityEngine;
-using UnityEngine.Networking;
-using UnityEngine.UI;
-using UnityEngine.UIElements;
 
 namespace Assets.Scripts
 {
-    
+
     public class LeaderBoard : MonoBehaviour
     {
         public GameObject scrollViewContent;
@@ -38,7 +30,7 @@ namespace Assets.Scripts
                 removeAllChildren(scrollViewContent);
 
                 var leaderboard = fetchLeaderboardCoroutine.Result;
-                if(leaderboard.Count != 0)
+                if (leaderboard.Count != 0)
                 {
                     for (var i = 0; i < leaderboard.Count; i++)
                     {
@@ -67,8 +59,8 @@ namespace Assets.Scripts
             }
 
 
-            if(time >= 10 && 
-                (fetchLeaderboardCoroutine.state == LoadingState.NotLoaded || 
+            if (time >= 10 &&
+                (fetchLeaderboardCoroutine.state == LoadingState.NotLoaded ||
                 fetchLeaderboardCoroutine.state == LoadingState.Error))
             {
                 if (fetchLeaderboardCoroutine.coroutine() != null)

@@ -1,15 +1,7 @@
 ﻿using Newtonsoft.Json;
-using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
-using System.Net.Http;
 using System.Text;
-using System.Threading.Tasks;
-using Unity.VisualScripting;
-using UnityEngine;
 using UnityEngine.Networking;
-using UnityEngine.SocialPlatforms.Impl;
 
 namespace Assets.Scripts
 {
@@ -28,14 +20,14 @@ namespace Assets.Scripts
             return new ConnectionCoroutine<LeaderBoardElement>(www);
         }
 
-        public static ConnectionCoroutine<LeaderBoardElement> SetMyPoints(string playerName, int points)
+        public static ConnectionCoroutine<object> SetMyPoints(string playerName, int points)
         {
             var www = new UnityWebRequest(url + "score/" + playerName, "POST");
-            byte[] bodyRaw = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(new LeaderBoardElement(playerName, points)));
+            byte[] bodyRaw = Encoding.UTF8.GetBytes(points.ToString());
             www.uploadHandler = new UploadHandlerRaw(bodyRaw);
             www.downloadHandler = new DownloadHandlerBuffer();
             www.SetRequestHeader("Content-Type", "application/json");
-            return new ConnectionCoroutine<LeaderBoardElement>(www);
+            return new ConnectionCoroutine<object>(www);
         }
     }
 }
