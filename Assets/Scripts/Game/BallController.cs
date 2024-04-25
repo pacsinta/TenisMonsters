@@ -5,34 +5,18 @@ using UnityEngine.Assertions;
 
 public class BallController : NetworkBehaviour
 {
-    struct KickData
-    {
-        private PlayerSide player;
-        public PlayerSide Player
-        {
-            get => player;
-            set
-            {
-                player = value;
-                bounced = false;
-            }
-        }
-        public bool bounced; // true if the ball has already bounced on the current turn
-        public bool firstKickSuccess; // true after the first kick was successful
-    }
-
-    public float initialUpForce = 15.0f;
-    public float initialMass = 1.0f;
-    public uint groundCollisinMaxTime = 1;
+    public float initialUpForce;
+    public float initialMass;
+    public uint groundCollisinMaxTime;
     public GameController gameController;
-
 
     private Rigidbody rb;
     private SphereCollider colldider;
     private Vector3 startLocation;
     private KickData kickData;
+    private readonly NetworkVariable<PlayerSide> serveSide = new (PlayerSide.Host);
 
-
+    readonly NetworkVariable<bool> colliderEnabled = new (false);
     void Start()
     {
         colldider = GetComponent<SphereCollider>();
@@ -51,25 +35,40 @@ public class BallController : NetworkBehaviour
     private float time = 0;
     void Update()
     {
-        if(!IsHost) return;
-
-        if (!gameStarted && Input.GetKeyDown(KeyCode.Space))
+        if (!gameStarted && Input.GetKeyDown(KeyCode.Space) && Utils.IsMyPlayer(serveSide.Value, IsHost))
         {
             StartGame();
         }
+
+        colldider.enabled = colliderEnabled.Value;
+
+        if (!IsHost) return;
 
         time += Time.deltaTime;
         UpdateBallRotationForces(time);
     }
     private void StartGame()
     {
-        colldider.enabled = true;
-        rb.useGravity = true;
-        rb.constraints = RigidbodyConstraints.None;
-        rb.AddForce(Vector3.up * initialUpForce, ForceMode.Impulse);
-        gameStarted = true;
-        kickData.Player = PlayerSide.Host;
-        gameController.StartGame();
+        if(IsHost)
+        {
+            colliderEnabled.Value = true;
+            rb.useGravity = true;
+            rb.constraints = RigidbodyConstraints.None;
+            rb.AddForce(Vector3.up * initialUpForce, ForceMode.Impulse);
+            gameStarted = true;
+            kickData.Player = serveSide.Value;
+            serveSide.Value = Utils.Swap(serveSide.Value);
+            gameController.StartGame();
+        }
+        else
+        {
+            StartGameServerRpc();
+        }
+    }
+    [ServerRpc(RequireOwnership = false)]
+    private void StartGameServerRpc()
+    {
+        StartGame();
     }
     public void Kicked(PlayerSide player, bool rotationKick = false)
     {
@@ -84,6 +83,7 @@ public class BallController : NetworkBehaviour
 
         if (collision.gameObject.CompareTag("Ground"))
         {
+            print(transform.position);
             CourtSquare location = CourtData.GetCurrentCourtSquare(transform.position);
             CollisionWithGround(location);
         }
@@ -97,13 +97,13 @@ public class BallController : NetworkBehaviour
         if (location == CourtSquare.Out)
         {
             print("End: out");
-            gameController.EndTurn(kickData.bounced ? kickData.Player : ~kickData.Player);
+            gameController.EndTurn(kickData.bounced ? kickData.Player : Utils.Swap(kickData.Player));
         }
         else if(kickData.Player == PlayerSide.Host && CourtData.IsHostSide(location) ||
-           kickData.Player == PlayerSide.Client && CourtData.IsClientSide(location))
+                kickData.Player == PlayerSide.Client && CourtData.IsClientSide(location))
         {
             print("End: same side");
-            gameController.EndTurn(~kickData.Player); // If the player can't kick the ball to the other side, the other player wins
+            gameController.EndTurn(Utils.Swap(kickData.Player)); // If the player can't kick the ball to the other side, the other player wins
         }
         else if (kickData.bounced)
         {
@@ -116,7 +116,7 @@ public class BallController : NetworkBehaviour
     private void CollisionWithLava()
     {
         print("End: lava");
-        gameController.EndTurn(kickData.bounced ? kickData.Player : ~kickData.Player);
+        gameController.EndTurn(kickData.bounced ? kickData.Player : Utils.Swap(kickData.Player));
     }
 
     private float collisionTimeCount = 0;
@@ -166,11 +166,20 @@ public class BallController : NetworkBehaviour
     public void ResetObject()
     {
         transform.position = startLocation;
+        if(PlayerSide.Client == serveSide.Value)
+        {
+            transform.position = new Vector3(-transform.position.x, transform.position.y, -transform.position.z);
+        }
         rb.useGravity = false;
         rb.constraints = RigidbodyConstraints.FreezeAll;
-        colldider.enabled = false;
         gameStarted = false;
         collisionTimeCount = 0;
         kickData.firstKickSuccess = false;
+        kickData.Player = serveSide.Value;
+
+        if(IsHost)
+        {
+            colliderEnabled.Value = true;
+        }
     }
 }

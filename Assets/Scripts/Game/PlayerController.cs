@@ -30,12 +30,6 @@ public partial class PlayerController : NetworkBehaviour
 
     private Animator animator;
     private PlayerPowers currentEffects = new();
-
-    struct Kick
-    {
-        public float XdirectionForce;
-        public float force;
-    }
     private Kick kick = new();
 
     public override void OnNetworkSpawn()
@@ -217,22 +211,8 @@ public partial class PlayerController : NetworkBehaviour
             print("Kick with force: " + kick.force + " and direction: " + kick.XdirectionForce);
             kickSource.Play();
 
-            collidedWithObject.GetComponent<Rigidbody>().velocity = Vector3.zero;
-            collidedWithObject.GetComponent<Rigidbody>().angularVelocity = Vector3.zero;
-            collidedWithObject.transform.position += new Vector3(0, 0, 0.5f * transform.forward.z); // move ball a bit forward to avoid animation clipping
-            collidedWithObject.GetComponent<Rigidbody>().AddForce(kick.XdirectionForce / 100,
-                                                                  kick.force / 2,
-                                                                  kick.force,
-                                                                  ForceMode.Impulse);
-
+            Kicking(collidedWithObject.GetComponent<NetworkObject>(), kick);
             EndKick();
-            BallController ballController = collidedWithObject.GetComponent<BallController>();
-            ballController.Kicked(IsHost ? PlayerSide.Host : PlayerSide.Client);
-
-            if (currentEffects.GravityPowerDuration > 0)
-            {
-                ballController.DecreaseWeight();
-            }
         }
         else if (collidedWithObject.CompareTag("PowerBall"))
         {
@@ -282,5 +262,41 @@ public partial class PlayerController : NetworkBehaviour
             Debug.Log("error");
         }
         Destroy(networkObject);
+    }
+
+    private void Kicking(NetworkObject ball, Kick kickData, bool clientKick = false)
+    {
+        if(IsHost)
+        {
+            int direction = clientKick ? -1 : 1;
+
+            ball.GetComponent<Rigidbody>().velocity = Vector3.zero;
+            ball.transform.position += new Vector3(0, 0, 0.5f * direction ); // move ball a bit forward to avoid animation clipping
+            ball.GetComponent<Rigidbody>().AddForce(kickData.XdirectionForce / 100,
+                                                    Math.Clamp(kickData.force / 2, 4, 7),
+                                                    direction * kickData.force,
+                                                    ForceMode.Impulse);
+
+            
+            BallController ballController = ball.GetComponent<BallController>();
+            ballController.Kicked(IsHost ? PlayerSide.Host : PlayerSide.Client);
+
+            if (currentEffects.GravityPowerDuration > 0)
+            {
+                ballController.DecreaseWeight();
+            }
+        }
+        else
+        {
+            KickingServerRpc(ball, kickData);
+        }
+    }
+    [ServerRpc(RequireOwnership = false)]
+    private void KickingServerRpc(NetworkObjectReference ballReference, Kick kickData)
+    {
+        if(ballReference.TryGet(out NetworkObject ball))
+        {
+            Kicking(ball, kickData, true);
+        }
     }
 }
