@@ -12,7 +12,6 @@ namespace Assets.Scripts
      * 
      * The players are differenciated by their Network id
      */
-    [Flags]
     public enum PlayerSide
     {
         Host = 0,
