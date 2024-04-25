@@ -22,5 +22,18 @@ namespace Assets.Scripts
         {
             return (IsHost && playerSide == PlayerSide.Host) || (!IsHost && playerSide == PlayerSide.Client);
         }
+
+        // RunOnHost is a helper function that allows you to run a function on the target by passing the function and the RPC function
+        public static void RunOnTarget<T>(Action<T> action, Action<T> rpcAction, T parameter, bool targetCondition)
+        {
+            if(targetCondition)
+            {
+                action(parameter);
+            }
+            else
+            {
+                rpcAction(parameter);
+            }
+        }
     }
 }

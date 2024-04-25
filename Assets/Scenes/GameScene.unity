@@ -3939,7 +3939,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7a5db2c5f9ac1574fbfebf7e19fafeb4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  initialUpForce: 15
+  initialUpForce: 10
   initialMass: 1
   groundCollisinMaxTime: 1
   gameController: {fileID: 1537785845}
@@ -3972,7 +3972,7 @@ MonoBehaviour:
   UseQuaternionCompression: 0
   UseHalfFloatPrecision: 0
   InLocalSpace: 0
-  Interpolate: 1
+  Interpolate: 0
   SlerpPosition: 0
 --- !u!114 &7305089366303975757
 MonoBehaviour:

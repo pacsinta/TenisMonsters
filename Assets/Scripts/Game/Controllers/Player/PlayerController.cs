@@ -2,6 +2,7 @@ using Assets.Scripts;
 using Cinemachine;
 using System;
 using Unity.Netcode;
+using Unity.Netcode.Components;
 using UnityEngine;
 using UnityEngine.Assertions;
 using UnityEngine.UI;
@@ -11,10 +12,6 @@ public partial class PlayerController : NetworkBehaviour
     private float horizontalInput;
     private float verticalInput;
     public float initialSpeed = 5.0f;
-    public float maxForce;
-    public float minForce;
-    public float maxKickTime;
-    public float sideKickForce;
     public float ballDistance = 2.0f;
     public float jumpForce = 5.0f;
     public float powerDuration = 30.0f;
@@ -30,7 +27,7 @@ public partial class PlayerController : NetworkBehaviour
 
     private Animator animator;
     private PlayerPowers currentEffects = new();
-    private Kick kick = new();
+    
 
     public override void OnNetworkSpawn()
     {
@@ -69,7 +66,6 @@ public partial class PlayerController : NetworkBehaviour
     private Vector2 kickMouseStartPos = Vector2.zero;
     private float kickMouseStartTime = 0;
     private float currSpeed;
-    private bool wasInKickState = false;
     void Update()
     {
         if (!IsOwner) return;
@@ -131,13 +127,6 @@ public partial class PlayerController : NetworkBehaviour
         }
         return true;
     }
-    private void setRacketColorByKickForce()
-    {
-        var color = Color.Lerp(Color.white, Color.red, kick.force / maxForce);
-        Material newRacketMaterial = new Material(racketMaterial);
-        newRacketMaterial.color = color;
-        racket.GetComponent<Renderer>().material = newRacketMaterial;
-    }
     private void UpdatePowerBallTimers()
     {
         speedTime.size = currentEffects.SpeedIncreasePowerDuration / powerDuration;
@@ -161,44 +150,14 @@ public partial class PlayerController : NetworkBehaviour
         }
     }
 
-    private void DetermineKickForce(Vector2 kickMouseStartPos, Vector2 kickMouseEndPos, float kickMouseEndTime, float kickMouseStartTime)
-    {
-        float mouseTime = kickMouseEndTime - kickMouseStartTime;
-        mouseTime = Mathf.Clamp(mouseTime, 0, maxKickTime);
-
-        Vector2 kickDirection = kickMouseEndPos - kickMouseStartPos;
-        kickDirection.Normalize();
-
-        kick = new Kick
-        {
-            force = minForce + (maxForce - minForce) * (mouseTime / maxKickTime),
-            XdirectionForce = kickDirection.x * sideKickForce
-        };
-    }
-    private void StartKick()
-    {
-        animator.enabled = true;
-        animator.SetTrigger("Kick");
-    }
-    private void EndKick()
-    {
-        animator.enabled = false;
-        racket.GetComponent<Renderer>().material = racketMaterial;
-        kick = new(); // reset kick
-        wasInKickState = false;
-    }
     private void PowerBallCollision(GameObject PowerBall)
     {
         var power = PowerBall.GetComponent<PowerBallController>().type;
         currentEffects.SetPower(power, powerDuration);
-        if (IsHost)
-        {
-            Destroy(PowerBall);
-        }
-        else
-        {
-            DestroyServerRpc(PowerBall);
-        }
+
+        Utils.RunOnTarget((powerBall) => { Destroy(powerBall); }, 
+                          (powerBall) => { DestroyServerRpc(powerBall); }, 
+                          PowerBall, IsHost);
     }
 
     private void OnCollisionEnter(Collision collision)
@@ -238,65 +197,7 @@ public partial class PlayerController : NetworkBehaviour
     public void ResetObject(Vector3 position)
     {
         if(!IsHost) return;
-        if(IsOwner)
-        {
-            transform.position = position;
-        }
-        else
-        {
-            ResetObejctClientRpc(position);
-        }
-    }
 
-    [ClientRpc]
-    void ResetObejctClientRpc(Vector3 position)
-    {
-        transform.position = position;
-    }
-
-    [ServerRpc(RequireOwnership = false)]
-    void DestroyServerRpc(NetworkObjectReference objectReference)
-    {
-        if (!objectReference.TryGet(out NetworkObject networkObject))
-        {
-            Debug.Log("error");
-        }
-        Destroy(networkObject);
-    }
-
-    private void Kicking(NetworkObject ball, Kick kickData, bool clientKick = false)
-    {
-        if(IsHost)
-        {
-            int direction = clientKick ? -1 : 1;
-
-            ball.GetComponent<Rigidbody>().velocity = Vector3.zero;
-            ball.transform.position += new Vector3(0, 0, 0.5f * direction ); // move ball a bit forward to avoid animation clipping
-            ball.GetComponent<Rigidbody>().AddForce(kickData.XdirectionForce / 100,
-                                                    Math.Clamp(kickData.force / 2, 4, 7),
-                                                    direction * kickData.force,
-                                                    ForceMode.Impulse);
-
-            
-            BallController ballController = ball.GetComponent<BallController>();
-            ballController.Kicked(IsHost ? PlayerSide.Host : PlayerSide.Client);
-
-            if (currentEffects.GravityPowerDuration > 0)
-            {
-                ballController.DecreaseWeight();
-            }
-        }
-        else
-        {
-            KickingServerRpc(ball, kickData);
-        }
-    }
-    [ServerRpc(RequireOwnership = false)]
-    private void KickingServerRpc(NetworkObjectReference ballReference, Kick kickData)
-    {
-        if(ballReference.TryGet(out NetworkObject ball))
-        {
-            Kicking(ball, kickData, true);
-        }
+        Utils.RunOnTarget((pos) => { transform.position = pos;  }, ResetObejctClientRpc, position, IsOwner);
     }
 }
