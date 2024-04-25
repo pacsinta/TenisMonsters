@@ -27,10 +27,10 @@ public class GameController : NetworkBehaviour
     private GameObject hostPlayerObject;
     private GameObject clientPlayerObject;
 
-    NetworkVariable<PlayerInfo> _hostPlayerInfo = new NetworkVariable<PlayerInfo>();
-    NetworkVariable<PlayerInfo> _clientPlayerInfo = new NetworkVariable<PlayerInfo>();
-    NetworkVariable<GameInfo> _gameInfo = new NetworkVariable<GameInfo>();
-    NetworkVariable<float> time = new NetworkVariable<float>();
+    readonly NetworkVariable<PlayerInfo> _hostPlayerInfo = new NetworkVariable<PlayerInfo>();
+    readonly NetworkVariable<PlayerInfo> _clientPlayerInfo = new NetworkVariable<PlayerInfo>();
+    readonly NetworkVariable<GameInfo> _gameInfo = new NetworkVariable<GameInfo>();
+    readonly NetworkVariable<float> time = new NetworkVariable<float>();
     private bool timeCounting = false;
     private float remainingTimeToSpawnPowerBall = 0;
 
@@ -181,7 +181,6 @@ public class GameController : NetworkBehaviour
         ballController.ResetObject();
         var position = PlayerStartPosition;
         clientPlayerObject.GetComponent<PlayerController>().ResetObject(position);
-        print(clientPlayerObject.transform.position);
         position.z *= -1;
         hostPlayerObject.GetComponent<PlayerController>().ResetObject(position);
     }
