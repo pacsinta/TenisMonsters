@@ -19,7 +19,7 @@ namespace Assets.Scripts
             loadingText.transform.SetParent(scrollViewContent.transform);
 
             fetchLeaderboardCoroutine = DatabaseHandler.GetLeaderBoard();
-            StartCoroutine(fetchLeaderboardCoroutine.coroutine());
+            StartCoroutine(fetchLeaderboardCoroutine.Coroutine());
         }
 
         private float time = 0;
@@ -74,12 +74,12 @@ namespace Assets.Scripts
 
         private void Refresh()
         {
-            if (fetchLeaderboardCoroutine.coroutine() != null)
+            if (fetchLeaderboardCoroutine.Coroutine() != null)
             {
-                StopCoroutine(fetchLeaderboardCoroutine.coroutine());
+                StopCoroutine(fetchLeaderboardCoroutine.Coroutine());
             }
             fetchLeaderboardCoroutine = DatabaseHandler.GetLeaderBoard();
-            StartCoroutine(fetchLeaderboardCoroutine.coroutine());
+            StartCoroutine(fetchLeaderboardCoroutine.Coroutine());
             time = 0;
         }
 

@@ -28,8 +28,8 @@ public class EndHandler : MonoBehaviour
         {
             timeOutTime = 0;
             errorText.text = "Loading...";
-            if (uploadScoreCoroutine.coroutine() != null) StopCoroutine(uploadScoreCoroutine.coroutine());
-            StartCoroutine(uploadScoreCoroutine.coroutine());
+            if (uploadScoreCoroutine.Coroutine() != null) StopCoroutine(uploadScoreCoroutine.Coroutine());
+            StartCoroutine(uploadScoreCoroutine.Coroutine());
         });
 
         audioObject = GameObject.Find("Audio");
@@ -82,7 +82,7 @@ public class EndHandler : MonoBehaviour
         }
     }
 
-    public void instantiateGameEnd(PlayerSide? winnerPlayer, string clientName, string hostName, bool IsHost)
+    public void InstantiateGameEnd(PlayerSide? winnerPlayer, string clientName, string hostName, bool IsHost)
     {
         this.winnerPlayer = winnerPlayer;
         this.IsHost = IsHost;
@@ -111,7 +111,7 @@ public class EndHandler : MonoBehaviour
         {
             uploadScoreCoroutine = DatabaseHandler.SetMyPoints(clientName, clientScore);
         }
-        StartCoroutine(uploadScoreCoroutine.coroutine());
+        StartCoroutine(uploadScoreCoroutine.Coroutine());
     }
 
     private enum ButtonVisibility

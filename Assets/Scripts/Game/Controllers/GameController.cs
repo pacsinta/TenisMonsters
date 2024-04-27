@@ -237,7 +237,7 @@ public class GameController : NetworkBehaviour
         }
 
         endCanvas.gameObject.SetActive(true);
-        endCanvas.GetComponent<EndHandler>().instantiateGameEnd(winner,
+        endCanvas.GetComponent<EndHandler>().InstantiateGameEnd(winner,
                                                                 _clientPlayerInfo.Value.PlayerName.ToString(),
                                                                 _hostPlayerInfo.Value.PlayerName.ToString(),
                                                                 IsHost);

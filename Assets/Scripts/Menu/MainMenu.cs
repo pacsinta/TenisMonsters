@@ -41,7 +41,7 @@ public class MainMenu : MonoBehaviour
         leaderBoardCanvas.gameObject.SetActive(false);
 
         myPointCoroutine = DatabaseHandler.GetMyPoints(playerInfo.PlayerName.ToString());
-        StartCoroutine(myPointCoroutine.coroutine());
+        StartCoroutine(myPointCoroutine.Coroutine());
 
         var resolution = Screen.resolutions[Screen.resolutions.Length - 2 >= 0 ? Screen.resolutions.Length - 2 : 0];
         Screen.SetResolution(resolution.width, resolution.height, FullScreenMode.Windowed);
@@ -64,12 +64,12 @@ public class MainMenu : MonoBehaviour
             myPontsText.text = "MyScore: -";
             if (time >= 10)
             {
-                if (myPointCoroutine.coroutine() != null)
+                if (myPointCoroutine.Coroutine() != null)
                 {
-                    StopCoroutine(myPointCoroutine.coroutine());
+                    StopCoroutine(myPointCoroutine.Coroutine());
                 }
                 myPointCoroutine = DatabaseHandler.GetMyPoints(playerInfo.PlayerName.ToString());
-                StartCoroutine(myPointCoroutine.coroutine());
+                StartCoroutine(myPointCoroutine.Coroutine());
                 time = 0;
             }
         }

@@ -26,7 +26,7 @@ public class ConnectionCoroutine<T>
         }
     }
     public LoadingState state = LoadingState.NotLoaded;
-    public IEnumerator coroutine()
+    public IEnumerator Coroutine()
     {
         state = LoadingState.NotLoaded;
         yield return www.SendWebRequest();
