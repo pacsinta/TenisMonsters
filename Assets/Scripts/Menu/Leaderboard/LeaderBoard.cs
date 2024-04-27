@@ -63,14 +63,23 @@ namespace Assets.Scripts
                 (fetchLeaderboardCoroutine.state == LoadingState.NotLoaded ||
                 fetchLeaderboardCoroutine.state == LoadingState.Error))
             {
-                if (fetchLeaderboardCoroutine.coroutine() != null)
-                {
-                    StopCoroutine(fetchLeaderboardCoroutine.coroutine());
-                }
-                fetchLeaderboardCoroutine = DatabaseHandler.GetLeaderBoard();
-                StartCoroutine(fetchLeaderboardCoroutine.coroutine());
-                time = 0;
+                Refresh();
             }
+            else if(time >= 120)
+            {
+                Refresh();
+            }
+        }
+
+        private void Refresh()
+        {
+            if (fetchLeaderboardCoroutine.coroutine() != null)
+            {
+                StopCoroutine(fetchLeaderboardCoroutine.coroutine());
+            }
+            fetchLeaderboardCoroutine = DatabaseHandler.GetLeaderBoard();
+            StartCoroutine(fetchLeaderboardCoroutine.coroutine());
+            time = 0;
         }
 
         private void removeAllChildren(GameObject content)
