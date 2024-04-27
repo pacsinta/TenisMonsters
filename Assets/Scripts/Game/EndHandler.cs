@@ -74,8 +74,21 @@ public class EndHandler : NetworkBehaviour
     {
         this.winnerPlayer = winnerPlayer;
         gameEnded = true;
-        int hostScore = winnerPlayer == PlayerSide.Host ? 2 : -1;
-        int clientScore = winnerPlayer == PlayerSide.Client ? 2 : -1;
+
+        int hostScore = 0;
+        int clientScore = 0;
+        switch (winnerPlayer)
+        {
+            case PlayerSide.Host:
+                hostScore = 2; clientScore = -1;
+                break;
+            case PlayerSide.Client:
+                hostScore = -1; clientScore = 2;
+                break;
+            case null:
+                hostScore = 1; clientScore = 1;
+                break;
+        }
 
         if (IsHost)
         {
