@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace Assets.Scripts
 {
@@ -85,8 +86,10 @@ namespace Assets.Scripts
         private void removeAllChildren(GameObject content)
         {
             var parent = content.transform.parent;
+            var scrollRect = content.GetComponentInParent<ScrollRect>();
             Destroy(content);
             scrollViewContent = Instantiate(scrollViewContentPrefab, parent);
+            scrollRect.content = scrollViewContent.GetComponent<RectTransform>();
         }
     }
 }
