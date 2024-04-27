@@ -14,7 +14,8 @@ public enum LoadingState
 
 public class ConnectionCoroutine<T>
 {
-    private UnityWebRequest www;
+    private readonly UnityWebRequest www;
+    private bool parseResponse = true;
     private T result;
     public T Result
     {
@@ -40,7 +41,7 @@ public class ConnectionCoroutine<T>
             var resultText = www.downloadHandler.text;
             try
             {
-                if(!string.IsNullOrEmpty(resultText))
+                if(parseResponse)
                 {
                     result = JsonConvert.DeserializeObject<T>(resultText);
                     if (result == null)
@@ -59,8 +60,9 @@ public class ConnectionCoroutine<T>
         }
     }
 
-    public ConnectionCoroutine(UnityWebRequest www)
+    public ConnectionCoroutine(UnityWebRequest www, bool parseResponse = true)
     {
         this.www = www;
+        this.parseResponse = parseResponse;
     }
 }

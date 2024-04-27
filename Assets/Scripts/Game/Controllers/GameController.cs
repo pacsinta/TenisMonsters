@@ -27,10 +27,11 @@ public class GameController : NetworkBehaviour
     private GameObject hostPlayerObject;
     private GameObject clientPlayerObject;
 
-    readonly NetworkVariable<PlayerInfo> _hostPlayerInfo = new NetworkVariable<PlayerInfo>();
-    readonly NetworkVariable<PlayerInfo> _clientPlayerInfo = new NetworkVariable<PlayerInfo>();
-    readonly NetworkVariable<GameInfo> _gameInfo = new NetworkVariable<GameInfo>();
-    readonly NetworkVariable<float> time = new NetworkVariable<float>();
+    readonly NetworkVariable<PlayerInfo> _hostPlayerInfo = new();
+    readonly NetworkVariable<PlayerInfo> _clientPlayerInfo = new();
+    readonly NetworkVariable<GameInfo> _gameInfo = new();
+    readonly NetworkVariable<float> time = new();
+    readonly NetworkVariable<bool> gameEnd = new(false);
     private bool timeCounting = false;
     private float remainingTimeToSpawnPowerBall = 0;
 
@@ -83,6 +84,8 @@ public class GameController : NetworkBehaviour
 
     private void Update()
     {
+        
+        checkEndGame();
         updateTexts();
 
         // Pass the environment to the player objects
@@ -96,22 +99,10 @@ public class GameController : NetworkBehaviour
 
         if (!IsServer || _gameInfo.Value == null) return;
 
-        // TODO: Clean up this code
-        if(Input.GetKeyDown(KeyCode.P))
-        {
-            EndGame();
-        }
-
-
         if (timeCounting)
         {
             time.Value += Time.deltaTime;
             remainingTimeToSpawnPowerBall += Time.deltaTime;
-        }
-
-        if (TimeEnded() || ScoreReached())
-        {
-            EndGame();
         }
 
         if (remainingTimeToSpawnPowerBall >= _gameInfo.Value.powerBallSpawnTime)
@@ -119,6 +110,36 @@ public class GameController : NetworkBehaviour
             SpawnPowerBall(PlayerSide.Host, _gameInfo.Value.GetAllPowerballEnabled());
             SpawnPowerBall(PlayerSide.Client, _gameInfo.Value.GetAllPowerballEnabled());
             remainingTimeToSpawnPowerBall = 0;
+        }
+    }
+
+    void checkEndGame()
+    {
+        if (Input.GetKeyDown(KeyCode.Delete))
+        {
+            if(IsHost)
+            {
+                EndGameClientRPC(PlayerSide.Client);
+            }
+            else
+            {
+                EndGameServerRPC(PlayerSide.Host);
+                EndGame(PlayerSide.Host);
+            }
+        }
+
+        if (gameEnd.Value)
+        {
+            EndGame();
+            return;
+        }
+
+        if(IsHost)
+        {
+            if (TimeEnded() || ScoreReached())
+            {
+                EndGame();
+            }
         }
     }
 
@@ -186,30 +207,55 @@ public class GameController : NetworkBehaviour
     }
 
 
-    private void EndGame()
+    /*
+     * If you don't pass a winner, it means the winner is calulated by the scores.
+     * Otherwise the winner is the one passed as argument.
+     */
+    private void EndGame(PlayerSide? winner = null)
     {
+        if (endCanvas.gameObject.activeSelf) return; // already instantiated gameEnd
         Debug.Log("Game Over");
         if (IsHost)
         {
             Destroy(ballObject);
+            gameEnd.Value = true;
         }
 
         timeCounting = false;
 
-        PlayerSide? winner = null; // null means draw
-        if (_clientPlayerInfo.Value.Score > _hostPlayerInfo.Value.Score)
+        if(winner == null)
         {
-            winner = PlayerSide.Client;
-        }
-        else if (_hostPlayerInfo.Value.Score > _clientPlayerInfo.Value.Score)
-        {
-            winner = PlayerSide.Host;
+            // If the scores are equal, it's a draw, and the winner remains null
+            if (_clientPlayerInfo.Value.Score > _hostPlayerInfo.Value.Score)
+            {
+                winner = PlayerSide.Client;
+            }
+            else if (_hostPlayerInfo.Value.Score > _clientPlayerInfo.Value.Score)
+            {
+                winner = PlayerSide.Host;
+            }
         }
 
         endCanvas.gameObject.SetActive(true);
         endCanvas.GetComponent<EndHandler>().instantiateGameEnd(winner,
                                                                 _clientPlayerInfo.Value.PlayerName.ToString(),
-                                                                _hostPlayerInfo.Value.PlayerName.ToString());
+                                                                _hostPlayerInfo.Value.PlayerName.ToString(),
+                                                                IsHost);
+
+        hostPlayerObject.SetActive(false);
+        clientPlayerObject.SetActive(false);
+        gameObject.SetActive(false);
+    }
+    [ServerRpc(RequireOwnership = false)]
+    public void EndGameServerRPC(PlayerSide winner)
+    {
+        gameEnd.Value = true;
+        EndGame(winner);
+    }
+    [ClientRpc]
+    public void EndGameClientRPC(PlayerSide winner)
+    {
+        EndGame(winner);
     }
 
     public void StartGame()

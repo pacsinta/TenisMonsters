@@ -4,7 +4,7 @@ using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class EndHandler : NetworkBehaviour
+public class EndHandler : MonoBehaviour
 {
     public TextMeshProUGUI endText;
     public TextMeshProUGUI errorText;
@@ -15,6 +15,7 @@ public class EndHandler : NetworkBehaviour
     private bool gameEnded = false;
     private PlayerSide? winnerPlayer;
     private GameObject audioObject;
+    private bool IsHost = false;
 
     void Start()
     {
@@ -38,7 +39,7 @@ public class EndHandler : NetworkBehaviour
     float audioTime = 0;
     void Update()
     {
-        if (!gameEnded || !IsOwner) return;
+        if (!gameEnded) return;
         timeOutTime += Time.deltaTime;
         audioTime += Time.deltaTime;
 
@@ -69,6 +70,7 @@ public class EndHandler : NetworkBehaviour
         }
         else if (uploadScoreCoroutine.state == LoadingState.NotLoaded && timeOutTime < 10)
         {
+            errorText.text = "Loading...";
             SetButtonVisibility(tryAgainBtn, ButtonVisibility.Hide);
             SetButtonVisibility(exitBtn, ButtonVisibility.Disabled);
         }
@@ -80,9 +82,10 @@ public class EndHandler : NetworkBehaviour
         }
     }
 
-    public void instantiateGameEnd(PlayerSide? winnerPlayer, string clientName, string hostName)
+    public void instantiateGameEnd(PlayerSide? winnerPlayer, string clientName, string hostName, bool IsHost)
     {
         this.winnerPlayer = winnerPlayer;
+        this.IsHost = IsHost;
         gameEnded = true;
 
         int hostScore = 0;

@@ -27,7 +27,7 @@ namespace Assets.Scripts
             www.uploadHandler = new UploadHandlerRaw(bodyRaw);
             www.downloadHandler = new DownloadHandlerBuffer();
             www.SetRequestHeader("Content-Type", "application/json");
-            return new ConnectionCoroutine<object>(www);
+            return new ConnectionCoroutine<object>(www, false);
         }
     }
 }
