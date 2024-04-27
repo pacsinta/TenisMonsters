@@ -10,11 +10,11 @@ public class EndHandler : NetworkBehaviour
     public TextMeshProUGUI errorText;
     public Button exitBtn;
     public Button tryAgainBtn;
-    public GameObject audioObject;
 
     private ConnectionCoroutine<object> uploadScoreCoroutine;
     private bool gameEnded = false;
     private PlayerSide? winnerPlayer;
+    private GameObject audioObject;
 
     void Start()
     {
@@ -25,19 +25,24 @@ public class EndHandler : NetworkBehaviour
         exitBtn.onClick.AddListener(() => SceneLoader.LoadScene(SceneLoader.Scene.MenuScene, NetworkManager.Singleton, true));
         tryAgainBtn.onClick.AddListener(() =>
         {
-            time = 0;
+            timeOutTime = 0;
             errorText.text = "Loading...";
             if (uploadScoreCoroutine.coroutine() != null) StopCoroutine(uploadScoreCoroutine.coroutine());
             StartCoroutine(uploadScoreCoroutine.coroutine());
         });
+
+        audioObject = GameObject.Find("Audio");
     }
 
-    float time = 0;
+    float timeOutTime = 0;
+    float audioTime = 0;
     void Update()
     {
-        if (!gameEnded) return;
-        time += Time.deltaTime;
+        if (!gameEnded || !IsOwner) return;
+        timeOutTime += Time.deltaTime;
+        audioTime += Time.deltaTime;
 
+        bool playWinnerAudio = true;
         if (winnerPlayer == null)
         {
             endText.text = "Draw!";
@@ -48,7 +53,12 @@ public class EndHandler : NetworkBehaviour
                                             (winnerPlayer == PlayerSide.Client && !IsHost);
 
             endText.text = isCurrentPlayerWinner ? "You won!" : "You lost!";
+            playWinnerAudio = isCurrentPlayerWinner;
+        }
 
+        if (audioTime % 60 == 0)
+        {
+            audioObject?.GetComponent<Audio>().PlayEndingSong(playWinnerAudio);
         }
 
         if (uploadScoreCoroutine.state == LoadingState.DataAvailable)
@@ -57,7 +67,7 @@ public class EndHandler : NetworkBehaviour
             SetButtonVisibility(tryAgainBtn, ButtonVisibility.Hide);
             SetButtonVisibility(exitBtn, ButtonVisibility.ShowAndEnable);
         }
-        else if (uploadScoreCoroutine.state == LoadingState.NotLoaded && time < 10)
+        else if (uploadScoreCoroutine.state == LoadingState.NotLoaded && timeOutTime < 10)
         {
             SetButtonVisibility(tryAgainBtn, ButtonVisibility.Hide);
             SetButtonVisibility(exitBtn, ButtonVisibility.Disabled);
