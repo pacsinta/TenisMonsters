@@ -239,16 +239,16 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   initialSpeed: 5
-  maxForce: 13
-  minForce: 7
-  maxKickTime: 1
-  sideKickForce: 10
   ballDistance: 2
   jumpForce: 5
   powerDuration: 10
   kickSource: {fileID: 263890432673576255}
   racketMaterial: {fileID: 2100000, guid: 88ed422e07c595441bab4009484421e7, type: 2}
   racket: {fileID: 1179358951285603451}
+  maxForce: 15
+  minForce: 10
+  maxKickTime: 1
+  sideKickForce: 10
 --- !u!114 &1370356921167364366
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1004,7 +1004,7 @@ PrefabInstance:
       addedObject: {fileID: 5061320667664829235}
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: beffbed0098bd624b8ac1162665239ac, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 108410711665210246}
+      addedObject: {fileID: 1836728193569910527}
   m_SourcePrefab: {fileID: 100100000, guid: beffbed0098bd624b8ac1162665239ac, type: 3}
 --- !u!1 &1179358951285603451 stripped
 GameObject:
@@ -1063,7 +1063,7 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 3.14, y: 2.97, z: 0.5}
   m_Center: {x: 2.6, y: 1.2, z: -0.33}
---- !u!114 &108410711665210246
+--- !u!114 &1836728193569910527
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -1072,7 +1072,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 8876625250542648916}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e8d0727d5ae3244e3b569694d3912374, type: 3}
+  m_Script: {fileID: 11500000, guid: ad8deae8091111f4eb30a56c1f4e0d3e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   TransitionStateInfoList: []

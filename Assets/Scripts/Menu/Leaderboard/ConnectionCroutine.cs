@@ -57,7 +57,6 @@ public class ConnectionCoroutine<T>
                 state = LoadingState.Error;
             }
         }
-
     }
 
     public ConnectionCoroutine(UnityWebRequest www)

@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace Assets.Scripts
 {
@@ -63,21 +64,32 @@ namespace Assets.Scripts
                 (fetchLeaderboardCoroutine.state == LoadingState.NotLoaded ||
                 fetchLeaderboardCoroutine.state == LoadingState.Error))
             {
-                if (fetchLeaderboardCoroutine.coroutine() != null)
-                {
-                    StopCoroutine(fetchLeaderboardCoroutine.coroutine());
-                }
-                fetchLeaderboardCoroutine = DatabaseHandler.GetLeaderBoard();
-                StartCoroutine(fetchLeaderboardCoroutine.coroutine());
-                time = 0;
+                Refresh();
             }
+            else if(time >= 120)
+            {
+                Refresh();
+            }
+        }
+
+        private void Refresh()
+        {
+            if (fetchLeaderboardCoroutine.coroutine() != null)
+            {
+                StopCoroutine(fetchLeaderboardCoroutine.coroutine());
+            }
+            fetchLeaderboardCoroutine = DatabaseHandler.GetLeaderBoard();
+            StartCoroutine(fetchLeaderboardCoroutine.coroutine());
+            time = 0;
         }
 
         private void removeAllChildren(GameObject content)
         {
             var parent = content.transform.parent;
+            var scrollRect = content.GetComponentInParent<ScrollRect>();
             Destroy(content);
             scrollViewContent = Instantiate(scrollViewContentPrefab, parent);
+            scrollRect.content = scrollViewContent.GetComponent<RectTransform>();
         }
     }
 }

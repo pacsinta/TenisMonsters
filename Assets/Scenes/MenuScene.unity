@@ -2195,7 +2195,7 @@ RectTransform:
   m_AnchorMin: {x: 1, y: 0}
   m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: 0, y: 0.041412354}
-  m_SizeDelta: {x: 20, y: -17}
+  m_SizeDelta: {x: 11, y: -17}
   m_Pivot: {x: 1, y: 1}
 --- !u!114 &553775662
 MonoBehaviour:
@@ -2218,10 +2218,10 @@ MonoBehaviour:
     m_SelectOnRight: {fileID: 0}
   m_Transition: 1
   m_Colors:
-    m_NormalColor: {r: 0.50539076, g: 0.67496514, b: 1, a: 1}
+    m_NormalColor: {r: 0.40392157, g: 0.6, b: 0.5294118, a: 1}
     m_HighlightedColor: {r: 0.30053893, g: 0.39244086, b: 0.99999994, a: 1}
     m_PressedColor: {r: 0.3019608, g: 0.39215687, b: 1, a: 1}
-    m_SelectedColor: {r: 0.5058824, g: 0.6745098, b: 1, a: 1}
+    m_SelectedColor: {r: 0.40392157, g: 0.6, b: 0.5294118, a: 1}
     m_DisabledColor: {r: 0.5058824, g: 1, b: 0.9719813, a: 0.5019608}
     m_ColorMultiplier: 1
     m_FadeDuration: 0.1
@@ -2240,7 +2240,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 455005929}
   m_HandleRect: {fileID: 455005928}
   m_Direction: 2
-  m_Value: 1
+  m_Value: 0
   m_Size: 1
   m_NumberOfSteps: 0
   m_OnValueChanged:
@@ -4354,7 +4354,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: -20, y: 0}
+  m_SizeDelta: {x: -11, y: 0}
   m_Pivot: {x: 0, y: 1}
 --- !u!114 &1296284820
 MonoBehaviour:
