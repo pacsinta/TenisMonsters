@@ -56,6 +56,7 @@ public class GameController : NetworkBehaviour
         }
         
         walls.SetActive(_gameInfo.Value.wallsEnabled);
+        Time.timeScale = _gameInfo.Value.timeSpeed;
     }
 
     private void instantiatePlayerObject(NetworkClient client)
@@ -85,7 +86,7 @@ public class GameController : NetworkBehaviour
     private void Update()
     {
         
-        checkEndGame();
+        CheckEndGame();
         updateTexts();
 
         // Pass the environment to the player objects
@@ -113,7 +114,7 @@ public class GameController : NetworkBehaviour
         }
     }
 
-    void checkEndGame()
+    void CheckEndGame()
     {
         if (Input.GetKeyDown(KeyCode.Delete))
         {
