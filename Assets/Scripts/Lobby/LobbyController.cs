@@ -9,9 +9,13 @@ public class LobbyController : NetworkBehaviour
 {
     public TextMeshProUGUI clientsText;
     public Button startGameButton;
-    public TMP_Dropdown skyDropdown;
     public TextMeshProUGUI titleText;
     public Button exitButton;
+
+    //Environment panel
+    public TMP_Dropdown skyDropdown;
+    public TextMeshProUGUI timeText;
+    public Slider timeSlider;
 
     // Game mode panel
     public TMP_Dropdown gameModeDropdown;
@@ -25,7 +29,7 @@ public class LobbyController : NetworkBehaviour
     public Slider powerballLiveTimeSlider;
     public Toggle wallsEnabledToggle;
 
-    private int maxPlayerCount = 2;
+    private readonly int maxPlayerCount = 2;
     private PlayerInfo playerInfo;
 
     public override void OnNetworkSpawn()
@@ -38,22 +42,23 @@ public class LobbyController : NetworkBehaviour
             _gameInfo.Value = new GameInfo();
             _hostPlayerInfo.Value = playerInfo;
 
-            setGameSettingListeners();
+            SetGameSettingListeners();
         }
         else
         {
-            disableGameSettings();
+            DisableGameSettings();
             playerInfo.Side = PlayerSide.Client;
         }
 
         NetworkManager.Singleton.OnClientConnectedCallback += HandleClientConnect;
+        NetworkManager.Singleton.OnClientDisconnectCallback += HandleClientDisconnect;
         NetworkManager.Singleton.ConnectionApprovalCallback += ApprovalCheck;
 
         startGameButton.onClick.AddListener(StartGame);
         exitButton.onClick.AddListener(() => SceneLoader.LoadScene(SceneLoader.Scene.MenuScene, NetworkManager.Singleton, true));
     }
 
-    private void disableGameSettings()
+    private void DisableGameSettings()
     {
         gameModeDropdown.interactable = false;
         gravityPowerBallToggle.interactable = false;
@@ -64,9 +69,10 @@ public class LobbyController : NetworkBehaviour
         powerballLiveTimeSlider.interactable = false;
         wallsEnabledToggle.interactable = false;
         skyDropdown.interactable = false;
+        timeSlider.interactable = false;
     }
 
-    private void setGameSettingListeners()
+    private void SetGameSettingListeners()
     {
         gameModeDropdown.onValueChanged.AddListener(GameSettingListeners<int>(_gameInfo.Value.SetGameMode));
         gravityPowerBallToggle.onValueChanged.AddListener(GameSettingListeners<bool>(_gameInfo.Value.SetGravityPowerballEnabled));
@@ -81,6 +87,7 @@ public class LobbyController : NetworkBehaviour
         });
         wallsEnabledToggle.onValueChanged.AddListener(GameSettingListeners<bool>(_gameInfo.Value.SetWallsEnabled));
         skyDropdown.onValueChanged.AddListener(GameSettingListeners<int>(_gameInfo.Value.SetSkyType));
+        timeSlider.onValueChanged.AddListener(GameSettingListeners<float>(_gameInfo.Value.SetTimeSpeed));
     }
 
     private UnityAction<T> GameSettingListeners<T>(Action<T> func)
@@ -112,6 +119,8 @@ public class LobbyController : NetworkBehaviour
         powerBallLiveTimeText.text = "Powerball live time: " + (_gameInfo.Value.multiplePowerBalls ? _gameInfo.Value.powerBallLiveTime : "0") + "s";
         wallsEnabledToggle.isOn = _gameInfo.Value.wallsEnabled;
         skyDropdown.value = (int)_gameInfo.Value.skyType;
+        timeSlider.value = _gameInfo.Value.timeSpeed;
+        timeText.text = "Time speed: " + _gameInfo.Value.timeSpeed.ToString("F1");
     }
 
     void ApprovalCheck(NetworkManager.ConnectionApprovalRequest request, NetworkManager.ConnectionApprovalResponse response)
@@ -133,6 +142,15 @@ public class LobbyController : NetworkBehaviour
             RegisterPlayerOnServerRpc(playerInfo);
         }
         titleText.text = "Ready for game";
+    }
+
+    void HandleClientDisconnect(ulong _)
+    {
+        if (!IsHost) return;
+
+        titleText.text = "Wait for oponents";
+        clientsText.text = "No clients connected";
+        _clientPlayerInfo.Value = null;
     }
 
     void StartGame()
@@ -164,7 +182,7 @@ public class LobbyController : NetworkBehaviour
         SceneLoader.LoadScene(SceneLoader.Scene.GameScene, NetworkManager.Singleton);
     }
 
-    NetworkVariable<PlayerInfo> _hostPlayerInfo = new NetworkVariable<PlayerInfo>();
-    NetworkVariable<PlayerInfo> _clientPlayerInfo = new NetworkVariable<PlayerInfo>();
-    NetworkVariable<GameInfo> _gameInfo = new NetworkVariable<GameInfo>();
+    readonly NetworkVariable<PlayerInfo> _hostPlayerInfo = new();
+    readonly NetworkVariable<PlayerInfo> _clientPlayerInfo = new();
+    readonly NetworkVariable<GameInfo> _gameInfo = new();
 }

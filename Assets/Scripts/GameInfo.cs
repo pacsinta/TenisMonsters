@@ -27,6 +27,7 @@ public class GameInfo : INetworkSerializable
     public bool multiplePowerBalls = true;
     public bool wallsEnabled = true;
     public SkyType skyType = SkyType.Sunny;
+    public float timeSpeed = 1;
     public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
     {
         serializer.SerializeValue(ref gameMode);
@@ -38,6 +39,7 @@ public class GameInfo : INetworkSerializable
         serializer.SerializeValue(ref multiplePowerBalls);
         serializer.SerializeValue(ref wallsEnabled);
         serializer.SerializeValue(ref skyType);
+        serializer.SerializeValue(ref timeSpeed);
     }
     public EnabledPowerBalls GetAllPowerballEnabled()
     {
@@ -96,6 +98,12 @@ public class GameInfo : INetworkSerializable
         skyType = (SkyType)type;
         PlayerPrefs.SetInt("skyType", type);
     }
+
+    public void SetTimeSpeed(float speed)
+    {
+        timeSpeed = speed;
+        PlayerPrefs.SetFloat("TimeSpeed", speed);
+    }
     public GameInfo()
     {
         gameMode = PlayerPrefs.GetInt("GameMode");
@@ -107,6 +115,7 @@ public class GameInfo : INetworkSerializable
         multiplePowerBalls = PlayerPrefs.GetInt("MultiplePowerBalls") == 1;
         wallsEnabled = PlayerPrefs.GetInt("WallsEnabled", 1) == 1;
         skyType = (SkyType)PlayerPrefs.GetInt("skyType", 0);
+        timeSpeed = PlayerPrefs.GetFloat("TimeSpeed", 1);
 
         powerBallSpawnTime = powerBallSpawnTime == 0 ? 10 : powerBallSpawnTime;
     }

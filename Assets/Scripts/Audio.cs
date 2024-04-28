@@ -32,6 +32,12 @@ public class Audio : MonoBehaviour
 
     private void Update()
     {
+        if (winSource.isPlaying || loseSource.isPlaying)
+        {
+            idleSource.Stop();
+            gameSource.Stop();
+        }
+
         // check if currentScene is 1
         if (GetCurrentScene() == Scene.GameScene)
         {

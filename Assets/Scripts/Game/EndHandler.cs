@@ -4,17 +4,18 @@ using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class EndHandler : NetworkBehaviour
+public class EndHandler : MonoBehaviour
 {
     public TextMeshProUGUI endText;
     public TextMeshProUGUI errorText;
     public Button exitBtn;
     public Button tryAgainBtn;
-    public GameObject audioObject;
 
     private ConnectionCoroutine<object> uploadScoreCoroutine;
     private bool gameEnded = false;
     private PlayerSide? winnerPlayer;
+    private GameObject audioObject;
+    private bool IsHost = false;
 
     void Start()
     {
@@ -25,19 +26,24 @@ public class EndHandler : NetworkBehaviour
         exitBtn.onClick.AddListener(() => SceneLoader.LoadScene(SceneLoader.Scene.MenuScene, NetworkManager.Singleton, true));
         tryAgainBtn.onClick.AddListener(() =>
         {
-            time = 0;
+            timeOutTime = 0;
             errorText.text = "Loading...";
-            if (uploadScoreCoroutine.coroutine() != null) StopCoroutine(uploadScoreCoroutine.coroutine());
-            StartCoroutine(uploadScoreCoroutine.coroutine());
+            if (uploadScoreCoroutine.Coroutine() != null) StopCoroutine(uploadScoreCoroutine.Coroutine());
+            StartCoroutine(uploadScoreCoroutine.Coroutine());
         });
+
+        audioObject = GameObject.Find("Audio");
     }
 
-    float time = 0;
+    float timeOutTime = 0;
+    float audioTime = 0;
     void Update()
     {
         if (!gameEnded) return;
-        time += Time.deltaTime;
+        timeOutTime += Time.deltaTime;
+        audioTime += Time.deltaTime;
 
+        bool playWinnerAudio = true;
         if (winnerPlayer == null)
         {
             endText.text = "Draw!";
@@ -48,7 +54,12 @@ public class EndHandler : NetworkBehaviour
                                             (winnerPlayer == PlayerSide.Client && !IsHost);
 
             endText.text = isCurrentPlayerWinner ? "You won!" : "You lost!";
+            playWinnerAudio = isCurrentPlayerWinner;
+        }
 
+        if (audioTime % 60 == 0)
+        {
+            audioObject?.GetComponent<Audio>().PlayEndingSong(playWinnerAudio);
         }
 
         if (uploadScoreCoroutine.state == LoadingState.DataAvailable)
@@ -57,8 +68,9 @@ public class EndHandler : NetworkBehaviour
             SetButtonVisibility(tryAgainBtn, ButtonVisibility.Hide);
             SetButtonVisibility(exitBtn, ButtonVisibility.ShowAndEnable);
         }
-        else if (uploadScoreCoroutine.state == LoadingState.NotLoaded && time < 10)
+        else if (uploadScoreCoroutine.state == LoadingState.NotLoaded && timeOutTime < 10)
         {
+            errorText.text = "Loading...";
             SetButtonVisibility(tryAgainBtn, ButtonVisibility.Hide);
             SetButtonVisibility(exitBtn, ButtonVisibility.Disabled);
         }
@@ -70,12 +82,26 @@ public class EndHandler : NetworkBehaviour
         }
     }
 
-    public void instantiateGameEnd(PlayerSide? winnerPlayer, string clientName, string hostName)
+    public void InstantiateGameEnd(PlayerSide? winnerPlayer, string clientName, string hostName, bool IsHost)
     {
         this.winnerPlayer = winnerPlayer;
+        this.IsHost = IsHost;
         gameEnded = true;
-        int hostScore = winnerPlayer == PlayerSide.Host ? 2 : -1;
-        int clientScore = winnerPlayer == PlayerSide.Client ? 2 : -1;
+
+        int hostScore = 0;
+        int clientScore = 0;
+        switch (winnerPlayer)
+        {
+            case PlayerSide.Host:
+                hostScore = 2; clientScore = -1;
+                break;
+            case PlayerSide.Client:
+                hostScore = -1; clientScore = 2;
+                break;
+            case null:
+                hostScore = 1; clientScore = 1;
+                break;
+        }
 
         if (IsHost)
         {
@@ -85,7 +111,7 @@ public class EndHandler : NetworkBehaviour
         {
             uploadScoreCoroutine = DatabaseHandler.SetMyPoints(clientName, clientScore);
         }
-        StartCoroutine(uploadScoreCoroutine.coroutine());
+        StartCoroutine(uploadScoreCoroutine.Coroutine());
     }
 
     private enum ButtonVisibility

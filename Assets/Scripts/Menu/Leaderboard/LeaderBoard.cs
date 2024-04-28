@@ -12,14 +12,11 @@ namespace Assets.Scripts
         public GameObject scrollViewContentPrefab;
         private ConnectionCoroutine<List<LeaderBoardElement>> fetchLeaderboardCoroutine;
 
-        void Start()
+        private void OnEnable()
         {
-            var loadingText = new GameObject("LoadingText");
-            loadingText.AddComponent<TextMeshProUGUI>().text = "Loading...";
-            loadingText.transform.SetParent(scrollViewContent.transform);
-
-            fetchLeaderboardCoroutine = DatabaseHandler.GetLeaderBoard();
-            StartCoroutine(fetchLeaderboardCoroutine.coroutine());
+            RemoveAllChildren(scrollViewContent);
+            CreateText(scrollViewContent.transform, "Loading...", "LoadingText");
+            Refresh();
         }
 
         private float time = 0;
@@ -28,35 +25,25 @@ namespace Assets.Scripts
             time += Time.deltaTime;
             if (fetchLeaderboardCoroutine.state == LoadingState.DataAvailable)
             {
-                removeAllChildren(scrollViewContent);
+                RemoveAllChildren(scrollViewContent);
 
                 var leaderboard = fetchLeaderboardCoroutine.Result;
                 if (leaderboard.Count != 0)
                 {
                     for (var i = 0; i < leaderboard.Count; i++)
                     {
-                        var text = new GameObject("Player" + i);
-                        text.AddComponent<TextMeshProUGUI>().text = leaderboard[i].ToString();
-                        text.transform.SetParent(scrollViewContent.transform);
+                        CreateText(scrollViewContent.transform, leaderboard[i].ToString(), "Player" + i);
                     }
                 }
                 else
                 {
-                    var text = new GameObject("Empty leaderboard");
-                    text.AddComponent<TextMeshProUGUI>().text = "Leaderboard is empty";
-                    text.GetComponent<TextMeshProUGUI>().fontSize = 20;
-                    text.transform.SetParent(scrollViewContent.transform);
+                    CreateText(scrollViewContent.transform, "Leaderboard is empty", "EmptyLeaderboardText");
                 }
             }
             else if (fetchLeaderboardCoroutine.state == LoadingState.Error)
             {
-                removeAllChildren(scrollViewContent);
-
-                var errorText = new GameObject("ErrorText");
-                errorText.AddComponent<TextMeshProUGUI>().text = "Can't fetch the leaderboard";
-                errorText.GetComponent<TextMeshProUGUI>().color = Color.red;
-                errorText.GetComponent<TextMeshProUGUI>().fontSize = 20;
-                errorText.transform.SetParent(scrollViewContent.transform);
+                RemoveAllChildren(scrollViewContent);
+                CreateText(scrollViewContent.transform, "Can't fetch the leaderboard", "ErrorText", Color.red);
             }
 
 
@@ -72,18 +59,30 @@ namespace Assets.Scripts
             }
         }
 
+        private void CreateText(Transform parent, string text, string name, Color? color = null)
+        {
+            var newText = new GameObject(name);
+            newText.AddComponent<TextMeshProUGUI>().text = text;
+            if(color != null) newText.GetComponent<TextMeshProUGUI>().color = (Color)color;
+            newText.GetComponent<TextMeshProUGUI>().alignment = TextAlignmentOptions.Center;
+            var parentWidth = parent.GetComponent<RectTransform>().rect.width;
+            newText.GetComponent<RectTransform>().sizeDelta = new Vector2(parentWidth, 50);
+            newText.transform.SetParent(parent);
+        }
+
         private void Refresh()
         {
-            if (fetchLeaderboardCoroutine.coroutine() != null)
+            print("Refreshing the leaderboard");
+            if (fetchLeaderboardCoroutine?.Coroutine() != null)
             {
-                StopCoroutine(fetchLeaderboardCoroutine.coroutine());
+                StopCoroutine(fetchLeaderboardCoroutine.Coroutine());
             }
             fetchLeaderboardCoroutine = DatabaseHandler.GetLeaderBoard();
-            StartCoroutine(fetchLeaderboardCoroutine.coroutine());
+            StartCoroutine(fetchLeaderboardCoroutine.Coroutine());
             time = 0;
         }
 
-        private void removeAllChildren(GameObject content)
+        private void RemoveAllChildren(GameObject content)
         {
             var parent = content.transform.parent;
             var scrollRect = content.GetComponentInParent<ScrollRect>();

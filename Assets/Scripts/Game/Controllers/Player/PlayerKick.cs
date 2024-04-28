@@ -41,14 +41,17 @@ public partial class PlayerController
 
             ball.GetComponent<Rigidbody>().velocity = Vector3.zero;
             ball.transform.position += new Vector3(0, 0, 0.5f * direction); // move ball a bit forward to avoid animation clipping
-            ball.GetComponent<Rigidbody>().AddForce(kickData.XdirectionForce / 100,
+            ball.GetComponent<Rigidbody>().AddForce(direction * kickData.XdirectionForce,
                                                     Math.Clamp(kickData.force / 2, 4, 7),
                                                     direction * kickData.force,
                                                     ForceMode.Impulse);
 
+            print("Kicking ball with force: " + kickData.force + ", upForce: " + (Math.Clamp(kickData.force / 2, 4, 7)) + " and X direction force: " + kickData.XdirectionForce + " by " +
+                 (clientKick ? "client" : "server") + " player ");
+
 
             BallController ballController = ball.GetComponent<BallController>();
-            ballController.Kicked(IsHost ? PlayerSide.Host : PlayerSide.Client);
+            ballController.Kicked(clientKick ? PlayerSide.Client : PlayerSide.Host);
 
             if (currentEffects.GravityPowerDuration > 0)
             {
