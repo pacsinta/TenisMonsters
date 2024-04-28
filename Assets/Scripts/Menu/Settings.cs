@@ -13,6 +13,7 @@ public class Settings : MonoBehaviour
 
     void Start()
     {
+        windowModeDropdown.value = PlayerPrefs.GetInt("windowmode", 0);
         windowModeDropdown.onValueChanged.AddListener(SetWindowMode);
 
         var resolutions = Screen.resolutions.Select(res => res.width + "x" + res.height).ToList();
@@ -25,7 +26,7 @@ public class Settings : MonoBehaviour
         resolutionDropdown.onValueChanged.AddListener(SetResolution);
 
         refreshRateDropdown.onValueChanged.AddListener(SetWindowRefreshRate);
-        refreshRateDropdown.value = 3;
+        refreshRateDropdown.value = PlayerPrefs.GetInt("refreshrate", 3);
 
         volumeSlider.onValueChanged.AddListener(SetVolume);
         volumeSlider.value = PlayerPrefs.GetFloat("volume", 1);
@@ -45,6 +46,7 @@ public class Settings : MonoBehaviour
                 Screen.fullScreenMode = FullScreenMode.FullScreenWindow;
                 break;
         }
+        PlayerPrefs.SetInt("windowmode", mode);
     }
 
     void SetVolume(float volume)
@@ -56,6 +58,7 @@ public class Settings : MonoBehaviour
     {
         var selectedResoltuion = Screen.resolutions[Screen.resolutions.Length - resolution - 1];
         Screen.SetResolution(selectedResoltuion.width, selectedResoltuion.height, Screen.fullScreenMode);
+        PlayerPrefs.SetInt("resolution", resolution);
     }
 
     void SetWindowRefreshRate(int rate)
@@ -75,5 +78,19 @@ public class Settings : MonoBehaviour
                 Application.targetFrameRate = -1;
                 break;
         }
+        PlayerPrefs.SetInt("refreshrate", rate);
+    }
+
+    public void RestoreSettings()
+    {
+        int defaultResolution = Screen.resolutions.Length - 2 >= 0 ? Screen.resolutions.Length - 2 : 0; // The default resolution is the second biggest resolution
+        var resolution = PlayerPrefs.GetInt("resolution", defaultResolution);
+        SetResolution(resolution);
+
+        var windowMode = PlayerPrefs.GetInt("windowmode", 0);
+        SetWindowMode(windowMode);
+
+        var refreshRate = PlayerPrefs.GetInt("refreshrate", 3);
+        SetWindowRefreshRate(refreshRate);
     }
 }

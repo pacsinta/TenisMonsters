@@ -43,11 +43,9 @@ public class MainMenu : MonoBehaviour
         myPointCoroutine = DatabaseHandler.GetMyPoints(playerInfo.PlayerName.ToString());
         StartCoroutine(myPointCoroutine.Coroutine());
 
-        var resolution = Screen.resolutions[Screen.resolutions.Length - 2 >= 0 ? Screen.resolutions.Length - 2 : 0];
-        Screen.SetResolution(resolution.width, resolution.height, FullScreenMode.Windowed);
-
         settingsPanel.SetActive(false);
         settingsButton.onClick.AddListener(() => { settingsPanel.SetActive(!settingsPanel.activeSelf); });
+        settingsPanel.GetComponent<Settings>().RestoreSettings();
     }
 
     private float time = 0;
