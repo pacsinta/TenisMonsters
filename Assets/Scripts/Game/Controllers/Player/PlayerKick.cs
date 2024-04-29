@@ -33,7 +33,7 @@ public partial class PlayerController
         wasInKickState = false;
     }
 
-    private void Kicking(NetworkObject ball, Kick kickData, bool clientKick = false)
+    private void Kicking(NetworkObject ball, Kick kickData, bool clientKick = false, bool rotationKick = false, bool gravityChange = false)
     {
         if (IsHost)
         {
@@ -47,20 +47,26 @@ public partial class PlayerController
                                                     ForceMode.Impulse);
 
             print("Kicking ball with force: " + kickData.force + ", upForce: " + (Math.Clamp(kickData.force / 2, 4, 7)) + " and X direction force: " + kickData.XdirectionForce + " by " +
-                 (clientKick ? "client" : "server") + " player ");
+                 (clientKick ? "client" : "host") + " player ");
 
 
             BallController ballController = ball.GetComponent<BallController>();
-            ballController.Kicked(clientKick ? PlayerSide.Client : PlayerSide.Host);
 
-            if (currentEffects.GravityPowerDuration > 0)
+            bool enableRotationKickEffect = clientKick ? rotationKick : currentEffects.BallRotationPowerDuration > 0;
+            bool enableGravityChangeEffect = clientKick ? gravityChange : currentEffects.GravityPowerDuration > 0;
+
+            ballController.Kicked(clientKick ? PlayerSide.Client : PlayerSide.Host, enableRotationKickEffect);
+
+            if (enableGravityChangeEffect)
             {
                 ballController.DecreaseWeight();
             }
         }
         else
         {
-            KickingServerRpc(ball, kickData);
+            bool rotationKickEffect = currentEffects.BallRotationPowerDuration > 0;
+            bool gravityChangeEffect = currentEffects.GravityPowerDuration > 0;
+            KickingServerRpc(ball, kickData, rotationKickEffect, gravityChangeEffect);
         }
     }
     private void DetermineKickForce(Vector2 kickMouseStartPos, Vector2 kickMouseEndPos, float kickMouseEndTime, float kickMouseStartTime)

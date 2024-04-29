@@ -76,6 +76,7 @@ public class BallController : NetworkBehaviour
         kickData.Player = player;
         ResetWeight();
         this.rotationKick = rotationKick;
+        print("Roation kick: " + rotationKick);
     }
     private void OnCollisionEnter(Collision collision)
     {
@@ -144,20 +145,26 @@ public class BallController : NetworkBehaviour
 
     public void DecreaseWeight()
     {
+        print("Ball weight decreased");
         rb.mass = initialMass * 0.7f;
     }
     private void ResetWeight()
     {
+        print("Ball weight reset");
         rb.mass = initialMass;
     }
     private bool rotationKick = false;
+    private float rotationKickTime = 0;
+    private bool rotationKickDirection = true;
     public void UpdateBallRotationForces(float time)
     {
-        int updateTime = 2;
-        if (rotationKick && time % updateTime == 0)
+        float updateTime = 1.0f;
+        if (rotationKick && time - rotationKickTime >= updateTime)
         {
-            float force = time % (updateTime * 2) == 0 ? 1 : -1;
-            Vector3 direction = new Vector3(force, 0, 0);
+            rotationKickTime = time;
+            float force = rotationKickDirection ? 2 : -2;
+            rotationKickDirection = !rotationKickDirection;
+            Vector3 direction = new (force, 0, 0);
 
             rb.AddForce(direction, ForceMode.Impulse);
         }
