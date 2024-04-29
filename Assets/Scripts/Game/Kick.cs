@@ -28,3 +28,10 @@ struct Kick : INetworkSerializable
         serializer.SerializeValue(ref force);
     }
 }
+
+struct RotationKick
+{
+    public bool rotationKick;
+    public float rotationKickTime;
+    public bool rotationKickDirection;
+}
