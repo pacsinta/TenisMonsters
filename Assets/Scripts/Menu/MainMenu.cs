@@ -52,12 +52,12 @@ public class MainMenu : MonoBehaviour
     private void Update()
     {
         time += Time.deltaTime;
-        if (myPointCoroutine.state == LoadingState.DataAvailable)
+        if (myPointCoroutine?.state == LoadingState.DataAvailable)
         {
             Debug.Log("MyPoints loaded: " + myPointCoroutine.Result.ToString());
             myPontsText.text = "MyScore: " + myPointCoroutine.Result.Score;
         }
-        else if (myPointCoroutine.state == LoadingState.Error || myPointCoroutine.state == LoadingState.NotLoaded)
+        else if (myPointCoroutine?.state == LoadingState.Error || myPointCoroutine?.state == LoadingState.NotLoaded)
         {
             myPontsText.text = "MyScore: -";
             if (time >= 10)
@@ -90,7 +90,7 @@ public class MainMenu : MonoBehaviour
         }
         else if(connecting)
         {
-            NetworkManager.Singleton?.Shutdown();
+            NetworkManager.Singleton.Shutdown();
             connecting = false;
             connectionErrorText.text = "Can't connect to a host!";
         }
@@ -100,7 +100,7 @@ public class MainMenu : MonoBehaviour
     {
         if (string.IsNullOrEmpty(playerName.text)) return;
 
-        if (startNetworkManager(IsHostToggle.isOn))
+        if (StartNetworkManager(IsHostToggle.isOn))
         {
             if (IsHostToggle.isOn)
             {
@@ -138,12 +138,16 @@ public class MainMenu : MonoBehaviour
     }
     private float connectingTime = 0;
     private bool connecting = false;
-    bool startNetworkManager(bool isHost)
+    bool StartNetworkManager(bool isHost)
     {
-        NetworkManager.Singleton?.Shutdown();
+        NetworkManager.Singleton.Shutdown();
 
         if (isHost)
         {
+            NetworkManager.Singleton.GetComponent<UnityTransport>().SetConnectionData(
+                "0.0.0.0",
+                7777
+            );
             return NetworkManager.Singleton.StartHost();
         }
         else
