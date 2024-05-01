@@ -33,5 +33,5 @@ struct RotationKick
 {
     public bool rotationKick;
     public float rotationKickTime;
-    public bool rotationKickDirection;
+    public int rotationKickDirection;
 }
