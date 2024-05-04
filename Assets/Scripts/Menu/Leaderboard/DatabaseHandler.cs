@@ -20,13 +20,23 @@ namespace Assets.Scripts
             return new ConnectionCoroutine<LeaderBoardElement>(www);
         }
 
-        public static ConnectionCoroutine<object> SetMyPoints(string playerName, int points)
+        public static ConnectionCoroutine<object> SetMyPoints(string playerName, int points, string password)
         {
             var www = new UnityWebRequest(url + "score/" + playerName, "POST");
-            byte[] bodyRaw = Encoding.UTF8.GetBytes(points.ToString());
+            byte[] bodyRaw = Encoding.UTF8.GetBytes(points.ToString() + ";" + password);
             www.uploadHandler = new UploadHandlerRaw(bodyRaw);
             www.downloadHandler = new DownloadHandlerBuffer();
-            www.SetRequestHeader("Content-Type", "application/json");
+            www.SetRequestHeader("Content-Type", "text/plain");
+            return new ConnectionCoroutine<object>(www, false);
+        }
+
+        public static ConnectionCoroutine<object> CheckAuth(string playerName, string password)
+        {
+            var www = new UnityWebRequest(url + "auth/" + playerName, "POST");
+            byte[] bodyRaw = Encoding.UTF8.GetBytes(password);
+            www.uploadHandler = new UploadHandlerRaw(bodyRaw);
+            www.downloadHandler = new DownloadHandlerBuffer();
+            www.SetRequestHeader("Content-Type", "text/plain");
             return new ConnectionCoroutine<object>(www, false);
         }
     }

@@ -108,6 +108,10 @@ public class LobbyController : NetworkBehaviour
             clientsText.text = "You: " + ownerName + "\nOpponent: " + opponentName;
         }
 
+        if(_gameInfo.Value == null)
+        {
+            return;
+        }
         multiplePowerBallToggle.isOn = _gameInfo.Value.multiplePowerBalls;
         gameModeDropdown.value = _gameInfo.Value.gameMode;
         gravityPowerBallToggle.isOn = _gameInfo.Value.gravityPowerballEnabled;

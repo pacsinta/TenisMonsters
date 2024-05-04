@@ -9,6 +9,7 @@ public class MainMenu : MonoBehaviour
 {
     public Toggle IsHostToggle;
     public TMP_InputField playerName;
+    public TMP_InputField passwordInput;
     public Button startGameBtn;
     public Button exitBtn;
     public TMP_InputField hostIpInput;
@@ -27,15 +28,18 @@ public class MainMenu : MonoBehaviour
 
     private PlayerInfo playerInfo;
     private ConnectionCoroutine<LeaderBoardElement> myPointCoroutine;
+    private ConnectionCoroutine<object> authCheck;
     private void Start()
     {
-        startGameBtn.onClick.AddListener(StartNewGame);
+        startGameBtn.onClick.AddListener(instantiatStartGame);
         playerName.onValueChanged.AddListener(PlayerNameChanged);
         leaderBoardButton.onClick.AddListener(SwitchCanvas);
         exitBtn.onClick.AddListener(() => { Application.Quit(); });
 
         playerInfo = new PlayerInfo();
         playerName.text = playerInfo.PlayerName.ToString();
+
+        passwordInput.contentType = TMP_InputField.ContentType.Password;
 
         mainCanvas.gameObject.SetActive(true);
         leaderBoardCanvas.gameObject.SetActive(false);
@@ -83,12 +87,18 @@ public class MainMenu : MonoBehaviour
             hostIpInput.interactable = true;
         }
 
-        if(connectingTime < 5 && connecting)
+        hostAvailabilityCheck();
+        passwordValidityCheck();
+    }
+
+    void hostAvailabilityCheck()
+    {
+        if (connectingTime < 5 && connecting)
         {
             connectingTime += Time.deltaTime;
             connectionErrorText.text = "";
         }
-        else if(connecting)
+        else if (connecting)
         {
             NetworkManager.Singleton.Shutdown();
             connecting = false;
@@ -96,10 +106,34 @@ public class MainMenu : MonoBehaviour
         }
     }
 
-    void StartNewGame()
+    void passwordValidityCheck()
+    {
+        if(authCheck?.state == LoadingState.DataAvailable)
+        {
+            StopAllCoroutines();
+            authCheck = null;
+            StartNewGame();
+        }
+    }
+
+    void instantiatStartGame()
     {
         if (string.IsNullOrEmpty(playerName.text)) return;
+        if (string.IsNullOrEmpty(passwordInput.text)) return;
 
+        if (!SecureStore.SecureCheck(playerName.text, passwordInput.text)) return;
+        SecureStore.SecureSave(playerName.text, passwordInput.text);
+
+        if (authCheck?.Coroutine() != null) StopCoroutine(authCheck.Coroutine());
+        authCheck = DatabaseHandler.CheckAuth(
+            playerName.text,
+            SecureStore.GetHashPassword(playerName.text)
+        );
+        StartCoroutine(authCheck.Coroutine());
+        print("authCheck started!");
+    }
+    void StartNewGame()
+    {
         if (StartNetworkManager(IsHostToggle.isOn))
         {
             if (IsHostToggle.isOn)
