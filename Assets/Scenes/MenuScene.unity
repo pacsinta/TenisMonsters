@@ -7897,7 +7897,7 @@ GameObject:
   - component: {fileID: 1898976028}
   - component: {fileID: 1898976027}
   m_Layer: 5
-  m_Name: ConnectionErrorText
+  m_Name: ErrorText
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -8705,7 +8705,7 @@ MonoBehaviour:
   settingsButton: {fileID: 65261198}
   leaderBoardButton: {fileID: 2053020403}
   settingsPanel: {fileID: 1635619580}
-  connectionErrorText: {fileID: 1898976027}
+  errorText: {fileID: 1898976027}
   monster: {fileID: 1385002437}
   rotationSpeed: 10
   rotationAngleLimit: 15

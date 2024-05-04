@@ -19,7 +19,7 @@ public class MainMenu : MonoBehaviour
     public Button settingsButton;
     public Button leaderBoardButton;
     public GameObject settingsPanel;
-    public TextMeshProUGUI connectionErrorText;
+    public TextMeshProUGUI errorText;
 
     // monster show variables
     public GameObject monster;
@@ -96,13 +96,13 @@ public class MainMenu : MonoBehaviour
         if (connectingTime < 5 && connecting)
         {
             connectingTime += Time.deltaTime;
-            connectionErrorText.text = "";
+            errorText.text = "";
         }
         else if (connecting)
         {
             NetworkManager.Singleton.Shutdown();
             connecting = false;
-            connectionErrorText.text = "Can't connect to a host!";
+            errorText.text = "Can't connect to a host!";
         }
     }
 
@@ -114,14 +114,32 @@ public class MainMenu : MonoBehaviour
             authCheck = null;
             StartNewGame();
         }
+        else if(authCheck?.state == LoadingState.Error)
+        {
+            StopAllCoroutines();
+            authCheck = null;
+            errorText.text = "Authentication error!";
+        }
     }
 
     void instantiatStartGame()
     {
-        if (string.IsNullOrEmpty(playerName.text)) return;
-        if (string.IsNullOrEmpty(passwordInput.text)) return;
+        if (string.IsNullOrEmpty(playerName.text))
+        {
+            errorText.text = "Player name can't be empty!";
+            return;
+        };
+        if (string.IsNullOrEmpty(passwordInput.text))
+        {
+            errorText.text = "Password can't be empty!";
+            return;
+        }
 
-        if (!SecureStore.SecureCheck(playerName.text, passwordInput.text)) return;
+        if (!SecureStore.SecureCheck(playerName.text, passwordInput.text))
+        {
+            errorText.text = "Wrong password!";
+            return;
+        }
         SecureStore.SecureSave(playerName.text, passwordInput.text);
 
         if (authCheck?.Coroutine() != null) StopCoroutine(authCheck.Coroutine());
