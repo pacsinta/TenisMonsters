@@ -120,13 +120,11 @@ public class MainMenu : MonoBehaviour
         if(authCheck?.state == LoadingState.DataAvailable)
         {
             StopAllCoroutines();
-            authCheck = null;
             StartNewGame();
         }
         else if(authCheck?.state == LoadingState.Error)
         {
             StopAllCoroutines();
-            authCheck = null;
             errorText.text = "Authentication error!";
         }
     }
