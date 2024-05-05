@@ -194,6 +194,7 @@ public class MainMenu : MonoBehaviour
         if (newName.Length > 32) return;
         playerInfo.PlayerName = newName;
         playerInfo.StorePlayerInfo();
+        time = 57; // set the time so that if the name is stopped being changed, the points will be refreshed
     }
     private float connectingTime = 0;
     private bool connecting = false;
