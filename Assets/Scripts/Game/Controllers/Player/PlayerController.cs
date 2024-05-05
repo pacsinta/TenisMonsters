@@ -68,7 +68,7 @@ public partial class PlayerController : NetworkBehaviour
     private float currSpeed;
     void Update()
     {
-        if (!IsOwner) return;
+        if (!IsOwner && IsSpawned) return;
 
         MovePlayer();
 
