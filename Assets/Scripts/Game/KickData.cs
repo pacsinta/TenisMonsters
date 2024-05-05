@@ -6,7 +6,7 @@ struct KickData
     private PlayerSide player;
     public PlayerSide Player
     {
-        get => player;
+        readonly get => player;
         set
         {
             player = value;

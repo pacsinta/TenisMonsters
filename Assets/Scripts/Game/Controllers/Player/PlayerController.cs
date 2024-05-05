@@ -87,7 +87,7 @@ public partial class PlayerController : NetworkBehaviour
             float kickMouseEndTime = Time.realtimeSinceStartup;
 
             DetermineKickForce(kickMouseStartPos, kickMouseEndPos, kickMouseEndTime, kickMouseStartTime);
-            setRacketColorByKickForce();
+            SetRacketColorByKickForce();
         }
         if(wasInKickState && animator.GetCurrentAnimatorStateInfo(0).IsName("IdleAnimation"))
         {
@@ -109,19 +109,22 @@ public partial class PlayerController : NetworkBehaviour
     {
         if (gravityTime == null)
         {
-            gravityTime = GameObject.Find("GravityTime")?.GetComponent<Scrollbar>();
+            try { gravityTime = GameObject.Find("GravityTime").GetComponent<Scrollbar>(); }
+            catch (NullReferenceException) { return false; }
             if(gravityTime != null) gravityTime.size = 0;
             else return false;
         }
         if (speedTime == null)
         {
-            speedTime = GameObject.Find("SpeedTime")?.GetComponent<Scrollbar>();
+            try { speedTime = GameObject.Find("SpeedTime").GetComponent<Scrollbar>(); }
+            catch (NullReferenceException) { return false; }
             if(speedTime != null) speedTime.size = 0;
             else return false;
         }
         if (rotationTime == null)
         {
-            rotationTime = GameObject.Find("RotationTime")?.GetComponent<Scrollbar>();
+            try { rotationTime = GameObject.Find("RotationTime").GetComponent<Scrollbar>(); }
+            catch (NullReferenceException) { return false; }
             if(rotationTime != null) rotationTime.size = 0;
             else return false;
         }
@@ -141,8 +144,8 @@ public partial class PlayerController : NetworkBehaviour
         if (horizontalInput != 0 || verticalInput != 0)
         {
             animator.SetBool("Running", true);
-            transform.Translate(Vector3.forward * Time.deltaTime * currSpeed * verticalInput);
-            transform.Translate(Vector3.right * Time.deltaTime * currSpeed * horizontalInput);
+            transform.Translate(currSpeed * Time.deltaTime * verticalInput * Vector3.forward);
+            transform.Translate(currSpeed * horizontalInput * Time.deltaTime * Vector3.right);
         }
         else
         {
@@ -165,15 +168,7 @@ public partial class PlayerController : NetworkBehaviour
          if (!IsOwner) return;
 
         GameObject collidedWithObject = collision.gameObject;
-        if (collidedWithObject.CompareTag("Ball") && collision.GetContact(0).thisCollider.gameObject.name == "monster")
-        {
-            print("Kick with force: " + kick.force + " and direction: " + kick.XdirectionForce);
-            kickSource.Play();
-
-            Kicking(collidedWithObject.GetComponent<NetworkObject>(), kick);
-            EndKick();
-        }
-        else if (collidedWithObject.CompareTag("PowerBall"))
+        if (collidedWithObject.CompareTag("PowerBall"))
         {
             PowerBallCollision(collidedWithObject);
         }
@@ -183,11 +178,26 @@ public partial class PlayerController : NetworkBehaviour
         }
     }
 
-    private void OnCollisionExit(Collision collision)
+    private void OnTriggerEnter(Collider other)
     {
         if (!IsOwner) return;
 
-        GameObject collidedWithObject = collision.gameObject;
+        GameObject collidedWithObject = other.gameObject;
+        if (collidedWithObject.CompareTag("Ball"))
+        {
+            print("Kick with force: " + kick.force + " and direction: " + kick.XdirectionForce);
+            kickSource.Play();
+
+            Kicking(collidedWithObject.GetComponent<NetworkObject>(), kick);
+            EndKick();
+        }
+    }
+
+    private void OnTriggerExit(Collider other)
+    {
+        if (!IsOwner) return;
+
+        GameObject collidedWithObject = other.gameObject;
         if (collidedWithObject.CompareTag("Ball"))
         {
             animator.enabled = true;

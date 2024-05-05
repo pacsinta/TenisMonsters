@@ -1,6 +1,7 @@
 using Assets.Scripts;
 using System;
 using Unity.Netcode;
+using Unity.Profiling;
 using UnityEngine;
 
 public partial class PlayerController
@@ -11,12 +12,15 @@ public partial class PlayerController
     public float minForce;
     public float maxKickTime;
     public float sideKickForce;
+    public float upKickForce;
 
-    private void setRacketColorByKickForce()
+    private void SetRacketColorByKickForce()
     {
         var color = Color.Lerp(Color.white, Color.red, kick.force / maxForce);
-        Material newRacketMaterial = new Material(racketMaterial);
-        newRacketMaterial.color = color;
+        Material newRacketMaterial = new(racketMaterial)
+        {
+            color = color
+        };
         racket.GetComponent<Renderer>().material = newRacketMaterial;
     }
 
@@ -39,21 +43,23 @@ public partial class PlayerController
         {
             int direction = clientKick ? -1 : 1;
 
+            bool enableRotationKickEffect = clientKick ? rotationKick : currentEffects.BallRotationPowerDuration > 0;
+            bool enableGravityChangeEffect = clientKick ? gravityChange : currentEffects.GravityPowerDuration > 0;
+
             ball.GetComponent<Rigidbody>().velocity = Vector3.zero;
             ball.transform.position += new Vector3(0, 0, 0.5f * direction); // move ball a bit forward to avoid animation clipping
-            ball.GetComponent<Rigidbody>().AddForce(direction * kickData.XdirectionForce,
-                                                    Math.Clamp(kickData.force / 2, 4, 7),
-                                                    direction * kickData.force,
-                                                    ForceMode.Impulse);
+
+            float gravityAdjustment = enableGravityChangeEffect ? 0.8f : 1;
+            float xForce = direction * kickData.XdirectionForce * gravityAdjustment;
+            float yForce = Physics.gravity.y * upKickForce;
+            float zForce = direction * kickData.force * gravityAdjustment;
+            ball.GetComponent<Rigidbody>().AddForce(xForce, yForce, zForce, ForceMode.Impulse);
 
             print("Kicking ball with force: " + kickData.force + ", upForce: " + (Math.Clamp(kickData.force / 2, 4, 7)) + " and X direction force: " + kickData.XdirectionForce + " by " +
                  (clientKick ? "client" : "host") + " player ");
 
 
             BallController ballController = ball.GetComponent<BallController>();
-
-            bool enableRotationKickEffect = clientKick ? rotationKick : currentEffects.BallRotationPowerDuration > 0;
-            bool enableGravityChangeEffect = clientKick ? gravityChange : currentEffects.GravityPowerDuration > 0;
 
             ballController.Kicked(clientKick ? PlayerSide.Client : PlayerSide.Host, enableRotationKickEffect);
 

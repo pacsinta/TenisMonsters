@@ -31,7 +31,7 @@ public class MainMenu : MonoBehaviour
     private ConnectionCoroutine<object> authCheck;
     private void Start()
     {
-        startGameBtn.onClick.AddListener(instantiatStartGame);
+        startGameBtn.onClick.AddListener(InstantiatStartGame);
         playerName.onValueChanged.AddListener(PlayerNameChanged);
         leaderBoardButton.onClick.AddListener(SwitchCanvas);
         exitBtn.onClick.AddListener(() => { Application.Quit(); });
@@ -87,11 +87,11 @@ public class MainMenu : MonoBehaviour
             hostIpInput.interactable = true;
         }
 
-        hostAvailabilityCheck();
-        passwordValidityCheck();
+        HostAvailabilityCheck();
+        PasswordValidityCheck();
     }
 
-    void hostAvailabilityCheck()
+    void HostAvailabilityCheck()
     {
         if (connectingTime < 5 && connecting)
         {
@@ -106,7 +106,7 @@ public class MainMenu : MonoBehaviour
         }
     }
 
-    void passwordValidityCheck()
+    void PasswordValidityCheck()
     {
         if(authCheck?.state == LoadingState.DataAvailable)
         {
@@ -122,7 +122,7 @@ public class MainMenu : MonoBehaviour
         }
     }
 
-    void instantiatStartGame()
+    void InstantiatStartGame()
     {
         if (string.IsNullOrEmpty(playerName.text))
         {
@@ -166,7 +166,7 @@ public class MainMenu : MonoBehaviour
     {
         if (rotateRight)
         {
-            monster.transform.Rotate(Vector3.up * Time.deltaTime * rotationSpeed);
+            monster.transform.Rotate(rotationSpeed * Time.deltaTime * Vector3.up);
             if (monster.transform.rotation.eulerAngles.y - 180 >= rotationAngleLimit)
             {
                 rotateRight = false;
@@ -174,7 +174,7 @@ public class MainMenu : MonoBehaviour
         }
         else
         {
-            monster.transform.Rotate(Vector3.down * Time.deltaTime * rotationSpeed);
+            monster.transform.Rotate(rotationSpeed * Time.deltaTime * Vector3.down);
             if (monster.transform.rotation.eulerAngles.y - 180 < -rotationAngleLimit)
             {
                 rotateRight = true;
