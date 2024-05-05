@@ -145,7 +145,7 @@ public class MainMenu : MonoBehaviour
         if (authCheck?.Coroutine() != null) StopCoroutine(authCheck.Coroutine());
         authCheck = DatabaseHandler.CheckAuth(
             playerName.text,
-            SecureStore.GetHashPassword(playerName.text)
+            SecureStore.GetHashWithConstSalt(playerName.text)
         );
         StartCoroutine(authCheck.Coroutine());
         print("authCheck started!");

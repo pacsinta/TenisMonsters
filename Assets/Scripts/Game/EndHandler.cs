@@ -105,11 +105,11 @@ public class EndHandler : MonoBehaviour
 
         if (IsHost)
         {
-            uploadScoreCoroutine = DatabaseHandler.SetMyPoints(hostName, hostScore, SecureStore.GetHashPassword(hostName));
+            uploadScoreCoroutine = DatabaseHandler.SetMyPoints(hostName, hostScore, SecureStore.GetHashWithConstSalt(hostName));
         }
         else
         {
-            uploadScoreCoroutine = DatabaseHandler.SetMyPoints(clientName, clientScore, SecureStore.GetHashPassword(clientName));
+            uploadScoreCoroutine = DatabaseHandler.SetMyPoints(clientName, clientScore, SecureStore.GetHashWithConstSalt(clientName));
         }
         StartCoroutine(uploadScoreCoroutine.Coroutine());
     }

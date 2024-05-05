@@ -6,6 +6,12 @@ using UnityEngine.UIElements;
 
 static class SecureStore
 {
+    // This is a conatant password to create a constant salt for the backend encryption
+    // The reason for this is to don't send a raw password through the network
+    // Please change the password before using it
+    // The password has to be a valid base64 string
+    const string encryptionPassword = "testpasswordshouldbechanged+";
+
     private static byte[] CreateSalt(int length)
     {
         byte[] salt = new byte[length];
@@ -19,6 +25,13 @@ static class SecureStore
     private static string HashPassword(string password, byte[] salt)
     {
         byte[] hashed = new Rfc2898DeriveBytes(password, salt, 10000, HashAlgorithmName.SHA256).GetBytes(32);
+        return Convert.ToBase64String(hashed);
+    }
+
+    public static string GetHashWithConstSalt(string password)
+    {
+        byte[] encyptionConsSalt = Convert.FromBase64String(encryptionPassword);
+        byte[] hashed = new Rfc2898DeriveBytes(password, encyptionConsSalt, 10000, HashAlgorithmName.SHA256).GetBytes(32);
         return Convert.ToBase64String(hashed);
     }
 
@@ -36,7 +49,6 @@ static class SecureStore
     {
         return PlayerPrefs.GetString(value);
     }
-
 
     public static bool SecureCheck(string key, string value)
     {
