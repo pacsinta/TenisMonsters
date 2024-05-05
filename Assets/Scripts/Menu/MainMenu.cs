@@ -66,14 +66,12 @@ public class MainMenu : MonoBehaviour
             myPontsText.text = "MyScore: -";
             if (time >= 10)
             {
-                if (myPointCoroutine.Coroutine() != null)
-                {
-                    StopCoroutine(myPointCoroutine.Coroutine());
-                }
-                myPointCoroutine = DatabaseHandler.GetMyPoints(playerInfo.PlayerName.ToString());
-                StartCoroutine(myPointCoroutine.Coroutine());
-                time = 0;
+                RefreshMyPoints();
             }
+        }
+        else if (time >= 60)
+        {
+            RefreshMyPoints();
         }
 
         RotateMonster();
@@ -89,6 +87,17 @@ public class MainMenu : MonoBehaviour
 
         HostAvailabilityCheck();
         PasswordValidityCheck();
+    }
+
+    void RefreshMyPoints()
+    {
+        if (myPointCoroutine.Coroutine() != null)
+        {
+            StopCoroutine(myPointCoroutine.Coroutine());
+        }
+        myPointCoroutine = DatabaseHandler.GetMyPoints(playerInfo.PlayerName.ToString());
+        StartCoroutine(myPointCoroutine.Coroutine());
+        time = 0;
     }
 
     void HostAvailabilityCheck()
