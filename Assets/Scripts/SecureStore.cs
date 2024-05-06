@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using UnityEngine;
@@ -12,50 +13,35 @@ static class SecureStore
     // The password has to be a valid base64 string
     const string encryptionPassword = "testpasswordshouldbechanged+";
 
-    private static byte[] CreateSalt(int length)
-    {
-        byte[] salt = new byte[length];
-        using (var rng = RandomNumberGenerator.Create())
-        {
-            rng.GetBytes(salt);
-        }
-        return salt;
-    }
-
-    private static string HashPassword(string password, byte[] salt)
-    {
-        byte[] hashed = new Rfc2898DeriveBytes(password, salt, 10000, HashAlgorithmName.SHA256).GetBytes(32);
-        return Convert.ToBase64String(hashed);
-    }
-
-    public static string GetHashWithConstSalt(string password)
+    public static string CreateHashWithConstSalt(string password)
     {
         byte[] encyptionConsSalt = Convert.FromBase64String(encryptionPassword);
         byte[] hashed = new Rfc2898DeriveBytes(password, encyptionConsSalt, 10000, HashAlgorithmName.SHA256).GetBytes(32);
-        return Convert.ToBase64String(hashed);
+        string result = Convert.ToBase64String(hashed);
+        return result;
+    }
+    public static void SavePassword(string key, string password)
+    {
+        string hashed = CreateHashWithConstSalt(password);
+        PlayerPrefs.SetString(key, hashed);
+    }
+    public static string GetHashedPassword(string key)
+    {
+        return PlayerPrefs.GetString(key);
     }
 
-    public static void SecureSave(string key, string value)
+    public static string GetHashPassword(string key)
     {
-        if(!PlayerPrefs.HasKey(key))
-        {
-            byte[] salt = CreateSalt(16);
-            PlayerPrefs.SetString(key, HashPassword(value, salt));
-            PlayerPrefs.SetString(key + "_salt", Convert.ToBase64String(salt));
-        }
+        return PlayerPrefs.GetString(key);
     }
 
-    public static string GetHashPassword(string value)
+    public static bool SecureCheck(string key, string password)
     {
-        return PlayerPrefs.GetString(value);
-    }
-
-    public static bool SecureCheck(string key, string value)
-    {
+        if (password.Any(c => !char.IsLetterOrDigit(c))) return false;
         if (!PlayerPrefs.HasKey(key)) return true; // If the key is not found, then it is a new user
-        byte[] salt = Convert.FromBase64String(PlayerPrefs.GetString(key + "_salt"));
-        string storedHash = PlayerPrefs.GetString(key);
-        string testHash = HashPassword(value, salt);
+
+        string storedHash = GetHashedPassword(key);
+        string testHash = CreateHashWithConstSalt(password);
         return CryptographicOperations.FixedTimeEquals(Encoding.UTF8.GetBytes(storedHash), Encoding.UTF8.GetBytes(testHash));
     }
 }

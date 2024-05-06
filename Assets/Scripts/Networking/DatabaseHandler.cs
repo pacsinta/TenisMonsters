@@ -39,5 +39,15 @@ namespace Assets.Scripts
             www.SetRequestHeader("Content-Type", "text/plain");
             return new ConnectionCoroutine<object>(www, false);
         }
+
+        public static ConnectionCoroutine<object> ChangePassword(string playerName, string oldPassword, string newPassword)
+        {
+            var www = new UnityWebRequest(url + "auth/change/" + playerName, "POST");
+            byte[] bodyRaw = Encoding.UTF8.GetBytes(oldPassword + ";" + newPassword);
+            www.uploadHandler = new UploadHandlerRaw(bodyRaw);
+            www.downloadHandler = new DownloadHandlerBuffer();
+            www.SetRequestHeader("Content-Type", "text/plain");
+            return new ConnectionCoroutine<object>(www, false);
+        }
     }
 }

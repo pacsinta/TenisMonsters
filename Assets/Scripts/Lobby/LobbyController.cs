@@ -125,6 +125,8 @@ public class LobbyController : NetworkBehaviour
         skyDropdown.value = (int)_gameInfo.Value.skyType;
         timeSlider.value = _gameInfo.Value.timeSpeed;
         timeText.text = "Time speed: " + _gameInfo.Value.timeSpeed.ToString("F1");
+
+        startGameButton.interactable = NetworkManager.Singleton.ConnectedClients.Count == maxPlayerCount;
     }
 
     void ApprovalCheck(NetworkManager.ConnectionApprovalRequest request, NetworkManager.ConnectionApprovalResponse response)
@@ -141,7 +143,7 @@ public class LobbyController : NetworkBehaviour
 
     void HandleClientConnect(ulong clientId)
     {
-        if (NetworkManager.Singleton.LocalClientId == clientId)
+        if (NetworkManager.Singleton.LocalClientId == clientId && !IsHost)
         {
             RegisterPlayerOnServerRpc(playerInfo);
         }
@@ -173,7 +175,7 @@ public class LobbyController : NetworkBehaviour
     void RegisterPlayerOnServerRpc(PlayerInfo clientPlayerInfo, ServerRpcParams serverRpcParams = default)
     {
         var clientId = serverRpcParams.Receive.SenderClientId;
-        if (NetworkManager.ConnectedClients.ContainsKey(clientId))
+        if (NetworkManager.ConnectedClients.ContainsKey(clientId)) // check if client was connected successfully
         {
             _clientPlayerInfo.Value = clientPlayerInfo;
             clientPlayerInfo.StorePlayerInfo(clientId.ToString());

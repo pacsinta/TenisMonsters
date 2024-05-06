@@ -91,7 +91,8 @@ public class MainMenu : MonoBehaviour
 
     void RefreshMyPoints()
     {
-        if (myPointCoroutine.Coroutine() != null)
+        if(playerInfo == null || string.IsNullOrEmpty(playerInfo.PlayerName.ToString())) return;
+        if (myPointCoroutine?.Coroutine() != null)
         {
             StopCoroutine(myPointCoroutine.Coroutine());
         }
@@ -117,12 +118,14 @@ public class MainMenu : MonoBehaviour
 
     void PasswordValidityCheck()
     {
-        if(authCheck?.state == LoadingState.DataAvailable)
+        var state = authCheck?.state;
+        if(state == LoadingState.DataAvailable && !gameStarted)
         {
             StopAllCoroutines();
+            SecureStore.SavePassword(playerName.text, passwordInput.text); // Only save the password if the server authentication was successful
             StartNewGame();
         }
-        else if(authCheck?.state == LoadingState.Error)
+        else if(state == LoadingState.Error)
         {
             StopAllCoroutines();
             errorText.text = "Authentication error!";
@@ -147,20 +150,21 @@ public class MainMenu : MonoBehaviour
             errorText.text = "Wrong password!";
             return;
         }
-        SecureStore.SecureSave(playerName.text, passwordInput.text);
 
         if (authCheck?.Coroutine() != null) StopCoroutine(authCheck.Coroutine());
         authCheck = DatabaseHandler.CheckAuth(
             playerName.text,
-            SecureStore.GetHashWithConstSalt(playerName.text)
+            SecureStore.CreateHashWithConstSalt(playerName.text)
         );
         StartCoroutine(authCheck.Coroutine());
         print("authCheck started!");
     }
+    private bool gameStarted = false;
     void StartNewGame()
     {
         if (StartNetworkManager(IsHostToggle.isOn))
         {
+            gameStarted = true;
             if (IsHostToggle.isOn)
             {
                 SceneLoader.LoadScene(SceneLoader.Scene.LobbyScene, NetworkManager.Singleton);
