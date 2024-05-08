@@ -18,16 +18,27 @@ public struct EnabledPowerBalls
 
 public class GameInfo : INetworkSerializable
 {
-    public int gameMode;
-    public bool gravityPowerballEnabled = true;
-    public bool rotationKickPowerballEnabled = true;
-    public bool speedPowerballEnabled = true;
-    public int powerBallSpawnTime = 10;
-    public int powerBallLiveTime = 5;
-    public bool multiplePowerBalls = true;
-    public bool wallsEnabled = true;
-    public SkyType skyType = SkyType.Sunny;
-    public float timeSpeed = 1;
+    private GameMode gameMode;
+    public GameMode GameMode => gameMode;
+    private bool gravityPowerballEnabled = true;
+    public bool GravityPowerballEnabled => gravityPowerballEnabled;
+    private bool rotationKickPowerballEnabled = true;
+    public bool RotationKickPowerballEnabled => rotationKickPowerballEnabled;
+    private bool speedPowerballEnabled = true;
+    public bool SpeedPowerballEnabled => speedPowerballEnabled;
+    private int powerBallSpawnTime = 10;
+    public int PowerBallSpawnTime => powerBallSpawnTime;
+    private int powerBallLiveTime = 5;
+    public int PowerBallLiveTime => powerBallLiveTime;
+    private bool multiplePowerBalls = true;
+    public bool MultiplePowerBalls => multiplePowerBalls;
+    private bool wallsEnabled = true;
+    public bool WallsEnabled => wallsEnabled;
+    private SkyType skyType = SkyType.Sunny;
+    public SkyType SkyType => skyType;
+    private float timeSpeed = 1;
+    public float TimeSpeed => timeSpeed;
+
     public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
     {
         serializer.SerializeValue(ref gameMode);
@@ -53,7 +64,7 @@ public class GameInfo : INetworkSerializable
 
     public void SetGameMode(int mode)
     {
-        gameMode = mode;
+        gameMode = (GameMode)mode;
         PlayerPrefs.SetInt("GameMode", mode);
     }
     public void SetGravityPowerballEnabled(bool enabled)
@@ -106,7 +117,7 @@ public class GameInfo : INetworkSerializable
     }
     public GameInfo()
     {
-        gameMode = PlayerPrefs.GetInt("GameMode");
+        gameMode = (GameMode)PlayerPrefs.GetInt("GameMode");
         gravityPowerballEnabled = PlayerPrefs.GetInt("GravityPowerballEnabled") == 1;
         rotationKickPowerballEnabled = PlayerPrefs.GetInt("RotationKickPowerballEnabled") == 1;
         speedPowerballEnabled = PlayerPrefs.GetInt("SpeedPowerballEnabled") == 1;
@@ -124,17 +135,13 @@ public class GameInfo : INetworkSerializable
     {
         get
         {
-            switch ((GameMode)gameMode)
+            return gameMode switch
             {
-                case GameMode.QuickGame:
-                    return 60 * 5;
-                case GameMode.LongGame:
-                    return 60 * 10;
-                case GameMode.FirstToWin:
-                    return 0;
-                default:
-                    return 0;
-            }
+                GameMode.QuickGame => 60 * 5,
+                GameMode.LongGame => 60 * 10,
+                GameMode.FirstToWin => 0,
+                _ => 0,
+            };
         }
     }
 
@@ -142,17 +149,13 @@ public class GameInfo : INetworkSerializable
     {
         get
         {
-            switch ((GameMode)gameMode)
+            return gameMode switch
             {
-                case GameMode.QuickGame:
-                    return 0;
-                case GameMode.LongGame:
-                    return 0;
-                case GameMode.FirstToWin:
-                    return 10;
-                default:
-                    return 0;
-            }
+                GameMode.QuickGame => 0,
+                GameMode.LongGame => 0,
+                GameMode.FirstToWin => 10,
+                _ => 0,
+            };
         }
     }
 }

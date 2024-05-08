@@ -1,4 +1,5 @@
 using Assets.Scripts;
+using Assets.Scripts.Networking;
 using TMPro;
 using Unity.Netcode;
 using UnityEngine;
@@ -57,9 +58,9 @@ public class EndHandler : MonoBehaviour
             playWinnerAudio = isCurrentPlayerWinner;
         }
 
-        if (audioTime % 60 == 0)
+        if (audioTime % 60 == 0 && audioObject != null)
         {
-            audioObject?.GetComponent<Audio>().PlayEndingSong(playWinnerAudio);
+            audioObject.GetComponent<Audio>().PlayEndingSong(playWinnerAudio);
         }
 
         if (uploadScoreCoroutine.state == LoadingState.DataAvailable)

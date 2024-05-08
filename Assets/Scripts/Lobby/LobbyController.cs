@@ -47,7 +47,6 @@ public class LobbyController : NetworkBehaviour
         else
         {
             DisableGameSettings();
-            playerInfo.Side = PlayerSide.Client;
         }
 
         NetworkManager.Singleton.OnClientConnectedCallback += HandleClientConnect;
@@ -108,23 +107,28 @@ public class LobbyController : NetworkBehaviour
             clientsText.text = "You: " + ownerName + "\nOpponent: " + opponentName;
         }
 
-        if(_gameInfo.Value == null)
+        SyncUIWithGameInfo();
+    }
+
+    private void SyncUIWithGameInfo()
+    {
+        if (_gameInfo.Value == null)
         {
             return;
         }
-        multiplePowerBallToggle.isOn = _gameInfo.Value.multiplePowerBalls;
-        gameModeDropdown.value = _gameInfo.Value.gameMode;
-        gravityPowerBallToggle.isOn = _gameInfo.Value.gravityPowerballEnabled;
-        speedPowerBallToggle.isOn = _gameInfo.Value.speedPowerballEnabled;
-        rotationKickPowerBallToggle.isOn = _gameInfo.Value.rotationKickPowerballEnabled;
-        powerBallSpawnTimeSlider.value = _gameInfo.Value.powerBallSpawnTime / 10;
-        powerBallSpawnTimeText.text = "Powerball spawn time: " + _gameInfo.Value.powerBallSpawnTime + "s";
-        powerballLiveTimeSlider.value = _gameInfo.Value.powerBallLiveTime / 5;
-        powerBallLiveTimeText.text = "Powerball live time: " + (_gameInfo.Value.multiplePowerBalls ? _gameInfo.Value.powerBallLiveTime : "0") + "s";
-        wallsEnabledToggle.isOn = _gameInfo.Value.wallsEnabled;
-        skyDropdown.value = (int)_gameInfo.Value.skyType;
-        timeSlider.value = _gameInfo.Value.timeSpeed;
-        timeText.text = "Time speed: " + _gameInfo.Value.timeSpeed.ToString("F1");
+        multiplePowerBallToggle.isOn = _gameInfo.Value.MultiplePowerBalls;
+        gameModeDropdown.value = (int)_gameInfo.Value.GameMode;
+        gravityPowerBallToggle.isOn = _gameInfo.Value.GravityPowerballEnabled;
+        speedPowerBallToggle.isOn = _gameInfo.Value.SpeedPowerballEnabled;
+        rotationKickPowerBallToggle.isOn = _gameInfo.Value.RotationKickPowerballEnabled;
+        powerBallSpawnTimeSlider.value = _gameInfo.Value.PowerBallSpawnTime / 10;
+        powerBallSpawnTimeText.text = "Powerball spawn time: " + _gameInfo.Value.PowerBallSpawnTime + "s";
+        powerballLiveTimeSlider.value = _gameInfo.Value.PowerBallLiveTime / 5;
+        powerBallLiveTimeText.text = "Powerball live time: " + (_gameInfo.Value.MultiplePowerBalls ? _gameInfo.Value.PowerBallLiveTime : "0") + "s";
+        wallsEnabledToggle.isOn = _gameInfo.Value.WallsEnabled;
+        skyDropdown.value = (int)_gameInfo.Value.SkyType;
+        timeSlider.value = _gameInfo.Value.TimeSpeed;
+        timeText.text = "Time speed: " + _gameInfo.Value.TimeSpeed.ToString("F1");
 
         startGameButton.interactable = NetworkManager.Singleton.ConnectedClients.Count == maxPlayerCount;
     }
@@ -183,7 +187,7 @@ public class LobbyController : NetworkBehaviour
     }
 
     [ServerRpc(RequireOwnership = false)]
-    void StartGameServerRpc(ServerRpcParams serverRpcParams = default)
+    void StartGameServerRpc()
     {
         SceneLoader.LoadScene(SceneLoader.Scene.GameScene, NetworkManager.Singleton);
     }

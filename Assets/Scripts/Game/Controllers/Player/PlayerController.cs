@@ -2,9 +2,7 @@ using Assets.Scripts;
 using Cinemachine;
 using System;
 using Unity.Netcode;
-using Unity.Netcode.Components;
 using UnityEngine;
-using UnityEngine.Assertions;
 using UnityEngine.UI;
 
 public partial class PlayerController : NetworkBehaviour

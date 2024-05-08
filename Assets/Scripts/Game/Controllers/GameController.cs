@@ -50,16 +50,16 @@ public class GameController : NetworkBehaviour
 
             foreach (var client in clients)
             {
-                instantiatePlayerObject(client);
+                InstantiatePlayerObject(client);
                 _clientPlayerInfo.Value = new PlayerInfo(client.ClientId.ToString());
             }
         }
         
-        walls.SetActive(_gameInfo.Value.wallsEnabled);
-        Time.timeScale = _gameInfo.Value.timeSpeed;
+        walls.SetActive(_gameInfo.Value.WallsEnabled);
+        Time.timeScale = _gameInfo.Value.TimeSpeed;
     }
 
-    private void instantiatePlayerObject(NetworkClient client)
+    private void InstantiatePlayerObject(NetworkClient client)
     {
         Vector3 spawnPosition = PlayerStartPosition;
         Quaternion spawnRotation = Quaternion.identity;
@@ -87,7 +87,7 @@ public class GameController : NetworkBehaviour
     {
         
         CheckEndGame();
-        updateTexts();
+        UpdateTexts();
 
         // Pass the environment to the player objects
         // Because the client object has a separate version on the client side, we need to pass the environment to it as well
@@ -106,7 +106,7 @@ public class GameController : NetworkBehaviour
             remainingTimeToSpawnPowerBall += Time.deltaTime;
         }
 
-        if (remainingTimeToSpawnPowerBall >= _gameInfo.Value.powerBallSpawnTime)
+        if (remainingTimeToSpawnPowerBall >= _gameInfo.Value.PowerBallSpawnTime)
         {
             SpawnPowerBall(PlayerSide.Host, _gameInfo.Value.GetAllPowerballEnabled());
             SpawnPowerBall(PlayerSide.Client, _gameInfo.Value.GetAllPowerballEnabled());
@@ -144,7 +144,7 @@ public class GameController : NetworkBehaviour
         }
     }
 
-    void updateTexts()
+    void UpdateTexts()
     {
         timeText.text = _gameInfo.Value.GetMaxTime != 0 ? ConvertSecondsToTimeString(_gameInfo.Value.GetMaxTime - ((uint)time.Value)) : "";
         scoreText.text = _hostPlayerInfo.Value?.Score + " - " + _clientPlayerInfo.Value?.Score;
@@ -266,7 +266,7 @@ public class GameController : NetworkBehaviour
 
     private void SpawnPowerBall(PlayerSide side, EnabledPowerBalls enabled)
     {
-        // Create a shuffled list of rthe enabled power balls
+        // Create a shuffled list of the enabled power balls
         var enabledList = new List<PowerEffects>();
         if (enabled.GravityPowerBall) enabledList.Add(PowerEffects.Gravitychange);
         if (enabled.RotationPowerBall) enabledList.Add(PowerEffects.BallRotate);
@@ -280,25 +280,17 @@ public class GameController : NetworkBehaviour
 
         // Select the correct prefab based on the first element of the shuffled list
         NetworkObject selectedPowerballPrefab = null;
-        switch (enabledList[0])
+        selectedPowerballPrefab = enabledList[0] switch
         {
-            case PowerEffects.Gravitychange:
-                selectedPowerballPrefab = gravityPowerBallPrefab;
-                break;
-            case PowerEffects.SpeedIncrease:
-                selectedPowerballPrefab = speedPowerBallPrefab;
-                break;
-            case PowerEffects.BallRotate:
-                selectedPowerballPrefab = rotationKickPowerBallPrefab;
-                break;
-            default:
-                selectedPowerballPrefab = gravityPowerBallPrefab; // Safe value, but should never be reached
-                break;
-        }
+            PowerEffects.Gravitychange => gravityPowerBallPrefab,
+            PowerEffects.SpeedIncrease => speedPowerBallPrefab,
+            PowerEffects.BallRotate => rotationKickPowerBallPrefab,
+            _ => gravityPowerBallPrefab,// Safe value, but should never be reached
+        };
 
         // Create random position for the powerball
         var groundSize = ground.transform.localScale * 10 / 2;
-        Vector3 spawnPosition = new Vector3(Random.Range(-groundSize.x + 1, groundSize.x - 1),
+        Vector3 spawnPosition = new(Random.Range(-groundSize.x + 1, groundSize.x - 1),
                                                          0.5f,
                                                          Random.Range(0, groundSize.z - 1));
 
@@ -308,6 +300,6 @@ public class GameController : NetworkBehaviour
         }
 
         var ball = NetworkManager.Singleton.SpawnManager.InstantiateAndSpawn(selectedPowerballPrefab, 0, true, false, false, spawnPosition);
-        ball.GetComponent<PowerBallController>().powerBallLiveTime = _gameInfo.Value.multiplePowerBalls ? -1 : _gameInfo.Value.powerBallLiveTime;
+        ball.GetComponent<PowerBallController>().powerBallLiveTime = _gameInfo.Value.MultiplePowerBalls ? -1 : _gameInfo.Value.PowerBallLiveTime;
     }
 }

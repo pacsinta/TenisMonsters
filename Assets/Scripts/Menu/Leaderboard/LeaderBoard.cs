@@ -1,11 +1,11 @@
+using Assets.Scripts.Networking;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace Assets.Scripts
+namespace Assets.Scripts.Menu.Leaderboard
 {
-
     public class LeaderBoard : MonoBehaviour
     {
         public GameObject scrollViewContent;

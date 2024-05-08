@@ -1,9 +1,10 @@
-﻿using Newtonsoft.Json;
+﻿using Assets.Scripts.Menu.Leaderboard;
+using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.Text;
 using UnityEngine.Networking;
 
-namespace Assets.Scripts
+namespace Assets.Scripts.Networking
 {
     public static class DatabaseHandler
     {

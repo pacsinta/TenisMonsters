@@ -1,4 +1,5 @@
 using Assets.Scripts;
+using Assets.Scripts.Networking;
 using System.Linq;
 using TMPro;
 using UnityEngine;
@@ -40,7 +41,6 @@ public class Settings : MonoBehaviour
         volumeSlider.value = PlayerPrefs.GetFloat("volume", 1);
 
         changePasswordButton.onClick.AddListener(ChangePassword);
-        changePasswordInput.contentType = TMP_InputField.ContentType.Password;
     }
 
     void SetWindowMode(int mode)
@@ -117,6 +117,7 @@ public class Settings : MonoBehaviour
             errorText.text = "Wrong password!";
             return;
         }
+        errorText.text = "";
 
         if (changePasswordCoroutine?.Coroutine() != null) StopCoroutine(changePasswordCoroutine.Coroutine());
         changePasswordCoroutine = DatabaseHandler.ChangePassword(
@@ -124,8 +125,6 @@ public class Settings : MonoBehaviour
             SecureStore.GetHashedPassword(playerName.text), 
             SecureStore.CreateHashWithConstSalt(changePasswordInput.text));
         StartCoroutine(changePasswordCoroutine.Coroutine());
-
-        changePasswordInput.text = "";
     }
 
     void CheckUpdatedPassword()
@@ -135,10 +134,14 @@ public class Settings : MonoBehaviour
         {
             case LoadingState.Error:
                 errorText.text = "Error changing password!";
+                _ = changePasswordCoroutine.Result;
                 break;
             case LoadingState.DataAvailable:
+                _ = changePasswordCoroutine.Result;
                 errorText.text = "Password changed!";
                 SecureStore.SavePassword(playerName.text, changePasswordInput.text);
+                changePasswordInput.text = "";
+                originalPasswordInput.text = "";
                 break;
         }
     }
