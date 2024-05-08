@@ -6,7 +6,7 @@ struct KickData
     private PlayerSide player;
     public PlayerSide Player
     {
-        get => player;
+        readonly get => player;
         set
         {
             player = value;
@@ -27,4 +27,11 @@ struct Kick : INetworkSerializable
         serializer.SerializeValue(ref XdirectionForce);
         serializer.SerializeValue(ref force);
     }
+}
+
+struct RotationKick
+{
+    public bool rotationKick;
+    public float rotationKickTime;
+    public int rotationKickDirection;
 }

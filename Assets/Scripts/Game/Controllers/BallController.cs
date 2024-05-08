@@ -9,6 +9,8 @@ public class BallController : NetworkBehaviour
     public float initialMass;
     public uint groundCollisinMaxTime;
     public GameController gameController;
+    public float rotationUpdateTime;
+    public float rotationForce;
 
     private Rigidbody rb;
     private SphereCollider colldider;
@@ -75,7 +77,9 @@ public class BallController : NetworkBehaviour
         kickData.firstKickSuccess = true;
         kickData.Player = player;
         ResetWeight();
-        this.rotationKick = rotationKick;
+        ResetRotationKick();
+        rotationKickData.rotationKick = rotationKick;
+        print("Roation kick: " + rotationKick);
     }
     private void OnCollisionEnter(Collision collision)
     {
@@ -144,20 +148,31 @@ public class BallController : NetworkBehaviour
 
     public void DecreaseWeight()
     {
+        print("Ball weight decreased");
         rb.mass = initialMass * 0.7f;
     }
     private void ResetWeight()
     {
+        print("Ball weight reset");
         rb.mass = initialMass;
     }
-    private bool rotationKick = false;
+    private void ResetRotationKick()
+    {
+        rotationKickData.rotationKick = false;
+        rotationKickData.rotationKickDirection = 0;
+        rotationKickData.rotationKickTime = 0;
+    }
+    private RotationKick rotationKickData;
     public void UpdateBallRotationForces(float time)
     {
-        int updateTime = 2;
-        if (rotationKick && time % updateTime == 0)
+        if (rotationKickData.rotationKick && time - rotationKickData.rotationKickTime >= rotationUpdateTime)
         {
-            float force = time % (updateTime * 2) == 0 ? 1 : -1;
-            Vector3 direction = new Vector3(force, 0, 0);
+            rotationKickData.rotationKickTime = time;
+            float force = rotationKickData.rotationKickDirection < 2 ? rotationForce : -rotationForce;
+            rotationKickData.rotationKickDirection = rotationKickData.rotationKickDirection == 3 ? 0 : rotationKickData.rotationKickDirection++;
+            Vector3 direction = new (rotationKickData.rotationKickDirection % 2 == 0 ? force : 0,
+                                     rotationKickData.rotationKickDirection % 2 == 1 ? force : 0, 
+                                     0);
 
             rb.AddForce(direction, ForceMode.Impulse);
         }
@@ -174,8 +189,11 @@ public class BallController : NetworkBehaviour
         rb.constraints = RigidbodyConstraints.FreezeAll;
         gameStarted = false;
         collisionTimeCount = 0;
+
         kickData.firstKickSuccess = false;
         kickData.Player = serveSide.Value;
+
+        ResetRotationKick();
 
         if(IsHost)
         {

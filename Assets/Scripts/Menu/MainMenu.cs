@@ -9,6 +9,7 @@ public class MainMenu : MonoBehaviour
 {
     public Toggle IsHostToggle;
     public TMP_InputField playerName;
+    public TMP_InputField passwordInput;
     public Button startGameBtn;
     public Button exitBtn;
     public TMP_InputField hostIpInput;
@@ -18,7 +19,7 @@ public class MainMenu : MonoBehaviour
     public Button settingsButton;
     public Button leaderBoardButton;
     public GameObject settingsPanel;
-    public TextMeshProUGUI connectionErrorText;
+    public TextMeshProUGUI errorText;
 
     // monster show variables
     public GameObject monster;
@@ -27,15 +28,18 @@ public class MainMenu : MonoBehaviour
 
     private PlayerInfo playerInfo;
     private ConnectionCoroutine<LeaderBoardElement> myPointCoroutine;
+    private ConnectionCoroutine<object> authCheck;
     private void Start()
     {
-        startGameBtn.onClick.AddListener(StartNewGame);
+        startGameBtn.onClick.AddListener(InstantiatStartGame);
         playerName.onValueChanged.AddListener(PlayerNameChanged);
         leaderBoardButton.onClick.AddListener(SwitchCanvas);
         exitBtn.onClick.AddListener(() => { Application.Quit(); });
 
         playerInfo = new PlayerInfo();
         playerName.text = playerInfo.PlayerName.ToString();
+
+        passwordInput.contentType = TMP_InputField.ContentType.Password;
 
         mainCanvas.gameObject.SetActive(true);
         leaderBoardCanvas.gameObject.SetActive(false);
@@ -52,24 +56,22 @@ public class MainMenu : MonoBehaviour
     private void Update()
     {
         time += Time.deltaTime;
-        if (myPointCoroutine.state == LoadingState.DataAvailable)
+        if (myPointCoroutine?.state == LoadingState.DataAvailable)
         {
             Debug.Log("MyPoints loaded: " + myPointCoroutine.Result.ToString());
             myPontsText.text = "MyScore: " + myPointCoroutine.Result.Score;
         }
-        else if (myPointCoroutine.state == LoadingState.Error || myPointCoroutine.state == LoadingState.NotLoaded)
+        else if (myPointCoroutine?.state == LoadingState.Error || myPointCoroutine?.state == LoadingState.NotLoaded)
         {
             myPontsText.text = "MyScore: -";
             if (time >= 10)
             {
-                if (myPointCoroutine.Coroutine() != null)
-                {
-                    StopCoroutine(myPointCoroutine.Coroutine());
-                }
-                myPointCoroutine = DatabaseHandler.GetMyPoints(playerInfo.PlayerName.ToString());
-                StartCoroutine(myPointCoroutine.Coroutine());
-                time = 0;
+                RefreshMyPoints();
             }
+        }
+        else if (time >= 60)
+        {
+            RefreshMyPoints();
         }
 
         RotateMonster();
@@ -83,25 +85,86 @@ public class MainMenu : MonoBehaviour
             hostIpInput.interactable = true;
         }
 
-        if(connectingTime < 5 && connecting)
+        HostAvailabilityCheck();
+        PasswordValidityCheck();
+    }
+
+    void RefreshMyPoints()
+    {
+        if(playerInfo == null || string.IsNullOrEmpty(playerInfo.PlayerName.ToString())) return;
+        if (myPointCoroutine?.Coroutine() != null)
+        {
+            StopCoroutine(myPointCoroutine.Coroutine());
+        }
+        myPointCoroutine = DatabaseHandler.GetMyPoints(playerInfo.PlayerName.ToString());
+        StartCoroutine(myPointCoroutine.Coroutine());
+        time = 0;
+    }
+
+    void HostAvailabilityCheck()
+    {
+        if (connectingTime < 5 && connecting)
         {
             connectingTime += Time.deltaTime;
-            connectionErrorText.text = "";
+            errorText.text = "";
         }
-        else if(connecting)
+        else if (connecting)
         {
-            NetworkManager.Singleton?.Shutdown();
+            NetworkManager.Singleton.Shutdown();
             connecting = false;
-            connectionErrorText.text = "Can't connect to a host!";
+            errorText.text = "Can't connect to a host!";
         }
     }
 
+    void PasswordValidityCheck()
+    {
+        var state = authCheck?.state;
+        if(state == LoadingState.DataAvailable && !gameStarted)
+        {
+            StopAllCoroutines();
+            SecureStore.SavePassword(playerName.text, passwordInput.text); // Only save the password if the server authentication was successful
+            StartNewGame();
+        }
+        else if(state == LoadingState.Error)
+        {
+            StopAllCoroutines();
+            errorText.text = "Authentication error!";
+        }
+    }
+
+    void InstantiatStartGame()
+    {
+        if (string.IsNullOrEmpty(playerName.text))
+        {
+            errorText.text = "Player name can't be empty!";
+            return;
+        };
+        if (string.IsNullOrEmpty(passwordInput.text))
+        {
+            errorText.text = "Password can't be empty!";
+            return;
+        }
+
+        if (!SecureStore.SecureCheck(playerName.text, passwordInput.text))
+        {
+            errorText.text = "Wrong password!";
+            return;
+        }
+
+        if (authCheck?.Coroutine() != null) StopCoroutine(authCheck.Coroutine());
+        authCheck = DatabaseHandler.CheckAuth(
+            playerName.text,
+            SecureStore.CreateHashWithConstSalt(playerName.text)
+        );
+        StartCoroutine(authCheck.Coroutine());
+        print("authCheck started!");
+    }
+    private bool gameStarted = false;
     void StartNewGame()
     {
-        if (string.IsNullOrEmpty(playerName.text)) return;
-
-        if (startNetworkManager(IsHostToggle.isOn))
+        if (StartNetworkManager(IsHostToggle.isOn))
         {
+            gameStarted = true;
             if (IsHostToggle.isOn)
             {
                 SceneLoader.LoadScene(SceneLoader.Scene.LobbyScene, NetworkManager.Singleton);
@@ -114,7 +177,7 @@ public class MainMenu : MonoBehaviour
     {
         if (rotateRight)
         {
-            monster.transform.Rotate(Vector3.up * Time.deltaTime * rotationSpeed);
+            monster.transform.Rotate(rotationSpeed * Time.deltaTime * Vector3.up);
             if (monster.transform.rotation.eulerAngles.y - 180 >= rotationAngleLimit)
             {
                 rotateRight = false;
@@ -122,7 +185,7 @@ public class MainMenu : MonoBehaviour
         }
         else
         {
-            monster.transform.Rotate(Vector3.down * Time.deltaTime * rotationSpeed);
+            monster.transform.Rotate(rotationSpeed * Time.deltaTime * Vector3.down);
             if (monster.transform.rotation.eulerAngles.y - 180 < -rotationAngleLimit)
             {
                 rotateRight = true;
@@ -135,15 +198,20 @@ public class MainMenu : MonoBehaviour
         if (newName.Length > 32) return;
         playerInfo.PlayerName = newName;
         playerInfo.StorePlayerInfo();
+        time = 57; // set the time so that if the name is stopped being changed, the points will be refreshed
     }
     private float connectingTime = 0;
     private bool connecting = false;
-    bool startNetworkManager(bool isHost)
+    bool StartNetworkManager(bool isHost)
     {
-        NetworkManager.Singleton?.Shutdown();
+        NetworkManager.Singleton.Shutdown();
 
         if (isHost)
         {
+            NetworkManager.Singleton.GetComponent<UnityTransport>().SetConnectionData(
+                "0.0.0.0",
+                7777
+            );
             return NetworkManager.Singleton.StartHost();
         }
         else

@@ -4,7 +4,7 @@ using UnityEngine;
 public partial class PlayerController
 {
     [ServerRpc(RequireOwnership = false)]
-    private void KickingServerRpc(NetworkObjectReference ballReference, Kick kickData)
+    private void KickingServerRpc(NetworkObjectReference ballReference, Kick kickData, bool rotationKick, bool gravityChange)
     {
         if (ballReference.TryGet(out NetworkObject ball))
         {

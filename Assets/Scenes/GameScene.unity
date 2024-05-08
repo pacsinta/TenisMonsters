@@ -3538,6 +3538,8 @@ MonoBehaviour:
   initialMass: 1
   groundCollisinMaxTime: 1
   gameController: {fileID: 1537785845}
+  rotationUpdateTime: 0.5
+  rotationForce: 2
 --- !u!114 &7305089366303975756
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3560,7 +3562,7 @@ MonoBehaviour:
   SyncScaleX: 0
   SyncScaleY: 0
   SyncScaleZ: 0
-  PositionThreshold: 0.001
+  PositionThreshold: 0.0001
   RotAngleThreshold: 0.01
   ScaleThreshold: 0.01
   UseQuaternionSynchronization: 0

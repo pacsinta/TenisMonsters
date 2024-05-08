@@ -15,7 +15,7 @@ public enum LoadingState
 public class ConnectionCoroutine<T>
 {
     private readonly UnityWebRequest www;
-    private bool parseResponse = true;
+    private readonly bool parseResponse = true;
     private T result;
     public T Result
     {

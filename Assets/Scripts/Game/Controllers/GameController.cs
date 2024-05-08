@@ -243,9 +243,9 @@ public class GameController : NetworkBehaviour
                                                                 _hostPlayerInfo.Value.PlayerName.ToString(),
                                                                 IsHost);
 
-        hostPlayerObject.SetActive(false);
+        hostPlayerObject.GetComponent<PlayerController>().enabled = false;
         clientPlayerObject.SetActive(false);
-        gameObject.SetActive(false);
+        gameObject.GetComponent<PlayerController>().enabled = false;
     }
     [ServerRpc(RequireOwnership = false)]
     public void EndGameServerRPC(PlayerSide winner)

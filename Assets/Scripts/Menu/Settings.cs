@@ -1,3 +1,4 @@
+using Assets.Scripts;
 using System.Linq;
 using TMPro;
 using UnityEngine;
@@ -10,7 +11,14 @@ public class Settings : MonoBehaviour
     public TMP_Dropdown refreshRateDropdown;
     public Slider volumeSlider;
     public GameObject audioObject;
+    public TMP_InputField changePasswordInput;
+    public Button changePasswordButton;
 
+    public TMP_InputField playerName;
+    public TextMeshProUGUI errorText;
+    public TMP_InputField originalPasswordInput;
+
+    private ConnectionCoroutine<object> changePasswordCoroutine;
     void Start()
     {
         windowModeDropdown.value = PlayerPrefs.GetInt("windowmode", 0);
@@ -30,6 +38,9 @@ public class Settings : MonoBehaviour
 
         volumeSlider.onValueChanged.AddListener(SetVolume);
         volumeSlider.value = PlayerPrefs.GetFloat("volume", 1);
+
+        changePasswordButton.onClick.AddListener(ChangePassword);
+        changePasswordInput.contentType = TMP_InputField.ContentType.Password;
     }
 
     void SetWindowMode(int mode)
@@ -92,5 +103,48 @@ public class Settings : MonoBehaviour
 
         var refreshRate = PlayerPrefs.GetInt("refreshrate", 3);
         SetWindowRefreshRate(refreshRate);
+    }
+
+    void ChangePassword()
+    {
+        if (string.IsNullOrEmpty(changePasswordInput.text))
+        {
+            errorText.text = "The new password can't be empty!";
+            return;
+        }
+        if (!SecureStore.SecureCheck(playerName.text, originalPasswordInput.text))
+        {
+            errorText.text = "Wrong password!";
+            return;
+        }
+
+        if (changePasswordCoroutine?.Coroutine() != null) StopCoroutine(changePasswordCoroutine.Coroutine());
+        changePasswordCoroutine = DatabaseHandler.ChangePassword(
+            playerName.text, 
+            SecureStore.GetHashedPassword(playerName.text), 
+            SecureStore.CreateHashWithConstSalt(changePasswordInput.text));
+        StartCoroutine(changePasswordCoroutine.Coroutine());
+
+        changePasswordInput.text = "";
+    }
+
+    void CheckUpdatedPassword()
+    {
+        if (changePasswordCoroutine == null) return;
+        switch(changePasswordCoroutine.state)
+        {
+            case LoadingState.Error:
+                errorText.text = "Error changing password!";
+                break;
+            case LoadingState.DataAvailable:
+                errorText.text = "Password changed!";
+                SecureStore.SavePassword(playerName.text, changePasswordInput.text);
+                break;
+        }
+    }
+
+    private void Update()
+    {
+        CheckUpdatedPassword();
     }
 }
