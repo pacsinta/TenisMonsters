@@ -8,6 +8,7 @@ using UnityEngine.UI;
 public class EndHandler : MonoBehaviour
 {
     public TextMeshProUGUI endText;
+    public TextMeshProUGUI end2Text;
     public TextMeshProUGUI errorText;
     public Button exitBtn;
     public Button tryAgainBtn;
@@ -15,6 +16,7 @@ public class EndHandler : MonoBehaviour
     private ConnectionCoroutine<object> uploadScoreCoroutine;
     private bool gameEnded = false;
     private PlayerSide? winnerPlayer;
+    private string oponentPlayerName;
     private GameObject audioObject;
     private bool IsHost = false;
 
@@ -22,6 +24,7 @@ public class EndHandler : MonoBehaviour
     {
         errorText.text = "Loading...";
         endText.text = "";
+        end2Text.text = "";
         SetButtonVisibility(tryAgainBtn, ButtonVisibility.Hide);
         SetButtonVisibility(exitBtn, ButtonVisibility.Disabled);
         exitBtn.onClick.AddListener(() => SceneLoader.LoadScene(SceneLoader.Scene.MenuScene, NetworkManager.Singleton, true));
@@ -48,6 +51,7 @@ public class EndHandler : MonoBehaviour
         if (winnerPlayer == null)
         {
             endText.text = "Draw!";
+            end2Text.text = "";
         }
         else
         {
@@ -55,6 +59,7 @@ public class EndHandler : MonoBehaviour
                                             (winnerPlayer == PlayerSide.Client && !IsHost);
 
             endText.text = isCurrentPlayerWinner ? "You won!" : "You lost!";
+            end2Text.text = isCurrentPlayerWinner ? oponentPlayerName + " lost!" : oponentPlayerName + " won!";
             playWinnerAudio = isCurrentPlayerWinner;
         }
 
@@ -87,6 +92,7 @@ public class EndHandler : MonoBehaviour
     {
         this.winnerPlayer = winnerPlayer;
         this.IsHost = IsHost;
+        oponentPlayerName = IsHost ? clientName : hostName;
         gameEnded = true;
 
         int hostScore = 0;
