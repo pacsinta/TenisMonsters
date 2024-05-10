@@ -9,7 +9,7 @@ public enum GameMode
     FirstToWin = 2
 }
 
-public struct EnabledPowerBalls
+public struct EnabledPowerBalls : INetworkSerializeByMemcpy
 {
     public bool GravityPowerBall;
     public bool SpeedPowerBall;
@@ -20,12 +20,11 @@ public class GameInfo : INetworkSerializable
 {
     private GameMode gameMode;
     public GameMode GameMode => gameMode;
-    private bool gravityPowerballEnabled = true;
-    public bool GravityPowerballEnabled => gravityPowerballEnabled;
-    private bool rotationKickPowerballEnabled = true;
-    public bool RotationKickPowerballEnabled => rotationKickPowerballEnabled;
-    private bool speedPowerballEnabled = true;
-    public bool SpeedPowerballEnabled => speedPowerballEnabled;
+    private EnabledPowerBalls enabledPowerBalls = new()
+            { GravityPowerBall = true, SpeedPowerBall = true, RotationPowerBall = true };
+    public bool GravityPowerballEnabled => enabledPowerBalls.GravityPowerBall;
+    public bool RotationKickPowerballEnabled => enabledPowerBalls.RotationPowerBall;
+    public bool SpeedPowerballEnabled => enabledPowerBalls.SpeedPowerBall;
     private int powerBallSpawnTime = 10;
     public int PowerBallSpawnTime => powerBallSpawnTime;
     private int powerBallLiveTime = 5;
@@ -42,9 +41,7 @@ public class GameInfo : INetworkSerializable
     public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
     {
         serializer.SerializeValue(ref gameMode);
-        serializer.SerializeValue(ref gravityPowerballEnabled);
-        serializer.SerializeValue(ref rotationKickPowerballEnabled);
-        serializer.SerializeValue(ref speedPowerballEnabled);
+        serializer.SerializeValue(ref enabledPowerBalls);
         serializer.SerializeValue(ref powerBallSpawnTime);
         serializer.SerializeValue(ref powerBallLiveTime);
         serializer.SerializeValue(ref multiplePowerBalls);
@@ -54,12 +51,7 @@ public class GameInfo : INetworkSerializable
     }
     public EnabledPowerBalls GetAllPowerballEnabled()
     {
-        return new EnabledPowerBalls
-        {
-            GravityPowerBall = gravityPowerballEnabled,
-            SpeedPowerBall = speedPowerballEnabled,
-            RotationPowerBall = rotationKickPowerballEnabled
-        };
+        return enabledPowerBalls;
     }
 
     public void SetGameMode(int mode)
@@ -69,17 +61,17 @@ public class GameInfo : INetworkSerializable
     }
     public void SetGravityPowerballEnabled(bool enabled)
     {
-        gravityPowerballEnabled = enabled;
+        enabledPowerBalls.GravityPowerBall = enabled;
         PlayerPrefs.SetInt("GravityPowerballEnabled", enabled ? 1 : 0);
     }
     public void SetRotationKickPowerballEnabled(bool enabled)
     {
-        rotationKickPowerballEnabled = enabled;
+        enabledPowerBalls.RotationPowerBall = enabled;
         PlayerPrefs.SetInt("RotationKickPowerballEnabled", enabled ? 1 : 0);
     }
     public void SetSpeedPowerballEnabled(bool enabled)
     {
-        speedPowerballEnabled = enabled;
+        enabledPowerBalls.SpeedPowerBall = enabled;
         PlayerPrefs.SetInt("SpeedPowerballEnabled", enabled ? 1 : 0);
     }
     public void SetPowerBallSpawnTime(float time)
@@ -118,9 +110,9 @@ public class GameInfo : INetworkSerializable
     public GameInfo()
     {
         gameMode = (GameMode)PlayerPrefs.GetInt("GameMode");
-        gravityPowerballEnabled = PlayerPrefs.GetInt("GravityPowerballEnabled") == 1;
-        rotationKickPowerballEnabled = PlayerPrefs.GetInt("RotationKickPowerballEnabled") == 1;
-        speedPowerballEnabled = PlayerPrefs.GetInt("SpeedPowerballEnabled") == 1;
+        enabledPowerBalls.GravityPowerBall = PlayerPrefs.GetInt("GravityPowerballEnabled") == 1;
+        enabledPowerBalls.RotationPowerBall = PlayerPrefs.GetInt("RotationKickPowerballEnabled") == 1;
+        enabledPowerBalls.SpeedPowerBall = PlayerPrefs.GetInt("SpeedPowerballEnabled") == 1;
         powerBallSpawnTime = PlayerPrefs.GetInt("PowerBallSpawnTime");
         powerBallLiveTime = PlayerPrefs.GetInt("PowerBallLiveTime", 5);
         multiplePowerBalls = PlayerPrefs.GetInt("MultiplePowerBalls") == 1;
