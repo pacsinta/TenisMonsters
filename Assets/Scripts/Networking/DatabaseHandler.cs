@@ -9,9 +9,13 @@ namespace Assets.Scripts.Networking
     public static class DatabaseHandler
     {
         public static string url = "http://localhost:6000/";
-        public static ConnectionCoroutine<List<LeaderBoardElement>> GetLeaderBoard()
+        public static ConnectionCoroutine<List<LeaderBoardElement>> GetLeaderBoard(int maxPlayerCount = -1)
         {
             var www = UnityWebRequest.Get(url + "leaderboard");
+            if (maxPlayerCount != -1)
+            {
+                www.url += "?limit=" + maxPlayerCount;
+            }
             return new ConnectionCoroutine<List<LeaderBoardElement>>(www);
         }
 

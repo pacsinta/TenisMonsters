@@ -28,7 +28,6 @@ public class MainMenu : MonoBehaviour
     {
         startGameBtn.onClick.AddListener(InstantiatStartGame);
         playerName.onValueChanged.AddListener(PlayerNameChanged);
-        leaderBoardButton.onClick.AddListener(SwitchCanvas);
         exitBtn.onClick.AddListener(() => { Application.Quit(); });
 
         playerInfo = new PlayerInfo();

@@ -1,5 +1,6 @@
 using Assets.Scripts.Networking;
 using System.Collections.Generic;
+using System.Linq;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -10,7 +11,22 @@ namespace Assets.Scripts.Menu.Leaderboard
     {
         public GameObject scrollViewContent;
         public GameObject scrollViewContentPrefab;
+        public TMP_InputField maxPlayerCount;
         private ConnectionCoroutine<List<LeaderBoardElement>> fetchLeaderboardCoroutine;
+
+        private void Start()
+        {
+            maxPlayerCount.onValueChanged.AddListener((string value) => 
+            { 
+                if (string.IsNullOrEmpty(value) || !value.All(c => char.IsDigit(c)))
+                {
+                    maxPlayerCount.text = "";
+                    return;
+                }
+                    
+                Refresh();
+            });
+        }
 
         private void OnEnable()
         {
@@ -72,12 +88,25 @@ namespace Assets.Scripts.Menu.Leaderboard
 
         private void Refresh()
         {
-            print("Refreshing the leaderboard");
+            
             if (fetchLeaderboardCoroutine?.Coroutine() != null)
             {
                 StopCoroutine(fetchLeaderboardCoroutine.Coroutine());
             }
-            fetchLeaderboardCoroutine = DatabaseHandler.GetLeaderBoard();
+            int maxPlayers = -1;
+            if(!string.IsNullOrEmpty(maxPlayerCount.text))
+            {
+                try
+                {
+                    maxPlayers = int.Parse(maxPlayerCount.text);
+                }
+                catch
+                {
+                    maxPlayers = -1;
+                }
+            }
+            print("Refreshing the leaderboard with " + maxPlayers + " maxPlayerCount");
+            fetchLeaderboardCoroutine = DatabaseHandler.GetLeaderBoard(maxPlayers);
             StartCoroutine(fetchLeaderboardCoroutine.Coroutine());
             time = 0;
         }
