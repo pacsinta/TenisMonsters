@@ -1,5 +1,4 @@
 using Assets.Scripts;
-using Assets.Scripts.Menu.Leaderboard;
 using Assets.Scripts.Networking;
 using TMPro;
 using Unity.Netcode;
@@ -75,14 +74,14 @@ public class MainMenu : MonoBehaviour
     {
         if(authCheck == null) return;
         var state = authCheck.state;
-        if(state == LoadingState.DataAvailable && !gameStarted)
+        if(state == ELoadingState.DataAvailable && !gameStarted)
         {
             var _ = authCheck.Result;
             StopAllCoroutines();
             SecureStore.SavePassword(playerName.text, passwordInput.text); // Only save the password if the server authentication was successful
             StartNewGame();
         }
-        else if(state == LoadingState.Error)
+        else if(state == ELoadingState.Error)
         {
             StopAllCoroutines();
             errorText.text = "Authentication error!";

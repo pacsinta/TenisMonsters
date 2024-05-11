@@ -3,8 +3,8 @@ using Unity.Netcode;
 
 struct KickData
 {
-    private PlayerSide player;
-    public PlayerSide Player
+    private EPlayerSide player;
+    public EPlayerSide Player
     {
         readonly get => player;
         set

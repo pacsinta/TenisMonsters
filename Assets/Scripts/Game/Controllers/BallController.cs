@@ -1,7 +1,6 @@
 using Assets.Scripts;
 using Unity.Netcode;
 using UnityEngine;
-using UnityEngine.Assertions;
 
 public class BallController : NetworkBehaviour
 {
@@ -16,7 +15,7 @@ public class BallController : NetworkBehaviour
     private SphereCollider colldider;
     private Vector3 startLocation;
     private KickData kickData;
-    private readonly NetworkVariable<PlayerSide> serveSide = new (PlayerSide.Host);
+    private readonly NetworkVariable<EPlayerSide> serveSide = new (EPlayerSide.Host);
 
     readonly NetworkVariable<bool> colliderEnabled = new (false);
     void Start()
@@ -72,7 +71,7 @@ public class BallController : NetworkBehaviour
     {
         StartGame();
     }
-    public void Kicked(PlayerSide player, bool rotationKick = false)
+    public void Kicked(EPlayerSide player, bool rotationKick = false)
     {
         kickData.firstKickSuccess = true;
         kickData.Player = player;
@@ -103,8 +102,8 @@ public class BallController : NetworkBehaviour
             print("End: out");
             gameController.EndTurn(kickData.bounced ? kickData.Player : Utils.Swap(kickData.Player));
         }
-        else if(kickData.Player == PlayerSide.Host && CourtData.IsHostSide(location) ||
-                kickData.Player == PlayerSide.Client && CourtData.IsClientSide(location))
+        else if(kickData.Player == EPlayerSide.Host && CourtData.IsHostSide(location) ||
+                kickData.Player == EPlayerSide.Client && CourtData.IsClientSide(location))
         {
             print("End: same side");
             gameController.EndTurn(Utils.Swap(kickData.Player)); // If the player can't kick the ball to the other side, the other player wins
@@ -181,7 +180,7 @@ public class BallController : NetworkBehaviour
     public void ResetObject()
     {
         transform.position = startLocation;
-        if(PlayerSide.Client == serveSide.Value)
+        if(EPlayerSide.Client == serveSide.Value)
         {
             transform.position = new Vector3(-transform.position.x, transform.position.y, -transform.position.z);
         }

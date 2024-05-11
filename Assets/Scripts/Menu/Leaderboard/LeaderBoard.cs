@@ -39,7 +39,7 @@ namespace Assets.Scripts.Menu.Leaderboard
         private void Update()
         {
             time += Time.deltaTime;
-            if (fetchLeaderboardCoroutine.state == LoadingState.DataAvailable)
+            if (fetchLeaderboardCoroutine.state == ELoadingState.DataAvailable)
             {
                 RemoveAllChildren(scrollViewContent);
 
@@ -56,7 +56,7 @@ namespace Assets.Scripts.Menu.Leaderboard
                     CreateText(scrollViewContent.transform, "Leaderboard is empty", "EmptyLeaderboardText");
                 }
             }
-            else if (fetchLeaderboardCoroutine.state == LoadingState.Error)
+            else if (fetchLeaderboardCoroutine.state == ELoadingState.Error)
             {
                 RemoveAllChildren(scrollViewContent);
                 CreateText(scrollViewContent.transform, "Can't fetch the leaderboard", "ErrorText", Color.red);
@@ -64,8 +64,8 @@ namespace Assets.Scripts.Menu.Leaderboard
 
 
             if (time >= 10 &&
-                (fetchLeaderboardCoroutine.state == LoadingState.NotLoaded ||
-                fetchLeaderboardCoroutine.state == LoadingState.Error))
+                (fetchLeaderboardCoroutine.state == ELoadingState.NotLoaded ||
+                fetchLeaderboardCoroutine.state == ELoadingState.Error))
             {
                 Refresh();
             }

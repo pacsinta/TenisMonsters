@@ -1,4 +1,3 @@
-using Assets.Scripts;
 using Assets.Scripts.Networking;
 using System.Linq;
 using TMPro;
@@ -132,11 +131,11 @@ public class Settings : MonoBehaviour
         if (changePasswordCoroutine == null) return;
         switch(changePasswordCoroutine.state)
         {
-            case LoadingState.Error:
+            case ELoadingState.Error:
                 errorText.text = "Error changing password!";
                 _ = changePasswordCoroutine.Result;
                 break;
-            case LoadingState.DataAvailable:
+            case ELoadingState.DataAvailable:
                 _ = changePasswordCoroutine.Result;
                 errorText.text = "Password changed!";
                 SecureStore.SavePassword(playerName.text, changePasswordInput.text);

@@ -21,14 +21,14 @@ public class NewBehaviourScript : MonoBehaviour
     void Update()
     {
         time += Time.deltaTime;
-        if (myPointCoroutine?.state == LoadingState.DataAvailable)
+        if (myPointCoroutine?.state == ELoadingState.DataAvailable)
         {
             Debug.Log("MyPoints loaded: " + myPointCoroutine.Result.ToString());
             myPontsText.text = "MyScore: " + myPointCoroutine.Result.Score;
         }
-        else if (myPointCoroutine?.state == LoadingState.Error || myPointCoroutine?.state == LoadingState.NotLoaded)
+        else if (myPointCoroutine?.state == ELoadingState.Error || myPointCoroutine?.state == ELoadingState.NotLoaded)
         {
-            if(myPointCoroutine?.state == LoadingState.Error) myPontsText.text = "MyScore: -";
+            if(myPointCoroutine?.state == ELoadingState.Error) myPontsText.text = "MyScore: -";
             if (time >= 10)
             {
                 RefreshMyPoints();

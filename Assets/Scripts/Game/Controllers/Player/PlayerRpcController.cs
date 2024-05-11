@@ -1,30 +1,33 @@
 using Unity.Netcode;
 using UnityEngine;
 
-public partial class PlayerController
+namespace Assets.Scripts.Game.Controllers.Player
 {
-    [ServerRpc(RequireOwnership = false)]
-    private void KickingServerRpc(NetworkObjectReference ballReference, Kick kickData, bool rotationKick, bool gravityChange)
+    public partial class PlayerController
     {
-        if (ballReference.TryGet(out NetworkObject ball))
+        [ServerRpc(RequireOwnership = false)]
+        private void KickingServerRpc(NetworkObjectReference ballReference, Kick kickData, bool rotationKick, bool gravityChange)
         {
-            Kicking(ball, kickData, true);
+            if (ballReference.TryGet(out NetworkObject ball))
+            {
+                Kicking(ball, kickData, true, rotationKick, gravityChange);
+            }
         }
-    }
 
-    [ClientRpc]
-    void ResetObejctClientRpc(Vector3 position)
-    {
-        transform.position = position;
-    }
-
-    [ServerRpc(RequireOwnership = false)]
-    void DestroyServerRpc(NetworkObjectReference objectReference)
-    {
-        if (!objectReference.TryGet(out NetworkObject networkObject))
+        [ClientRpc]
+        void ResetObejctClientRpc(Vector3 position)
         {
-            Debug.Log("error");
+            transform.position = position;
         }
-        Destroy(networkObject);
+
+        [ServerRpc(RequireOwnership = false)]
+        void DestroyServerRpc(NetworkObjectReference objectReference)
+        {
+            if (!objectReference.TryGet(out NetworkObject networkObject))
+            {
+                Debug.Log("error");
+            }
+            Destroy(networkObject);
+        }
     }
 }

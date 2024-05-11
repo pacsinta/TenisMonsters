@@ -15,7 +15,7 @@ public class EndHandler : MonoBehaviour
 
     private ConnectionCoroutine<object> uploadScoreCoroutine;
     private bool gameEnded = false;
-    private PlayerSide? winnerPlayer;
+    private EPlayerSide? winnerPlayer;
     private string oponentPlayerName;
     private GameObject audioObject;
     private bool IsHost = false;
@@ -55,8 +55,8 @@ public class EndHandler : MonoBehaviour
         }
         else
         {
-            bool isCurrentPlayerWinner = (winnerPlayer == PlayerSide.Host && IsHost) ||
-                                            (winnerPlayer == PlayerSide.Client && !IsHost);
+            bool isCurrentPlayerWinner = (winnerPlayer == EPlayerSide.Host && IsHost) ||
+                                            (winnerPlayer == EPlayerSide.Client && !IsHost);
 
             endText.text = isCurrentPlayerWinner ? "You won!" : "You lost!";
             end2Text.text = isCurrentPlayerWinner ? oponentPlayerName + " lost!" : oponentPlayerName + " won!";
@@ -68,19 +68,20 @@ public class EndHandler : MonoBehaviour
             audioObject.GetComponent<Audio>().PlayEndingSong(playWinnerAudio);
         }
 
-        if (uploadScoreCoroutine.state == LoadingState.DataAvailable)
+        if (uploadScoreCoroutine.state == ELoadingState.DataAvailable)
         {
+            _ = uploadScoreCoroutine.Result;
             errorText.text = "Score uploaded!";
             SetButtonVisibility(tryAgainBtn, ButtonVisibility.Hide);
             SetButtonVisibility(exitBtn, ButtonVisibility.ShowAndEnable);
         }
-        else if (uploadScoreCoroutine.state == LoadingState.NotLoaded && timeOutTime < 10)
+        else if (uploadScoreCoroutine.state == ELoadingState.NotLoaded && timeOutTime < 10)
         {
             errorText.text = "Loading...";
             SetButtonVisibility(tryAgainBtn, ButtonVisibility.Hide);
             SetButtonVisibility(exitBtn, ButtonVisibility.Disabled);
         }
-        else // error or timeout
+        else if(uploadScoreCoroutine.state != ELoadingState.Loaded) // error or timeout
         {
             errorText.text = "Can't upload the score";
             SetButtonVisibility(tryAgainBtn, ButtonVisibility.ShowAndEnable);
@@ -88,7 +89,7 @@ public class EndHandler : MonoBehaviour
         }
     }
 
-    public void InstantiateGameEnd(PlayerSide? winnerPlayer, string clientName, string hostName, bool IsHost)
+    public void InstantiateGameEnd(EPlayerSide? winnerPlayer, string clientName, string hostName, bool IsHost)
     {
         this.winnerPlayer = winnerPlayer;
         this.IsHost = IsHost;
@@ -99,10 +100,10 @@ public class EndHandler : MonoBehaviour
         int clientScore = 0;
         switch (winnerPlayer)
         {
-            case PlayerSide.Host:
+            case EPlayerSide.Host:
                 hostScore = 2; clientScore = -1;
                 break;
-            case PlayerSide.Client:
+            case EPlayerSide.Client:
                 hostScore = -1; clientScore = 2;
                 break;
             case null:

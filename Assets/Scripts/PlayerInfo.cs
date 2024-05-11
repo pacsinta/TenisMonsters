@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace Assets.Scripts
 {
-    public enum PlayerSide
+    public enum EPlayerSide
     {
         Host = 0,
         Client = 1
