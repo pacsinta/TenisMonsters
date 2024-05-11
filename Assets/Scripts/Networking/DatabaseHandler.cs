@@ -8,7 +8,7 @@ namespace Assets.Scripts.Networking
 {
     public static class DatabaseHandler
     {
-        public static string url = "http://localhost:6000/";
+        private const string url = "http://localhost:6000/";
         public static ConnectionCoroutine<List<LeaderBoardElement>> GetLeaderBoard(int maxPlayerCount = -1)
         {
             var www = UnityWebRequest.Get(url + "leaderboard");
