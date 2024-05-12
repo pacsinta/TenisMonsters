@@ -1,4 +1,6 @@
 using Assets.Scripts.Networking;
+using System;
+using System.Collections.Generic;
 using System.Linq;
 using TMPro;
 using UnityEngine;
@@ -18,20 +20,18 @@ public class Settings : MonoBehaviour
     public TextMeshProUGUI errorText;
     public TMP_InputField originalPasswordInput;
 
+    public Button resetGameButton;
+
     private ConnectionCoroutine<object> changePasswordCoroutine;
     void Start()
     {
         windowModeDropdown.value = PlayerPrefs.GetInt("windowmode", 0);
         windowModeDropdown.onValueChanged.AddListener(SetWindowMode);
 
-        var resolutions = Screen.resolutions.Select(res => res.width + "x" + res.height).ToList();
-        resolutions.Reverse();
-        resolutionDropdown.AddOptions(resolutions);
-        resolutionDropdown.value = (Screen.resolutions.Length - 1) 
-                                        - Screen.resolutions.ToList()
-                                            .FindIndex(res => res.width == Screen.width && res.height == Screen.height);
-
+        InitResolutions();
+        resolutionDropdown.AddOptions(resolutionOptions);
         resolutionDropdown.onValueChanged.AddListener(SetResolution);
+        resolutionDropdown.value = PlayerPrefs.GetInt("resolution", GetDefaultResolution());
 
         refreshRateDropdown.onValueChanged.AddListener(SetWindowRefreshRate);
         refreshRateDropdown.value = PlayerPrefs.GetInt("refreshrate", 3);
@@ -40,6 +40,15 @@ public class Settings : MonoBehaviour
         volumeSlider.value = PlayerPrefs.GetFloat("volume", 1);
 
         changePasswordButton.onClick.AddListener(ChangePassword);
+        resetGameButton.onClick.AddListener(ResetGame);
+    }
+
+    List<string> resolutionOptions = new();
+    void InitResolutions()
+    {
+        var resolutions = Screen.resolutions.Select(res => res.width + "x" + res.height).ToHashSet();
+        resolutionOptions = resolutions.ToList();
+        resolutionOptions.Reverse();
     }
 
     void SetWindowMode(int mode)
@@ -66,8 +75,10 @@ public class Settings : MonoBehaviour
 
     void SetResolution(int resolution)
     {
-        var selectedResoltuion = Screen.resolutions[Screen.resolutions.Length - resolution - 1];
-        Screen.SetResolution(selectedResoltuion.width, selectedResoltuion.height, Screen.fullScreenMode);
+        var options = resolutionDropdown.options;
+        var selectedResoltuion = options[resolution].text.Split('x');
+
+        Screen.SetResolution(Convert.ToInt32(selectedResoltuion[0]), Convert.ToInt32(selectedResoltuion[1]), Screen.fullScreenMode);
         PlayerPrefs.SetInt("resolution", resolution);
     }
 
@@ -91,17 +102,27 @@ public class Settings : MonoBehaviour
         PlayerPrefs.SetInt("refreshrate", rate);
     }
 
+    int GetDefaultResolution()
+    {
+        return resolutionOptions.Count > 1 ? 1 : 0;
+    }
     public void RestoreSettings()
     {
-        int defaultResolution = Screen.resolutions.Length - 2 >= 0 ? Screen.resolutions.Length - 2 : 0; // The default resolution is the second biggest resolution
+        InitResolutions();
+
+        int defaultResolution = GetDefaultResolution();
         var resolution = PlayerPrefs.GetInt("resolution", defaultResolution);
+        
         SetResolution(resolution);
+        resolutionDropdown.value = resolution;
 
         var windowMode = PlayerPrefs.GetInt("windowmode", 0);
         SetWindowMode(windowMode);
+        windowModeDropdown.value = windowMode;
 
         var refreshRate = PlayerPrefs.GetInt("refreshrate", 3);
         SetWindowRefreshRate(refreshRate);
+        refreshRateDropdown.value = refreshRate;
     }
 
     void ChangePassword()
@@ -148,5 +169,11 @@ public class Settings : MonoBehaviour
     private void Update()
     {
         CheckUpdatedPassword();
+    }
+
+    void ResetGame()
+    {
+        PlayerPrefs.DeleteAll();
+        RestoreSettings();
     }
 }
