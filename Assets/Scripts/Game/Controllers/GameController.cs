@@ -1,4 +1,5 @@
 using Assets.Scripts;
+using Assets.Scripts.Game.Controllers.Player;
 using System.Collections.Generic;
 using System.Linq;
 using TMPro;
@@ -50,16 +51,16 @@ public class GameController : NetworkBehaviour
 
             foreach (var client in clients)
             {
-                instantiatePlayerObject(client);
+                InstantiatePlayerObject(client);
                 _clientPlayerInfo.Value = new PlayerInfo(client.ClientId.ToString());
             }
         }
         
-        walls.SetActive(_gameInfo.Value.wallsEnabled);
-        Time.timeScale = _gameInfo.Value.timeSpeed;
+        walls.SetActive(_gameInfo.Value.WallsEnabled);
+        Time.timeScale = _gameInfo.Value.TimeSpeed;
     }
 
-    private void instantiatePlayerObject(NetworkClient client)
+    private void InstantiatePlayerObject(NetworkClient client)
     {
         Vector3 spawnPosition = PlayerStartPosition;
         Quaternion spawnRotation = Quaternion.identity;
@@ -87,7 +88,7 @@ public class GameController : NetworkBehaviour
     {
         
         CheckEndGame();
-        updateTexts();
+        UpdateTexts();
 
         // Pass the environment to the player objects
         // Because the client object has a separate version on the client side, we need to pass the environment to it as well
@@ -106,10 +107,10 @@ public class GameController : NetworkBehaviour
             remainingTimeToSpawnPowerBall += Time.deltaTime;
         }
 
-        if (remainingTimeToSpawnPowerBall >= _gameInfo.Value.powerBallSpawnTime)
+        if (remainingTimeToSpawnPowerBall >= _gameInfo.Value.PowerBallSpawnTime)
         {
-            SpawnPowerBall(PlayerSide.Host, _gameInfo.Value.GetAllPowerballEnabled());
-            SpawnPowerBall(PlayerSide.Client, _gameInfo.Value.GetAllPowerballEnabled());
+            SpawnPowerBall(EPlayerSide.Host, _gameInfo.Value.GetAllPowerballEnabled());
+            SpawnPowerBall(EPlayerSide.Client, _gameInfo.Value.GetAllPowerballEnabled());
             remainingTimeToSpawnPowerBall = 0;
         }
     }
@@ -120,12 +121,12 @@ public class GameController : NetworkBehaviour
         {
             if(IsHost)
             {
-                EndGameClientRPC(PlayerSide.Client);
+                EndGameClientRPC(EPlayerSide.Client);
             }
             else
             {
-                EndGameServerRPC(PlayerSide.Host);
-                EndGame(PlayerSide.Host);
+                EndGameServerRPC(EPlayerSide.Host);
+                EndGame(EPlayerSide.Host);
             }
         }
 
@@ -144,7 +145,7 @@ public class GameController : NetworkBehaviour
         }
     }
 
-    void updateTexts()
+    void UpdateTexts()
     {
         timeText.text = _gameInfo.Value.GetMaxTime != 0 ? ConvertSecondsToTimeString(_gameInfo.Value.GetMaxTime - ((uint)time.Value)) : "";
         scoreText.text = _hostPlayerInfo.Value?.Score + " - " + _clientPlayerInfo.Value?.Score;
@@ -168,7 +169,7 @@ public class GameController : NetworkBehaviour
         return maxScore != 0 && (_hostPlayerInfo.Value.Score >= maxScore || _clientPlayerInfo.Value.Score >= maxScore);
     }
 
-    public void EndTurn(PlayerSide winner)
+    public void EndTurn(EPlayerSide winner)
     {
         if(!IsServer)
         {
@@ -176,7 +177,7 @@ public class GameController : NetworkBehaviour
             return;
         }
 
-        if (winner == PlayerSide.Host)
+        if (winner == EPlayerSide.Host)
         {
             _hostPlayerInfo.Value.Score++;
             _hostPlayerInfo.IsDirty();
@@ -192,7 +193,7 @@ public class GameController : NetworkBehaviour
     }
 
     [ServerRpc(RequireOwnership = false)]
-    void EndTurnServerRPC(PlayerSide winner)
+    void EndTurnServerRPC(EPlayerSide winner)
     {
         EndTurn(winner);
     }
@@ -212,7 +213,7 @@ public class GameController : NetworkBehaviour
      * If you don't pass a winner, it means the winner is calulated by the scores.
      * Otherwise the winner is the one passed as argument.
      */
-    private void EndGame(PlayerSide? winner = null)
+    private void EndGame(EPlayerSide? winner = null)
     {
         if (endCanvas.gameObject.activeSelf) return; // already instantiated gameEnd
         Debug.Log("Game Over");
@@ -229,11 +230,11 @@ public class GameController : NetworkBehaviour
             // If the scores are equal, it's a draw, and the winner remains null
             if (_clientPlayerInfo.Value.Score > _hostPlayerInfo.Value.Score)
             {
-                winner = PlayerSide.Client;
+                winner = EPlayerSide.Client;
             }
             else if (_hostPlayerInfo.Value.Score > _clientPlayerInfo.Value.Score)
             {
-                winner = PlayerSide.Host;
+                winner = EPlayerSide.Host;
             }
         }
 
@@ -248,13 +249,13 @@ public class GameController : NetworkBehaviour
         gameObject.GetComponent<PlayerController>().enabled = false;
     }
     [ServerRpc(RequireOwnership = false)]
-    public void EndGameServerRPC(PlayerSide winner)
+    public void EndGameServerRPC(EPlayerSide winner)
     {
         gameEnd.Value = true;
         EndGame(winner);
     }
     [ClientRpc]
-    public void EndGameClientRPC(PlayerSide winner)
+    public void EndGameClientRPC(EPlayerSide winner)
     {
         EndGame(winner);
     }
@@ -264,13 +265,13 @@ public class GameController : NetworkBehaviour
         timeCounting = true;
     }
 
-    private void SpawnPowerBall(PlayerSide side, EnabledPowerBalls enabled)
+    private void SpawnPowerBall(EPlayerSide side, EnabledPowerBalls enabled)
     {
-        // Create a shuffled list of rthe enabled power balls
-        var enabledList = new List<PowerEffects>();
-        if (enabled.GravityPowerBall) enabledList.Add(PowerEffects.Gravitychange);
-        if (enabled.RotationPowerBall) enabledList.Add(PowerEffects.BallRotate);
-        if (enabled.SpeedPowerBall) enabledList.Add(PowerEffects.SpeedIncrease);
+        // Create a shuffled list of the enabled power balls
+        var enabledList = new List<EPowerEffects>();
+        if (enabled.GravityPowerBall) enabledList.Add(EPowerEffects.Gravitychange);
+        if (enabled.RotationPowerBall) enabledList.Add(EPowerEffects.BallRotate);
+        if (enabled.SpeedPowerBall) enabledList.Add(EPowerEffects.SpeedIncrease);
         if (enabledList.Count == 0)
         {
             print("No power balls enabled");
@@ -280,34 +281,26 @@ public class GameController : NetworkBehaviour
 
         // Select the correct prefab based on the first element of the shuffled list
         NetworkObject selectedPowerballPrefab = null;
-        switch (enabledList[0])
+        selectedPowerballPrefab = enabledList[0] switch
         {
-            case PowerEffects.Gravitychange:
-                selectedPowerballPrefab = gravityPowerBallPrefab;
-                break;
-            case PowerEffects.SpeedIncrease:
-                selectedPowerballPrefab = speedPowerBallPrefab;
-                break;
-            case PowerEffects.BallRotate:
-                selectedPowerballPrefab = rotationKickPowerBallPrefab;
-                break;
-            default:
-                selectedPowerballPrefab = gravityPowerBallPrefab; // Safe value, but should never be reached
-                break;
-        }
+            EPowerEffects.Gravitychange => gravityPowerBallPrefab,
+            EPowerEffects.SpeedIncrease => speedPowerBallPrefab,
+            EPowerEffects.BallRotate => rotationKickPowerBallPrefab,
+            _ => gravityPowerBallPrefab,// Safe value, but should never be reached
+        };
 
         // Create random position for the powerball
         var groundSize = ground.transform.localScale * 10 / 2;
-        Vector3 spawnPosition = new Vector3(Random.Range(-groundSize.x + 1, groundSize.x - 1),
+        Vector3 spawnPosition = new(Random.Range(-groundSize.x + 1, groundSize.x - 1),
                                                          0.5f,
                                                          Random.Range(0, groundSize.z - 1));
 
-        if (side == PlayerSide.Host)
+        if (side == EPlayerSide.Host)
         {
             spawnPosition.z *= -1;
         }
 
         var ball = NetworkManager.Singleton.SpawnManager.InstantiateAndSpawn(selectedPowerballPrefab, 0, true, false, false, spawnPosition);
-        ball.GetComponent<PowerBallController>().powerBallLiveTime = _gameInfo.Value.multiplePowerBalls ? -1 : _gameInfo.Value.powerBallLiveTime;
+        ball.GetComponent<PowerBallController>().powerBallLiveTime = _gameInfo.Value.MultiplePowerBalls ? -1 : _gameInfo.Value.PowerBallLiveTime;
     }
 }

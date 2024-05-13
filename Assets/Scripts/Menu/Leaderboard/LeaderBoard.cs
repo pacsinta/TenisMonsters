@@ -1,16 +1,32 @@
+using Assets.Scripts.Networking;
 using System.Collections.Generic;
+using System.Linq;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace Assets.Scripts
+namespace Assets.Scripts.Menu.Leaderboard
 {
-
     public class LeaderBoard : MonoBehaviour
     {
         public GameObject scrollViewContent;
         public GameObject scrollViewContentPrefab;
+        public TMP_InputField maxPlayerCount;
         private ConnectionCoroutine<List<LeaderBoardElement>> fetchLeaderboardCoroutine;
+
+        private void Start()
+        {
+            maxPlayerCount.onValueChanged.AddListener((string value) => 
+            { 
+                if (string.IsNullOrEmpty(value) || !value.All(c => char.IsDigit(c)))
+                {
+                    maxPlayerCount.text = "";
+                    return;
+                }
+                    
+                Refresh();
+            });
+        }
 
         private void OnEnable()
         {
@@ -23,7 +39,7 @@ namespace Assets.Scripts
         private void Update()
         {
             time += Time.deltaTime;
-            if (fetchLeaderboardCoroutine.state == LoadingState.DataAvailable)
+            if (fetchLeaderboardCoroutine.state == ELoadingState.DataAvailable)
             {
                 RemoveAllChildren(scrollViewContent);
 
@@ -40,7 +56,7 @@ namespace Assets.Scripts
                     CreateText(scrollViewContent.transform, "Leaderboard is empty", "EmptyLeaderboardText");
                 }
             }
-            else if (fetchLeaderboardCoroutine.state == LoadingState.Error)
+            else if (fetchLeaderboardCoroutine.state == ELoadingState.Error)
             {
                 RemoveAllChildren(scrollViewContent);
                 CreateText(scrollViewContent.transform, "Can't fetch the leaderboard", "ErrorText", Color.red);
@@ -48,8 +64,8 @@ namespace Assets.Scripts
 
 
             if (time >= 10 &&
-                (fetchLeaderboardCoroutine.state == LoadingState.NotLoaded ||
-                fetchLeaderboardCoroutine.state == LoadingState.Error))
+                (fetchLeaderboardCoroutine.state == ELoadingState.NotLoaded ||
+                fetchLeaderboardCoroutine.state == ELoadingState.Error))
             {
                 Refresh();
             }
@@ -72,12 +88,25 @@ namespace Assets.Scripts
 
         private void Refresh()
         {
-            print("Refreshing the leaderboard");
+            
             if (fetchLeaderboardCoroutine?.Coroutine() != null)
             {
                 StopCoroutine(fetchLeaderboardCoroutine.Coroutine());
             }
-            fetchLeaderboardCoroutine = DatabaseHandler.GetLeaderBoard();
+            int maxPlayers = -1;
+            if(!string.IsNullOrEmpty(maxPlayerCount.text))
+            {
+                try
+                {
+                    maxPlayers = int.Parse(maxPlayerCount.text);
+                }
+                catch
+                {
+                    maxPlayers = -1;
+                }
+            }
+            print("Refreshing the leaderboard with " + maxPlayers + " maxPlayerCount");
+            fetchLeaderboardCoroutine = DatabaseHandler.GetLeaderBoard(maxPlayers);
             StartCoroutine(fetchLeaderboardCoroutine.Coroutine());
             time = 0;
         }

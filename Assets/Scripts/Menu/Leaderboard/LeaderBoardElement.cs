@@ -1,4 +1,4 @@
-﻿namespace Assets.Scripts
+﻿namespace Assets.Scripts.Menu.Leaderboard
 {
     public struct LeaderBoardElement
     {
@@ -11,7 +11,7 @@
             Score = score;
         }
 
-        public override string ToString()
+        public override readonly string ToString()
         {
             return Name + " - " + Score;
         }

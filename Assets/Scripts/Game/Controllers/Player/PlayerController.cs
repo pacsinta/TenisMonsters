@@ -1,213 +1,213 @@
-using Assets.Scripts;
 using Cinemachine;
 using System;
 using Unity.Netcode;
-using Unity.Netcode.Components;
 using UnityEngine;
-using UnityEngine.Assertions;
 using UnityEngine.UI;
 
-public partial class PlayerController : NetworkBehaviour
+namespace Assets.Scripts.Game.Controllers.Player
 {
-    private float horizontalInput;
-    private float verticalInput;
-    public float initialSpeed = 5.0f;
-    public float ballDistance = 2.0f;
-    public float jumpForce = 5.0f;
-    public float powerDuration = 30.0f;
-
-    public GameObject Environment { set; private get; }
-    public AudioSource kickSource;
-    public Material racketMaterial;
-    public GameObject racket;
-
-    private Scrollbar gravityTime;
-    private Scrollbar speedTime;
-    private Scrollbar rotationTime;
-
-    private Animator animator;
-    private PlayerPowers currentEffects = new();
-    
-
-    public override void OnNetworkSpawn()
+    public partial class PlayerController : NetworkBehaviour
     {
-        CinemachineVirtualCamera vcam = transform.Find("Virtual Camera").gameObject.GetComponent<CinemachineVirtualCamera>();
-        AudioListener audioListener = transform.Find("Camera").gameObject.GetComponent<AudioListener>();
-        if (IsOwner)
-        {
-            vcam.Priority = 1;
-            audioListener.enabled = true;
-            kickSource.volume = PlayerPrefs.GetFloat("volume", 1);
-        }
-        else
-        {
-            vcam.Priority = 0;
-            audioListener.enabled = false;
-        }
+        private float horizontalInput;
+        private float verticalInput;
+        public float initialSpeed = 5.0f;
+        public float ballDistance = 2.0f;
+        public float jumpForce = 5.0f;
+        public float powerDuration = 30.0f;
 
-        if((IsHost && IsOwner) || (!IsHost && !IsOwner))
-        {
-            gameObject.name = "HostPlayer";
-        }
-        else if ((IsHost && !IsOwner) || (!IsHost && IsOwner))
-        {
-            gameObject.name = "ClientPlayer";
-        }
+        public GameObject Environment { set; private get; }
+        public AudioSource kickSource;
+        public Material racketMaterial;
+        public GameObject racket;
 
-    }
+        private Scrollbar gravityTime;
+        private Scrollbar speedTime;
+        private Scrollbar rotationTime;
 
-    private void Start()
-    {
-        Debug.Assert(minForce < maxForce, "minForce must be less than maxForce");
-        animator = GetComponentInChildren<Animator>();
-        currSpeed = initialSpeed;
-    }
+        private Animator animator;
+        private PlayerPowers currentEffects = new();
 
-    private Vector2 kickMouseStartPos = Vector2.zero;
-    private float kickMouseStartTime = 0;
-    private float currSpeed;
-    void Update()
-    {
-        if (!IsOwner && IsSpawned) return;
 
-        MovePlayer();
-
-        if (Input.GetKeyDown(KeyCode.Mouse0))
+        public override void OnNetworkSpawn()
         {
-            kickMouseStartPos = Input.mousePosition;
-            kickMouseStartTime = Time.realtimeSinceStartup;
-        }
-        else if(Input.GetKeyUp(KeyCode.Mouse0))
-        {
-            StartKick();
-        }
-        else if(Input.GetKey(KeyCode.Mouse0))
-        {
-            Vector2 kickMouseEndPos = Input.mousePosition;
-            float kickMouseEndTime = Time.realtimeSinceStartup;
+            CinemachineVirtualCamera vcam = transform.Find("Virtual Camera").gameObject.GetComponent<CinemachineVirtualCamera>();
+            AudioListener audioListener = transform.Find("Camera").gameObject.GetComponent<AudioListener>();
+            if (IsOwner)
+            {
+                vcam.Priority = 1;
+                audioListener.enabled = true;
+                kickSource.volume = PlayerPrefs.GetFloat("volume", 1);
+            }
+            else
+            {
+                vcam.Priority = 0;
+                audioListener.enabled = false;
+            }
 
-            DetermineKickForce(kickMouseStartPos, kickMouseEndPos, kickMouseEndTime, kickMouseStartTime);
-            SetRacketColorByKickForce();
-        }
-        if(wasInKickState && animator.GetCurrentAnimatorStateInfo(0).IsName("IdleAnimation"))
-        {
-            EndKick();
+            if ((IsHost && IsOwner) || (!IsHost && !IsOwner))
+            {
+                gameObject.name = "HostPlayer";
+            }
+            else if ((IsHost && !IsOwner) || (!IsHost && IsOwner))
+            {
+                gameObject.name = "ClientPlayer";
+            }
+
         }
 
-        if (GetPowerBallTimerInstances())
+        private void Start()
         {
-            UpdatePowerBallTimers();
+            Debug.Assert(minForce < maxForce, "minForce must be less than maxForce");
+            animator = GetComponentInChildren<Animator>();
+            currSpeed = initialSpeed;
         }
 
-        currSpeed = currentEffects.SpeedIncreasePowerDuration > 0 ? initialSpeed * 1.5f : initialSpeed;
-        currentEffects.DecreaseTime(Time.deltaTime);
-
-        wasInKickState = animator.GetCurrentAnimatorStateInfo(0).IsName("KickAnimation");
-    }
-
-    private bool GetPowerBallTimerInstances()
-    {
-        if (gravityTime == null)
+        private Vector2 kickMouseStartPos = Vector2.zero;
+        private float kickMouseStartTime = 0;
+        private float currSpeed;
+        void Update()
         {
-            try { gravityTime = GameObject.Find("GravityTime").GetComponent<Scrollbar>(); }
-            catch (NullReferenceException) { return false; }
-            if(gravityTime != null) gravityTime.size = 0;
-            else return false;
+            if (!IsOwner && IsSpawned) return;
+
+            MovePlayer();
+
+            if (Input.GetKeyDown(KeyCode.Mouse0))
+            {
+                kickMouseStartPos = Input.mousePosition;
+                kickMouseStartTime = Time.realtimeSinceStartup;
+            }
+            else if (Input.GetKeyUp(KeyCode.Mouse0))
+            {
+                StartKick();
+            }
+            else if (Input.GetKey(KeyCode.Mouse0))
+            {
+                Vector2 kickMouseEndPos = Input.mousePosition;
+                float kickMouseEndTime = Time.realtimeSinceStartup;
+
+                DetermineKickForce(kickMouseStartPos, kickMouseEndPos, kickMouseEndTime, kickMouseStartTime);
+                SetRacketColorByKickForce();
+            }
+            if (wasInKickState && animator.GetCurrentAnimatorStateInfo(0).IsName("IdleAnimation"))
+            {
+                EndKick();
+            }
+
+            if (GetPowerBallTimerInstances())
+            {
+                UpdatePowerBallTimers();
+            }
+
+            currSpeed = currentEffects.SpeedIncreasePowerDuration > 0 ? initialSpeed * 1.5f : initialSpeed;
+            currentEffects.DecreaseTime(Time.deltaTime);
+
+            wasInKickState = animator.GetCurrentAnimatorStateInfo(0).IsName("KickAnimation");
         }
-        if (speedTime == null)
+
+        private bool GetPowerBallTimerInstances()
         {
-            try { speedTime = GameObject.Find("SpeedTime").GetComponent<Scrollbar>(); }
-            catch (NullReferenceException) { return false; }
-            if(speedTime != null) speedTime.size = 0;
-            else return false;
+            if (gravityTime == null)
+            {
+                try { gravityTime = GameObject.Find("GravityTime").GetComponent<Scrollbar>(); }
+                catch (NullReferenceException) { return false; }
+                if (gravityTime != null) gravityTime.size = 0;
+                else return false;
+            }
+            if (speedTime == null)
+            {
+                try { speedTime = GameObject.Find("SpeedTime").GetComponent<Scrollbar>(); }
+                catch (NullReferenceException) { return false; }
+                if (speedTime != null) speedTime.size = 0;
+                else return false;
+            }
+            if (rotationTime == null)
+            {
+                try { rotationTime = GameObject.Find("RotationTime").GetComponent<Scrollbar>(); }
+                catch (NullReferenceException) { return false; }
+                if (rotationTime != null) rotationTime.size = 0;
+                else return false;
+            }
+            return true;
         }
-        if (rotationTime == null)
+        private void UpdatePowerBallTimers()
         {
-            try { rotationTime = GameObject.Find("RotationTime").GetComponent<Scrollbar>(); }
-            catch (NullReferenceException) { return false; }
-            if(rotationTime != null) rotationTime.size = 0;
-            else return false;
+            speedTime.size = currentEffects.SpeedIncreasePowerDuration / powerDuration;
+            gravityTime.size = currentEffects.GravityPowerDuration / powerDuration;
+            rotationTime.size = currentEffects.BallRotationPowerDuration / powerDuration;
         }
-        return true;
-    }
-    private void UpdatePowerBallTimers()
-    {
-        speedTime.size = currentEffects.SpeedIncreasePowerDuration / powerDuration;
-        gravityTime.size = currentEffects.GravityPowerDuration / powerDuration;
-        rotationTime.size = currentEffects.BallRotationPowerDuration / powerDuration;
-    }
-    private void MovePlayer()
-    {
-        horizontalInput = Input.GetAxis("Horizontal");
-        verticalInput = Input.GetAxis("Vertical");
-
-        if (horizontalInput != 0 || verticalInput != 0)
+        private void MovePlayer()
         {
-            animator.SetBool("Running", true);
-            transform.Translate(currSpeed * Time.deltaTime * verticalInput * Vector3.forward);
-            transform.Translate(currSpeed * horizontalInput * Time.deltaTime * Vector3.right);
+            horizontalInput = Input.GetAxis("Horizontal");
+            verticalInput = Input.GetAxis("Vertical");
+
+            if (horizontalInput != 0 || verticalInput != 0)
+            {
+                animator.SetBool("Running", true);
+                transform.Translate(currSpeed * Time.deltaTime * verticalInput * Vector3.forward);
+                transform.Translate(currSpeed * horizontalInput * Time.deltaTime * Vector3.right);
+            }
+            else
+            {
+                animator.SetBool("Running", false);
+            }
         }
-        else
+
+        private void PowerBallCollision(GameObject PowerBall)
         {
-            animator.SetBool("Running", false);
+            var power = PowerBall.GetComponent<PowerBallController>().type;
+            currentEffects.SetPower(power, powerDuration);
+
+            Utils.RunOnTarget((powerBall) => { Destroy(powerBall); },
+                              (powerBall) => { DestroyServerRpc(powerBall); },
+                              PowerBall, IsHost);
         }
-    }
 
-    private void PowerBallCollision(GameObject PowerBall)
-    {
-        var power = PowerBall.GetComponent<PowerBallController>().type;
-        currentEffects.SetPower(power, powerDuration);
-
-        Utils.RunOnTarget((powerBall) => { Destroy(powerBall); }, 
-                          (powerBall) => { DestroyServerRpc(powerBall); }, 
-                          PowerBall, IsHost);
-    }
-
-    private void OnCollisionEnter(Collision collision)
-    {
-         if (!IsOwner) return;
-
-        GameObject collidedWithObject = collision.gameObject;
-        if (collidedWithObject.CompareTag("PowerBall"))
+        private void OnCollisionEnter(Collision collision)
         {
-            PowerBallCollision(collidedWithObject);
+            if (!IsOwner) return;
+
+            GameObject collidedWithObject = collision.gameObject;
+            if (collidedWithObject.CompareTag("PowerBall"))
+            {
+                PowerBallCollision(collidedWithObject);
+            }
+            else if (collidedWithObject.CompareTag("Lava"))
+            {
+                Environment.GetComponent<GameController>().EndTurn(IsHost ? EPlayerSide.Client : EPlayerSide.Host);
+            }
         }
-        else if (collidedWithObject.CompareTag("Lava"))
+
+        private void OnTriggerEnter(Collider other)
         {
-            Environment.GetComponent<GameController>().EndTurn(IsHost ? PlayerSide.Client : PlayerSide.Host);
+            if (!IsOwner) return;
+
+            GameObject collidedWithObject = other.gameObject;
+            if (collidedWithObject.CompareTag("Ball"))
+            {
+                print("Kick with force: " + kick.force + " and direction: " + kick.XdirectionForce);
+                kickSource.Play();
+
+                Kicking(collidedWithObject.GetComponent<NetworkObject>(), kick);
+                EndKick();
+            }
         }
-    }
 
-    private void OnTriggerEnter(Collider other)
-    {
-        if (!IsOwner) return;
-
-        GameObject collidedWithObject = other.gameObject;
-        if (collidedWithObject.CompareTag("Ball"))
+        private void OnTriggerExit(Collider other)
         {
-            print("Kick with force: " + kick.force + " and direction: " + kick.XdirectionForce);
-            kickSource.Play();
+            if (!IsOwner) return;
 
-            Kicking(collidedWithObject.GetComponent<NetworkObject>(), kick);
-            EndKick();
+            GameObject collidedWithObject = other.gameObject;
+            if (collidedWithObject.CompareTag("Ball"))
+            {
+                animator.enabled = true;
+            }
         }
-    }
 
-    private void OnTriggerExit(Collider other)
-    {
-        if (!IsOwner) return;
-
-        GameObject collidedWithObject = other.gameObject;
-        if (collidedWithObject.CompareTag("Ball"))
+        public void ResetObject(Vector3 position)
         {
-            animator.enabled = true;
+            if (!IsHost) return;
+
+            Utils.RunOnTarget((pos) => { transform.position = pos; }, ResetObejctClientRpc, position, IsOwner);
         }
-    }
-
-    public void ResetObject(Vector3 position)
-    {
-        if(!IsHost) return;
-
-        Utils.RunOnTarget((pos) => { transform.position = pos;  }, ResetObejctClientRpc, position, IsOwner);
     }
 }

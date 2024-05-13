@@ -1,157 +1,163 @@
-using System;
+using Assets.Scripts.Game;
 using Unity.Netcode;
 using UnityEngine;
 
-public enum GameMode
+namespace Assets.Scripts
 {
-    QuickGame = 0,
-    LongGame = 1,
-    FirstToWin = 2
-}
-
-public struct EnabledPowerBalls
-{
-    public bool GravityPowerBall;
-    public bool SpeedPowerBall;
-    public bool RotationPowerBall;
-}
-
-public class GameInfo : INetworkSerializable
-{
-    public int gameMode;
-    public bool gravityPowerballEnabled = true;
-    public bool rotationKickPowerballEnabled = true;
-    public bool speedPowerballEnabled = true;
-    public int powerBallSpawnTime = 10;
-    public int powerBallLiveTime = 5;
-    public bool multiplePowerBalls = true;
-    public bool wallsEnabled = true;
-    public SkyType skyType = SkyType.Sunny;
-    public float timeSpeed = 1;
-    public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
+    public struct EnabledPowerBalls : INetworkSerializeByMemcpy
     {
-        serializer.SerializeValue(ref gameMode);
-        serializer.SerializeValue(ref gravityPowerballEnabled);
-        serializer.SerializeValue(ref rotationKickPowerballEnabled);
-        serializer.SerializeValue(ref speedPowerballEnabled);
-        serializer.SerializeValue(ref powerBallSpawnTime);
-        serializer.SerializeValue(ref powerBallLiveTime);
-        serializer.SerializeValue(ref multiplePowerBalls);
-        serializer.SerializeValue(ref wallsEnabled);
-        serializer.SerializeValue(ref skyType);
-        serializer.SerializeValue(ref timeSpeed);
+        public bool GravityPowerBall;
+        public bool SpeedPowerBall;
+        public bool RotationPowerBall;
     }
-    public EnabledPowerBalls GetAllPowerballEnabled()
+
+    public class GameInfo : INetworkSerializable
     {
-        return new EnabledPowerBalls
+        private EGameMode gameMode;
+        private PowerBallInfo powerBallInfo = new()
+        { multiplePowerBalls = true, powerBallLiveTime = 5, powerBallSpawnTime = 10 };
+        private EnabledPowerBalls enabledPowerBalls = new()
+        { GravityPowerBall = true, SpeedPowerBall = true, RotationPowerBall = true };
+        private bool wallsEnabled = true;
+        private SkyType skyType = SkyType.Sunny;
+        private float timeSpeed = 1;
+
+        // Get properties
+        public EGameMode GameMode => gameMode;
+        public bool GravityPowerballEnabled => enabledPowerBalls.GravityPowerBall;
+        public bool RotationKickPowerballEnabled => enabledPowerBalls.RotationPowerBall;
+        public bool SpeedPowerballEnabled => enabledPowerBalls.SpeedPowerBall;
+        public int PowerBallSpawnTime => powerBallInfo.powerBallSpawnTime;
+        public int PowerBallLiveTime => powerBallInfo.powerBallLiveTime;
+        public bool MultiplePowerBalls => powerBallInfo.multiplePowerBalls;
+        public bool WallsEnabled => wallsEnabled;
+        public SkyType SkyType => skyType;
+        public float TimeSpeed => timeSpeed;
+
+        public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
         {
-            GravityPowerBall = gravityPowerballEnabled,
-            SpeedPowerBall = speedPowerballEnabled,
-            RotationPowerBall = rotationKickPowerballEnabled
-        };
-    }
+            serializer.SerializeValue(ref gameMode);
+            serializer.SerializeValue(ref enabledPowerBalls);
+            serializer.SerializeValue(ref powerBallInfo);
+            serializer.SerializeValue(ref wallsEnabled);
+            serializer.SerializeValue(ref skyType);
+            serializer.SerializeValue(ref timeSpeed);
+        }
 
-    public void SetGameMode(int mode)
-    {
-        gameMode = mode;
-        PlayerPrefs.SetInt("GameMode", mode);
-    }
-    public void SetGravityPowerballEnabled(bool enabled)
-    {
-        gravityPowerballEnabled = enabled;
-        PlayerPrefs.SetInt("GravityPowerballEnabled", enabled ? 1 : 0);
-    }
-    public void SetRotationKickPowerballEnabled(bool enabled)
-    {
-        rotationKickPowerballEnabled = enabled;
-        PlayerPrefs.SetInt("RotationKickPowerballEnabled", enabled ? 1 : 0);
-    }
-    public void SetSpeedPowerballEnabled(bool enabled)
-    {
-        speedPowerballEnabled = enabled;
-        PlayerPrefs.SetInt("SpeedPowerballEnabled", enabled ? 1 : 0);
-    }
-    public void SetPowerBallSpawnTime(float time)
-    {
-        int seconds = (int)time * 10;
-        powerBallSpawnTime = seconds;
-        PlayerPrefs.SetInt("PowerBallSpawnTime", seconds);
-    }
-    public void SetPowerBallLiveTime(float time)
-    {
-        int seconds = (int)time * 5;
-        powerBallLiveTime = seconds;
-        PlayerPrefs.SetInt("PowerBallLiveTime", seconds);
-    }
-    public void SetMultiplePowerBalls(bool enabled)
-    {
-        multiplePowerBalls = enabled;
-        PlayerPrefs.SetInt("MultiplePowerBalls", enabled ? 1 : 0);
-    }
-    public void SetWallsEnabled(bool enabled)
-    {
-        wallsEnabled = enabled;
-        PlayerPrefs.SetInt("WallsEnabled", enabled ? 1 : 0);
-    }
-    public void SetSkyType(int type)
-    {
-        skyType = (SkyType)type;
-        PlayerPrefs.SetInt("skyType", type);
-    }
-
-    public void SetTimeSpeed(float speed)
-    {
-        timeSpeed = speed;
-        PlayerPrefs.SetFloat("TimeSpeed", speed);
-    }
-    public GameInfo()
-    {
-        gameMode = PlayerPrefs.GetInt("GameMode");
-        gravityPowerballEnabled = PlayerPrefs.GetInt("GravityPowerballEnabled") == 1;
-        rotationKickPowerballEnabled = PlayerPrefs.GetInt("RotationKickPowerballEnabled") == 1;
-        speedPowerballEnabled = PlayerPrefs.GetInt("SpeedPowerballEnabled") == 1;
-        powerBallSpawnTime = PlayerPrefs.GetInt("PowerBallSpawnTime");
-        powerBallLiveTime = PlayerPrefs.GetInt("PowerBallLiveTime", 5);
-        multiplePowerBalls = PlayerPrefs.GetInt("MultiplePowerBalls") == 1;
-        wallsEnabled = PlayerPrefs.GetInt("WallsEnabled", 1) == 1;
-        skyType = (SkyType)PlayerPrefs.GetInt("skyType", 0);
-        timeSpeed = PlayerPrefs.GetFloat("TimeSpeed", 1);
-
-        powerBallSpawnTime = powerBallSpawnTime == 0 ? 10 : powerBallSpawnTime;
-    }
-
-    public uint GetMaxTime
-    {
-        get
+        public enum EGameMode
         {
-            switch ((GameMode)gameMode)
+            QuickGame = 0,
+            LongGame = 1,
+            FirstToWin = 2
+        }
+        private struct PowerBallInfo : INetworkSerializeByMemcpy
+        {
+            public bool multiplePowerBalls;
+            public int powerBallLiveTime;
+            public int powerBallSpawnTime;
+        }
+
+
+        // Setters
+        public void SetGameMode(int mode)
+        {
+            gameMode = (EGameMode)mode;
+            PlayerPrefs.SetInt("GameMode", mode);
+        }
+        public void SetGravityPowerballEnabled(bool enabled)
+        {
+            enabledPowerBalls.GravityPowerBall = enabled;
+            PlayerPrefs.SetInt("GravityPowerballEnabled", enabled ? 1 : 0);
+        }
+        public void SetRotationKickPowerballEnabled(bool enabled)
+        {
+            enabledPowerBalls.RotationPowerBall = enabled;
+            PlayerPrefs.SetInt("RotationKickPowerballEnabled", enabled ? 1 : 0);
+        }
+        public void SetSpeedPowerballEnabled(bool enabled)
+        {
+            enabledPowerBalls.SpeedPowerBall = enabled;
+            PlayerPrefs.SetInt("SpeedPowerballEnabled", enabled ? 1 : 0);
+        }
+        public void SetPowerBallSpawnTime(float time)
+        {
+            int seconds = (int)time * 10;
+            powerBallInfo.powerBallSpawnTime = seconds;
+            PlayerPrefs.SetInt("PowerBallSpawnTime", seconds);
+        }
+        public void SetPowerBallLiveTime(float time)
+        {
+            int seconds = (int)time * 5;
+            powerBallInfo.powerBallLiveTime = seconds;
+            PlayerPrefs.SetInt("PowerBallLiveTime", seconds);
+        }
+        public void SetMultiplePowerBalls(bool enabled)
+        {
+            powerBallInfo.multiplePowerBalls = enabled;
+            PlayerPrefs.SetInt("MultiplePowerBalls", enabled ? 1 : 0);
+        }
+        public void SetWallsEnabled(bool enabled)
+        {
+            wallsEnabled = enabled;
+            PlayerPrefs.SetInt("WallsEnabled", enabled ? 1 : 0);
+        }
+        public void SetSkyType(int type)
+        {
+            skyType = (SkyType)type;
+            PlayerPrefs.SetInt("skyType", type);
+        }
+
+        public void SetTimeSpeed(float speed)
+        {
+            timeSpeed = speed;
+            PlayerPrefs.SetFloat("TimeSpeed", speed);
+        }
+        public GameInfo()
+        {
+            gameMode = (EGameMode)PlayerPrefs.GetInt("GameMode");
+            enabledPowerBalls.GravityPowerBall = PlayerPrefs.GetInt("GravityPowerballEnabled") == 1;
+            enabledPowerBalls.RotationPowerBall = PlayerPrefs.GetInt("RotationKickPowerballEnabled") == 1;
+            enabledPowerBalls.SpeedPowerBall = PlayerPrefs.GetInt("SpeedPowerballEnabled") == 1;
+            powerBallInfo.powerBallSpawnTime = PlayerPrefs.GetInt("PowerBallSpawnTime");
+            powerBallInfo.powerBallLiveTime = PlayerPrefs.GetInt("PowerBallLiveTime", 5);
+            powerBallInfo.multiplePowerBalls = PlayerPrefs.GetInt("MultiplePowerBalls") == 1;
+            wallsEnabled = PlayerPrefs.GetInt("WallsEnabled", 1) == 1;
+            skyType = (SkyType)PlayerPrefs.GetInt("skyType", 0);
+            timeSpeed = PlayerPrefs.GetFloat("TimeSpeed", 1);
+
+            powerBallInfo.powerBallSpawnTime = powerBallInfo.powerBallSpawnTime == 0 ? 10 : powerBallInfo.powerBallSpawnTime;
+        }
+
+        public EnabledPowerBalls GetAllPowerballEnabled()
+        {
+            return enabledPowerBalls;
+        }
+
+        public uint GetMaxTime
+        {
+            get
             {
-                case GameMode.QuickGame:
-                    return 60 * 5;
-                case GameMode.LongGame:
-                    return 60 * 10;
-                case GameMode.FirstToWin:
-                    return 0;
-                default:
-                    return 0;
+                return gameMode switch
+                {
+                    EGameMode.QuickGame => 60 * 5,
+                    EGameMode.LongGame => 60 * 10,
+                    EGameMode.FirstToWin => 0,
+                    _ => 0,
+                };
             }
         }
-    }
 
-    public uint GetMaxScore
-    {
-        get
+        public uint GetMaxScore
         {
-            switch ((GameMode)gameMode)
+            get
             {
-                case GameMode.QuickGame:
-                    return 0;
-                case GameMode.LongGame:
-                    return 0;
-                case GameMode.FirstToWin:
-                    return 10;
-                default:
-                    return 0;
+                return gameMode switch
+                {
+                    EGameMode.QuickGame => 0,
+                    EGameMode.LongGame => 0,
+                    EGameMode.FirstToWin => 10,
+                    _ => 0,
+                };
             }
         }
     }

@@ -1,68 +1,90 @@
 using Newtonsoft.Json;
 using System;
 using System.Collections;
+using System.Text;
 using UnityEngine;
 using UnityEngine.Networking;
 
-public enum LoadingState
+namespace Assets.Scripts.Networking
 {
-    NotLoaded,
-    DataAvailable,
-    Loaded,
-    Error
-}
-
-public class ConnectionCoroutine<T>
-{
-    private readonly UnityWebRequest www;
-    private readonly bool parseResponse = true;
-    private T result;
-    public T Result
+    public enum ELoadingState
     {
-        get
-        {
-            state = LoadingState.Loaded;
-            return result;
-        }
+        NotLoaded,
+        DataAvailable,
+        Loaded,
+        Error
     }
-    public LoadingState state = LoadingState.NotLoaded;
-    public IEnumerator Coroutine()
-    {
-        state = LoadingState.NotLoaded;
-        yield return www.SendWebRequest();
 
-        if (www.result != UnityWebRequest.Result.Success)
+    public enum ERequestType
+    {
+        GET,
+        POST
+    }
+
+    public class ConnectionCoroutine<T>
+    {
+        private readonly UnityWebRequest www;
+        private readonly bool parseResponse = true;
+        private T result;
+        public T Result
         {
-            Debug.LogError("BackendError: " + www.error);
-            state = LoadingState.Error;
-        }
-        else
-        {
-            var resultText = www.downloadHandler.text;
-            try
+            get
             {
-                if(parseResponse)
+                state = ELoadingState.Loaded;
+                return result;
+            }
+        }
+        public ELoadingState state = ELoadingState.NotLoaded;
+        public IEnumerator Coroutine()
+        {
+            state = ELoadingState.NotLoaded;
+            yield return www.SendWebRequest();
+
+            if (www.result != UnityWebRequest.Result.Success)
+            {
+                Debug.LogError("BackendError: " + www.error);
+                state = ELoadingState.Error;
+            }
+            else
+            {
+                var resultText = www.downloadHandler.text;
+                try
                 {
-                    result = JsonConvert.DeserializeObject<T>(resultText);
-                    if (result == null)
+                    if (parseResponse)
                     {
-                        Debug.LogError("Can't parse the result");
+                        result = JsonConvert.DeserializeObject<T>(resultText);
+                        if (result == null)
+                        {
+                            Debug.LogError("Can't parse the result");
+                        }
                     }
-                }
 
-                state = LoadingState.DataAvailable;
-            }
-            catch (Exception e)
-            {
-                Debug.LogError(e.Message);
-                state = LoadingState.Error;
+                    state = ELoadingState.DataAvailable;
+                }
+                catch (Exception e)
+                {
+                    Debug.LogError(e.Message);
+                    state = ELoadingState.Error;
+                }
             }
         }
-    }
 
-    public ConnectionCoroutine(UnityWebRequest www, bool parseResponse = true)
-    {
-        this.www = www;
-        this.parseResponse = parseResponse;
+        public ConnectionCoroutine(UnityWebRequest www, bool parseResponse = true)
+        {
+            this.www = www;
+            this.parseResponse = parseResponse;
+        }
+        public ConnectionCoroutine(string fullUrl, ERequestType type, string body = "", bool parseResponse = true)
+        {
+            string typeString = type == ERequestType.GET ? "GET" : "POST";
+            var www = new UnityWebRequest(fullUrl, typeString);
+            byte[] bodyRaw = Encoding.UTF8.GetBytes(body);
+            www.uploadHandler = new UploadHandlerRaw(bodyRaw);
+            www.downloadHandler = new DownloadHandlerBuffer();
+            www.SetRequestHeader("Content-Type", "text/plain");
+            
+            this.www = www;
+            this.parseResponse = parseResponse;
+        }
     }
 }

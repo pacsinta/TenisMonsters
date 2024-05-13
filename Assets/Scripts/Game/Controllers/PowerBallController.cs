@@ -1,24 +1,27 @@
 using Unity.Netcode;
 using UnityEngine;
 
-public class PowerBallController : NetworkBehaviour
+namespace Assets.Scripts.Game.Controllers.Player
 {
-    public PowerEffects type;
-    public float powerBallLiveTime = -1;
-
-    private void Update()
+    public class PowerBallController : NetworkBehaviour
     {
-        if (!IsHost) return;
+        public EPowerEffects type;
+        public float powerBallLiveTime = -1;
 
-        if (powerBallLiveTime != -1)
+        private void Update()
         {
-            if (powerBallLiveTime == 0)
+            if (!IsHost) return;
+
+            if (powerBallLiveTime != -1)
             {
-                Destroy(gameObject);
-            }
-            else
-            {
-                powerBallLiveTime -= Time.deltaTime;
+                if (powerBallLiveTime == 0)
+                {
+                    Destroy(gameObject);
+                }
+                else
+                {
+                    powerBallLiveTime -= Time.deltaTime;
+                }
             }
         }
     }

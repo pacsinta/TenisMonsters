@@ -18,9 +18,9 @@ namespace Assets.Scripts
             value = (T)Enum.ToObject(typeof(T), converted);
         }
 
-        public static bool IsMyPlayer(PlayerSide playerSide, bool IsHost)
+        public static bool IsMyPlayer(EPlayerSide playerSide, bool IsHost)
         {
-            return (IsHost && playerSide == PlayerSide.Host) || (!IsHost && playerSide == PlayerSide.Client);
+            return (IsHost && playerSide == EPlayerSide.Host) || (!IsHost && playerSide == EPlayerSide.Client);
         }
 
         // RunOnHost is a helper function that allows you to run a function on the target by passing the function and the RPC function

@@ -1,4 +1,5 @@
 using Assets.Scripts;
+using Assets.Scripts.Networking;
 using TMPro;
 using Unity.Netcode;
 using Unity.Netcode.Transports.UTP;
@@ -15,67 +16,32 @@ public class MainMenu : MonoBehaviour
     public TMP_InputField hostIpInput;
     public Canvas mainCanvas;
     public Canvas leaderBoardCanvas;
-    public TextMeshProUGUI myPontsText;
     public Button settingsButton;
     public Button leaderBoardButton;
     public GameObject settingsPanel;
     public TextMeshProUGUI errorText;
 
-    // monster show variables
-    public GameObject monster;
-    public float rotationSpeed = 10.0f;
-    public float rotationAngleLimit = 15.0f;
-
     private PlayerInfo playerInfo;
-    private ConnectionCoroutine<LeaderBoardElement> myPointCoroutine;
     private ConnectionCoroutine<object> authCheck;
     private void Start()
     {
         startGameBtn.onClick.AddListener(InstantiatStartGame);
         playerName.onValueChanged.AddListener(PlayerNameChanged);
-        leaderBoardButton.onClick.AddListener(SwitchCanvas);
         exitBtn.onClick.AddListener(() => { Application.Quit(); });
 
         playerInfo = new PlayerInfo();
         playerName.text = playerInfo.PlayerName.ToString();
 
-        passwordInput.contentType = TMP_InputField.ContentType.Password;
-
         mainCanvas.gameObject.SetActive(true);
         leaderBoardCanvas.gameObject.SetActive(false);
-
-        myPointCoroutine = DatabaseHandler.GetMyPoints(playerInfo.PlayerName.ToString());
-        StartCoroutine(myPointCoroutine.Coroutine());
-
+        
         settingsPanel.SetActive(false);
         settingsButton.onClick.AddListener(() => { settingsPanel.SetActive(!settingsPanel.activeSelf); });
         settingsPanel.GetComponent<Settings>().RestoreSettings();
     }
 
-    private float time = 0;
     private void Update()
     {
-        time += Time.deltaTime;
-        if (myPointCoroutine?.state == LoadingState.DataAvailable)
-        {
-            Debug.Log("MyPoints loaded: " + myPointCoroutine.Result.ToString());
-            myPontsText.text = "MyScore: " + myPointCoroutine.Result.Score;
-        }
-        else if (myPointCoroutine?.state == LoadingState.Error || myPointCoroutine?.state == LoadingState.NotLoaded)
-        {
-            myPontsText.text = "MyScore: -";
-            if (time >= 10)
-            {
-                RefreshMyPoints();
-            }
-        }
-        else if (time >= 60)
-        {
-            RefreshMyPoints();
-        }
-
-        RotateMonster();
-
         if (IsHostToggle.isOn)
         {
             hostIpInput.interactable = false;
@@ -87,18 +53,6 @@ public class MainMenu : MonoBehaviour
 
         HostAvailabilityCheck();
         PasswordValidityCheck();
-    }
-
-    void RefreshMyPoints()
-    {
-        if(playerInfo == null || string.IsNullOrEmpty(playerInfo.PlayerName.ToString())) return;
-        if (myPointCoroutine?.Coroutine() != null)
-        {
-            StopCoroutine(myPointCoroutine.Coroutine());
-        }
-        myPointCoroutine = DatabaseHandler.GetMyPoints(playerInfo.PlayerName.ToString());
-        StartCoroutine(myPointCoroutine.Coroutine());
-        time = 0;
     }
 
     void HostAvailabilityCheck()
@@ -118,14 +72,16 @@ public class MainMenu : MonoBehaviour
 
     void PasswordValidityCheck()
     {
-        var state = authCheck?.state;
-        if(state == LoadingState.DataAvailable && !gameStarted)
+        if(authCheck == null) return;
+        var state = authCheck.state;
+        if(state == ELoadingState.DataAvailable && !gameStarted)
         {
+            var _ = authCheck.Result;
             StopAllCoroutines();
             SecureStore.SavePassword(playerName.text, passwordInput.text); // Only save the password if the server authentication was successful
             StartNewGame();
         }
-        else if(state == LoadingState.Error)
+        else if(state == ELoadingState.Error)
         {
             StopAllCoroutines();
             errorText.text = "Authentication error!";
@@ -154,7 +110,7 @@ public class MainMenu : MonoBehaviour
         if (authCheck?.Coroutine() != null) StopCoroutine(authCheck.Coroutine());
         authCheck = DatabaseHandler.CheckAuth(
             playerName.text,
-            SecureStore.CreateHashWithConstSalt(playerName.text)
+            SecureStore.CreateHashWithConstSalt(passwordInput.text)
         );
         StartCoroutine(authCheck.Coroutine());
         print("authCheck started!");
@@ -172,33 +128,11 @@ public class MainMenu : MonoBehaviour
         }
     }
 
-    private bool rotateRight = true;
-    void RotateMonster()
-    {
-        if (rotateRight)
-        {
-            monster.transform.Rotate(rotationSpeed * Time.deltaTime * Vector3.up);
-            if (monster.transform.rotation.eulerAngles.y - 180 >= rotationAngleLimit)
-            {
-                rotateRight = false;
-            }
-        }
-        else
-        {
-            monster.transform.Rotate(rotationSpeed * Time.deltaTime * Vector3.down);
-            if (monster.transform.rotation.eulerAngles.y - 180 < -rotationAngleLimit)
-            {
-                rotateRight = true;
-            }
-        }
-    }
-
     private void PlayerNameChanged(string newName)
     {
         if (newName.Length > 32) return;
         playerInfo.PlayerName = newName;
         playerInfo.StorePlayerInfo();
-        time = 57; // set the time so that if the name is stopped being changed, the points will be refreshed
     }
     private float connectingTime = 0;
     private bool connecting = false;
