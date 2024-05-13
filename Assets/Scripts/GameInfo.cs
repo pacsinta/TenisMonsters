@@ -4,8 +4,6 @@ using UnityEngine;
 
 namespace Assets.Scripts
 {
-    
-
     public struct EnabledPowerBalls : INetworkSerializeByMemcpy
     {
         public bool GravityPowerBall;
