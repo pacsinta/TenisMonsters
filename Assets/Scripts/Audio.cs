@@ -9,9 +9,18 @@ public class Audio : MonoBehaviour
     public AudioSource winSource;
     public AudioSource loseSource;
 
+    private static Audio instance;
     private void Awake()
     {
         DontDestroyOnLoad(gameObject);
+        if(instance == null)
+        {
+            instance = this;
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
     }
     private float volume;
     private void Start()
