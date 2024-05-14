@@ -46,9 +46,8 @@ public class Audio : MonoBehaviour
             idleSource.Stop();
             gameSource.Stop();
         }
-
         // check if currentScene is 1
-        if (GetCurrentScene() == Scene.GameScene)
+        else if (GetCurrentScene() == Scene.GameScene)
         {
             idleSource.Stop();
             if(!gameSource.isPlaying) gameSource.Play();
