@@ -69,7 +69,7 @@ namespace Assets.Scripts.Game.Controllers.Player
         private float currSpeed;
         void Update()
         {
-            if (!IsOwner && IsSpawned) return;
+            if (!IsOwner || !IsSpawned) return;
 
             MovePlayer();
 

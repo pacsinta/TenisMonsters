@@ -43,15 +43,15 @@ public class LobbyController : NetworkBehaviour
             _hostPlayerInfo.Value = playerInfo;
 
             SetGameSettingListeners();
-
-            NetworkManager.Singleton.OnClientConnectedCallback += HandleClientConnect;
-            NetworkManager.Singleton.OnClientDisconnectCallback += HandleClientDisconnect;
-            NetworkManager.Singleton.ConnectionApprovalCallback += ApprovalCheck;
         }
         else
         {
             DisableGameSettings();
         }
+
+        NetworkManager.Singleton.OnClientConnectedCallback += HandleClientConnect;
+        NetworkManager.Singleton.OnClientDisconnectCallback += HandleClientDisconnect;
+        NetworkManager.Singleton.ConnectionApprovalCallback += ApprovalCheck;
 
         startGameButton.onClick.AddListener(StartGame);
         exitButton.onClick.AddListener(() => SceneLoader.LoadScene(SceneLoader.Scene.MenuScene, NetworkManager.Singleton, true));
