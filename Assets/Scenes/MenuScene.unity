@@ -3762,7 +3762,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 'MyScore: 0'
+  m_text: 'MyScore: -'
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -5414,6 +5414,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: beffbed0098bd624b8ac1162665239ac, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1385002439}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: beffbed0098bd624b8ac1162665239ac, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1385002440}
   m_SourcePrefab: {fileID: 100100000, guid: beffbed0098bd624b8ac1162665239ac, type: 3}
 --- !u!1 &1107866902
 GameObject:
@@ -7094,6 +7097,20 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &1385002440
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1385002437}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b2cb4ae7c9579fa42abc6562b13ab26d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  rotationSpeed: 10
+  rotationAngleLimit: 15
 --- !u!1 &1391202961
 GameObject:
   m_ObjectHideFlags: 0
@@ -10443,7 +10460,6 @@ GameObject:
   - component: {fileID: 1971778025}
   - component: {fileID: 1971778028}
   - component: {fileID: 1971778029}
-  - component: {fileID: 1971778030}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -10550,21 +10566,6 @@ MonoBehaviour:
   settingsPanel: {fileID: 1635619580}
   errorText: {fileID: 1898976027}
 --- !u!114 &1971778029
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1971778024}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b2cb4ae7c9579fa42abc6562b13ab26d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  monster: {fileID: 1385002437}
-  rotationSpeed: 10
-  rotationAngleLimit: 15
---- !u!114 &1971778030
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}

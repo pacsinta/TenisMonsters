@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 
-public class NewBehaviourScript : MonoBehaviour
+public class ScoreFetcher : MonoBehaviour
 {
     public TMP_InputField playerName;
     public TextMeshProUGUI myPontsText;
