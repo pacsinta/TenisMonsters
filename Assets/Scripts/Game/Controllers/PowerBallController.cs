@@ -14,7 +14,7 @@ namespace Assets.Scripts.Game.Controllers.Player
 
             if (powerBallLiveTime != -1)
             {
-                if (powerBallLiveTime == 0)
+                if (powerBallLiveTime <= 0)
                 {
                     Destroy(gameObject);
                 }

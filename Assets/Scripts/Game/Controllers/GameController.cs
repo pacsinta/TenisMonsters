@@ -301,6 +301,6 @@ public class GameController : NetworkBehaviour
         }
 
         var ball = NetworkManager.Singleton.SpawnManager.InstantiateAndSpawn(selectedPowerballPrefab, 0, true, false, false, spawnPosition);
-        ball.GetComponent<PowerBallController>().powerBallLiveTime = _gameInfo.Value.MultiplePowerBalls ? -1 : _gameInfo.Value.PowerBallLiveTime;
+        ball.GetComponent<PowerBallController>().powerBallLiveTime = _gameInfo.Value.MultiplePowerBalls ? _gameInfo.Value.PowerBallLiveTime : _gameInfo.Value.PowerBallSpawnTime;
     }
 }
