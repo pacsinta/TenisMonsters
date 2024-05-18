@@ -9,9 +9,18 @@ public class Audio : MonoBehaviour
     public AudioSource winSource;
     public AudioSource loseSource;
 
+    private static Audio instance;
     private void Awake()
     {
         DontDestroyOnLoad(gameObject);
+        if(instance == null)
+        {
+            instance = this;
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
     }
     private float volume;
     private void Start()
@@ -37,9 +46,8 @@ public class Audio : MonoBehaviour
             idleSource.Stop();
             gameSource.Stop();
         }
-
         // check if currentScene is 1
-        if (GetCurrentScene() == Scene.GameScene)
+        else if (GetCurrentScene() == Scene.GameScene)
         {
             idleSource.Stop();
             if(!gameSource.isPlaying) gameSource.Play();

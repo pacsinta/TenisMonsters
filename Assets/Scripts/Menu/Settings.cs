@@ -175,5 +175,7 @@ public class Settings : MonoBehaviour
     {
         PlayerPrefs.DeleteAll();
         RestoreSettings();
+        errorText.text = "Game reseted!";
+        playerName.text = "";
     }
 }

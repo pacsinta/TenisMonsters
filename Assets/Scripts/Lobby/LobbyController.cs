@@ -73,25 +73,25 @@ public class LobbyController : NetworkBehaviour
 
     private void SetGameSettingListeners()
     {
-        gameModeDropdown.onValueChanged.AddListener(GameSettingListeners<int>(_gameInfo.Value.SetGameMode));
-        gravityPowerBallToggle.onValueChanged.AddListener(GameSettingListeners<bool>(_gameInfo.Value.SetGravityPowerballEnabled));
-        speedPowerBallToggle.onValueChanged.AddListener(GameSettingListeners<bool>(_gameInfo.Value.SetSpeedPowerballEnabled));
-        rotationKickPowerBallToggle.onValueChanged.AddListener(GameSettingListeners<bool>(_gameInfo.Value.SetRotationKickPowerballEnabled));
-        powerBallSpawnTimeSlider.onValueChanged.AddListener(GameSettingListeners<float>(_gameInfo.Value.SetPowerBallSpawnTime));
-        powerballLiveTimeSlider.onValueChanged.AddListener(GameSettingListeners<float>(_gameInfo.Value.SetPowerBallLiveTime));
+        gameModeDropdown.onValueChanged.AddListener(GameSettingListener<int>(_gameInfo.Value.SetGameMode));
+        gravityPowerBallToggle.onValueChanged.AddListener(GameSettingListener<bool>(_gameInfo.Value.SetGravityPowerballEnabled));
+        speedPowerBallToggle.onValueChanged.AddListener(GameSettingListener<bool>(_gameInfo.Value.SetSpeedPowerballEnabled));
+        rotationKickPowerBallToggle.onValueChanged.AddListener(GameSettingListener<bool>(_gameInfo.Value.SetRotationKickPowerballEnabled));
+        powerBallSpawnTimeSlider.onValueChanged.AddListener(GameSettingListener<float>(_gameInfo.Value.SetPowerBallSpawnTime));
+        powerballLiveTimeSlider.onValueChanged.AddListener(GameSettingListener<float>(_gameInfo.Value.SetPowerBallLiveTime));
         multiplePowerBallToggle.onValueChanged.AddListener((isOn) =>
         {
-            GameSettingListeners<bool>(_gameInfo.Value.SetMultiplePowerBalls)(isOn);
+            GameSettingListener<bool>(_gameInfo.Value.SetMultiplePowerBalls)(isOn);
             powerballLiveTimeSlider.interactable = isOn;
         });
-        wallsEnabledToggle.onValueChanged.AddListener(GameSettingListeners<bool>(_gameInfo.Value.SetWallsEnabled));
-        skyDropdown.onValueChanged.AddListener(GameSettingListeners<int>(_gameInfo.Value.SetSkyType));
-        timeSlider.onValueChanged.AddListener(GameSettingListeners<float>(_gameInfo.Value.SetTimeSpeed));
+        wallsEnabledToggle.onValueChanged.AddListener(GameSettingListener<bool>(_gameInfo.Value.SetWallsEnabled));
+        skyDropdown.onValueChanged.AddListener(GameSettingListener<int>(_gameInfo.Value.SetSkyType));
+        timeSlider.onValueChanged.AddListener(GameSettingListener<float>(_gameInfo.Value.SetTimeSpeed));
     }
 
-    private UnityAction<T> GameSettingListeners<T>(Action<T> func)
+    private UnityAction<T> GameSettingListener<T>(Action<T> gameInfoSetter)
     {
-        return (enabled) => { func(enabled); _gameInfo.IsDirty(); };
+        return (newValue) => { gameInfoSetter(newValue); _gameInfo.IsDirty(); };
     }
 
     private void Update()
@@ -124,7 +124,7 @@ public class LobbyController : NetworkBehaviour
         powerBallSpawnTimeSlider.value = _gameInfo.Value.PowerBallSpawnTime / 10;
         powerBallSpawnTimeText.text = "Powerball spawn time: " + _gameInfo.Value.PowerBallSpawnTime + "s";
         powerballLiveTimeSlider.value = _gameInfo.Value.PowerBallLiveTime / 5;
-        powerBallLiveTimeText.text = "Powerball live time: " + (_gameInfo.Value.MultiplePowerBalls ? _gameInfo.Value.PowerBallLiveTime : "0") + "s";
+        powerBallLiveTimeText.text = "Powerball live time: " + (_gameInfo.Value.MultiplePowerBalls ? _gameInfo.Value.PowerBallLiveTime : _gameInfo.Value.PowerBallSpawnTime) + "s";
         wallsEnabledToggle.isOn = _gameInfo.Value.WallsEnabled;
         skyDropdown.value = (int)_gameInfo.Value.SkyType;
         timeSlider.value = _gameInfo.Value.TimeSpeed;

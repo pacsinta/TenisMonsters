@@ -17,6 +17,7 @@ namespace Assets.Scripts.Game.Controllers.Player
 
         public GameObject Environment { set; private get; }
         public AudioSource kickSource;
+        public AudioSource effectSource;
         public Material racketMaterial;
         public GameObject racket;
 
@@ -37,6 +38,7 @@ namespace Assets.Scripts.Game.Controllers.Player
                 vcam.Priority = 1;
                 audioListener.enabled = true;
                 kickSource.volume = PlayerPrefs.GetFloat("volume", 1);
+                effectSource.volume = PlayerPrefs.GetFloat("volume", 1);
             }
             else
             {
@@ -67,12 +69,13 @@ namespace Assets.Scripts.Game.Controllers.Player
         private float currSpeed;
         void Update()
         {
-            if (!IsOwner && IsSpawned) return;
+            if (!IsOwner || !IsSpawned) return;
 
             MovePlayer();
 
             if (Input.GetKeyDown(KeyCode.Mouse0))
             {
+                // Store the mouse position and time when the kick started
                 kickMouseStartPos = Input.mousePosition;
                 kickMouseStartTime = Time.realtimeSinceStartup;
             }
@@ -82,6 +85,7 @@ namespace Assets.Scripts.Game.Controllers.Player
             }
             else if (Input.GetKey(KeyCode.Mouse0))
             {
+                // Update the kick force and color of the racket, while the mouse is held down
                 Vector2 kickMouseEndPos = Input.mousePosition;
                 float kickMouseEndTime = Time.realtimeSinceStartup;
 
@@ -90,6 +94,7 @@ namespace Assets.Scripts.Game.Controllers.Player
             }
             if (wasInKickState && animator.GetCurrentAnimatorStateInfo(0).IsName("IdleAnimation"))
             {
+                // If the kick animation has ended, but the ball was not kicked, reset the kick
                 EndKick();
             }
 
@@ -156,6 +161,7 @@ namespace Assets.Scripts.Game.Controllers.Player
         {
             var power = PowerBall.GetComponent<PowerBallController>().type;
             currentEffects.SetPower(power, powerDuration);
+            effectSource.Play();
 
             Utils.RunOnTarget((powerBall) => { Destroy(powerBall); },
                               (powerBall) => { DestroyServerRpc(powerBall); },
