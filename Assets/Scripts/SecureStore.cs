@@ -22,27 +22,22 @@ namespace Assets.Scripts.Networking
             string result = Convert.ToBase64String(hashed);
             return result;
         }
-        public static void SavePassword(string key, string password)
+        public static void SavePassword(string name, string password)
         {
             string hashed = CreateHashWithConstSalt(password);
-            PlayerPrefs.SetString(key, hashed);
+            PlayerPrefs.SetString("hash-"+name, hashed);
         }
-        public static string GetHashedPassword(string key)
+        public static string GetHashedPassword(string name)
         {
-            return PlayerPrefs.GetString(key);
+            return PlayerPrefs.GetString("hash-" + name);
         }
 
-        public static string GetHashPassword(string key)
-        {
-            return PlayerPrefs.GetString(key);
-        }
-
-        public static bool SecureCheck(string key, string password)
+        public static bool SecureCheck(string name, string password)
         {
             if (password.Any(c => !char.IsLetterOrDigit(c))) return false;
-            if (!PlayerPrefs.HasKey(key)) return true; // If the key is not found, then it is a new user
+            if (!PlayerPrefs.HasKey(name)) return true; // If the key is not found, then it is a new user
 
-            string storedHash = GetHashedPassword(key);
+            string storedHash = GetHashedPassword(name);
             string testHash = CreateHashWithConstSalt(password);
             return CryptographicOperations.FixedTimeEquals(Encoding.UTF8.GetBytes(storedHash), Encoding.UTF8.GetBytes(testHash));
         }

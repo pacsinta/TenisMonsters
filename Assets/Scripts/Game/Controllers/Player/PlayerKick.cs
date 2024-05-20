@@ -32,7 +32,6 @@ namespace Assets.Scripts.Game.Controllers.Player
         }
         private void EndKick()
         {
-            animator.enabled = false;
             racket.GetComponent<Renderer>().material = racketMaterial;
             kick = new(); // reset kick
             wasInKickState = false;

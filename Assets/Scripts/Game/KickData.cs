@@ -17,16 +17,10 @@ struct KickData
     public bool firstKickSuccess; // true after the first kick was successful
 }
 
-struct Kick : INetworkSerializable
+struct Kick : INetworkSerializeByMemcpy
 {
     public float XdirectionForce;
     public float force;
-
-    public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
-    {
-        serializer.SerializeValue(ref XdirectionForce);
-        serializer.SerializeValue(ref force);
-    }
 }
 
 struct RotationKick
