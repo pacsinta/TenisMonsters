@@ -12,9 +12,26 @@ namespace Assets.Scripts.Game.Controllers.Player
      */
     struct PlayerPowers
     {
-        public float GravityPowerDuration;
-        public float BallRotationPowerDuration;
-        public float SpeedIncreasePowerDuration;
+        private float garvityPowerDuration;
+        public float GravityPowerDuration 
+        {
+            readonly get { return garvityPowerDuration; }
+            private set { garvityPowerDuration = value < 0 ? 0 : value; }
+        }
+
+        private float ballRotationPowerDuration;
+        public float BallRotationPowerDuration
+        {
+            readonly get { return ballRotationPowerDuration; }
+            private set { ballRotationPowerDuration = value < 0 ? 0 : value; }
+        }
+
+        private float speedIncreasePowerDuration;
+        public float SpeedIncreasePowerDuration
+        {
+            readonly get { return speedIncreasePowerDuration; }
+            private set { speedIncreasePowerDuration = value < 0 ? 0 : value; }
+        }
 
         public float EffectDuration { set; private get; }
         public void SetPower(EPowerEffects effect, float duration)
