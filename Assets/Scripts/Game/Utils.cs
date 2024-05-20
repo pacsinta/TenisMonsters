@@ -11,13 +11,6 @@ namespace Assets.Scripts
             return (T)Enum.ToObject(typeof(T), converted);
         }
 
-        public static void Swap<T>(ref T value) where T : Enum
-        {
-            int converted = Convert.ToInt32(value);
-            converted = converted == 0 ? 1 : 0;
-            value = (T)Enum.ToObject(typeof(T), converted);
-        }
-
         public static bool IsMyPlayer(EPlayerSide playerSide, bool IsHost)
         {
             return (IsHost && playerSide == EPlayerSide.Host) || (!IsHost && playerSide == EPlayerSide.Client);
