@@ -6,6 +6,7 @@ public class BallController : NetworkBehaviour
 {
     public float initialUpForce;
     public float initialMass;
+    public float massDecrease;
     public uint groundCollisinMaxTime;
     public GameController gameController;
     public float rotationUpdateTime;
@@ -148,7 +149,7 @@ public class BallController : NetworkBehaviour
     public void DecreaseWeight()
     {
         print("Ball weight decreased");
-        rb.mass = initialMass * 0.7f;
+        rb.mass = initialMass * massDecrease;
     }
     private void ResetWeight()
     {
