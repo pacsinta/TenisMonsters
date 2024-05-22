@@ -69,10 +69,6 @@ namespace Assets.Scripts.Menu.Leaderboard
             {
                 Refresh();
             }
-            else if(time >= 120)
-            {
-                Refresh();
-            }
         }
 
         private void CreateText(Transform parent, string text, string name, Color? color = null)
