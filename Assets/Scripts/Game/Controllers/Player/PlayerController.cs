@@ -190,12 +190,15 @@ namespace Assets.Scripts.Game.Controllers.Player
             GameObject collidedWithObject = other.gameObject;
             if (collidedWithObject.CompareTag("Ball"))
             {
-                print("Kick with force: " + kick.force + " and direction: " + kick.XdirectionForce);
-                kickSource.Play();
-                animator.enabled = false;
+                if(kick.force != 0 && kick.XdirectionForce != 0) // don't allow empty kicks
+                {
+                    print("Kick with force: " + kick.force + " and direction: " + kick.XdirectionForce);
+                    kickSource.Play();
+                    animator.enabled = false;
 
-                Kicking(collidedWithObject.GetComponent<NetworkObject>(), kick);
-                EndKick();
+                    Kicking(collidedWithObject.GetComponent<NetworkObject>(), kick);
+                    EndKick();
+                }
             }
         }
 
