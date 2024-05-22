@@ -1817,7 +1817,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   endText: {fileID: 1645077334}
-  end2Text: {fileID: 0}
+  end2Text: {fileID: 1998757322}
   errorText: {fileID: 862422705}
   exitBtn: {fileID: 855768204}
   tryAgainBtn: {fileID: 974463734}
