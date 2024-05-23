@@ -70,7 +70,7 @@ public class GameController : NetworkBehaviour
         }
         else
         {
-            spawnRotation = Quaternion.Euler(0, -180, 0);
+            spawnRotation = Quaternion.Euler(0, 180, 0);
         }
         var playerObject = NetworkManager.Singleton.SpawnManager.InstantiateAndSpawn(playerPrefab, client.ClientId, false, true, true, spawnPosition, spawnRotation);
         playerObject.GetComponent<PlayerController>().Environment = gameObject;
