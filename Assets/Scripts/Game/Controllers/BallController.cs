@@ -194,8 +194,9 @@ public class BallController : NetworkBehaviour
         kickData.Player = serveSide.Value;
 
         ResetRotationKick();
+        ResetWeight();
 
-        if(IsHost)
+        if (IsHost)
         {
             colliderEnabled.Value = false;
         }
