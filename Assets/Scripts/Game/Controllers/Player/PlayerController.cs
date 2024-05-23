@@ -69,7 +69,7 @@ namespace Assets.Scripts.Game.Controllers.Player
         private float currSpeed;
         void Update()
         {
-            if (!IsOwner || !IsSpawned) return;
+            if (!IsOwner || !IsSpawned) return; // false, true -> true | false 
 
             MovePlayer();
 
@@ -92,7 +92,7 @@ namespace Assets.Scripts.Game.Controllers.Player
                 DetermineKickForce(kickMouseStartPos, kickMouseEndPos, kickMouseEndTime, kickMouseStartTime);
                 SetRacketColorByKickForce();
             }
-            if (wasInKickState && animator.GetCurrentAnimatorStateInfo(0).IsName("IdleAnimation"))
+            if (wasInKickState && !animator.GetCurrentAnimatorStateInfo(0).IsName("KickAnimation"))
             {
                 // If the kick animation has ended, but the ball was not kicked, reset the kick
                 EndKick();
@@ -148,7 +148,7 @@ namespace Assets.Scripts.Game.Controllers.Player
             if (horizontalInput != 0 || verticalInput != 0)
             {
                 animator.SetBool("Running", true);
-                transform.Translate(currSpeed * Time.deltaTime * verticalInput * Vector3.forward);
+                transform.Translate(currSpeed * verticalInput * Time.deltaTime * Vector3.forward);
                 transform.Translate(currSpeed * horizontalInput * Time.deltaTime * Vector3.right);
             }
             else
@@ -190,11 +190,15 @@ namespace Assets.Scripts.Game.Controllers.Player
             GameObject collidedWithObject = other.gameObject;
             if (collidedWithObject.CompareTag("Ball"))
             {
-                print("Kick with force: " + kick.force + " and direction: " + kick.XdirectionForce);
-                kickSource.Play();
+                if(kick.force != 0 && kick.XdirectionForce != 0) // don't allow empty kicks
+                {
+                    print("Kick with force: " + kick.force + " and direction: " + kick.XdirectionForce);
+                    kickSource.Play();
+                    animator.enabled = false;
 
-                Kicking(collidedWithObject.GetComponent<NetworkObject>(), kick);
-                EndKick();
+                    Kicking(collidedWithObject.GetComponent<NetworkObject>(), kick);
+                    EndKick();
+                }
             }
         }
 

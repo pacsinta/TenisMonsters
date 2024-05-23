@@ -51,21 +51,22 @@ public class MainMenu : MonoBehaviour
             hostIpInput.interactable = true;
         }
 
-        HostAvailabilityCheck();
         PasswordValidityCheck();
+        if (connectingToHost) HostAvailabilityCheck();
     }
 
     void HostAvailabilityCheck()
     {
-        if (connectingTime < 5 && connecting)
+        if(!connectingToHost) return;
+        if (connectingTime < 5)
         {
             connectingTime += Time.deltaTime;
             errorText.text = "";
         }
-        else if (connecting)
+        else
         {
             NetworkManager.Singleton.Shutdown();
-            connecting = false;
+            connectingToHost = false;
             errorText.text = "Can't connect to a host!";
         }
     }
@@ -135,7 +136,7 @@ public class MainMenu : MonoBehaviour
         playerInfo.StorePlayerInfo();
     }
     private float connectingTime = 0;
-    private bool connecting = false;
+    private bool connectingToHost = false;
     bool StartNetworkManager(bool isHost)
     {
         NetworkManager.Singleton.Shutdown();
@@ -155,7 +156,7 @@ public class MainMenu : MonoBehaviour
                 7777
             );
             connectingTime = 0;
-            connecting = true;
+            connectingToHost = true;
             return NetworkManager.Singleton.StartClient();
         }
     }

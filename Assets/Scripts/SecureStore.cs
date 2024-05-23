@@ -3,6 +3,7 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using UnityEngine;
+using UnityEngine.Assertions;
 using UnityEngine.UIElements;
 
 namespace Assets.Scripts.Networking
@@ -17,32 +18,37 @@ namespace Assets.Scripts.Networking
 
         public static string CreateHashWithConstSalt(string password)
         {
-            byte[] encyptionConsSalt = Convert.FromBase64String(encryptionPassword);
+            byte[] encyptionConsSalt;
+            try
+            {
+                encyptionConsSalt = Convert.FromBase64String(encryptionPassword);
+            }
+            catch (FormatException)
+            {
+                Debug.Assert(false, "The encryption password is not a valid base64 string");
+                return null;
+            }
+            
             byte[] hashed = new Rfc2898DeriveBytes(password, encyptionConsSalt, 10000, HashAlgorithmName.SHA256).GetBytes(32);
             string result = Convert.ToBase64String(hashed);
             return result;
         }
-        public static void SavePassword(string key, string password)
+        public static void SavePassword(string name, string password)
         {
             string hashed = CreateHashWithConstSalt(password);
-            PlayerPrefs.SetString(key, hashed);
+            PlayerPrefs.SetString("hash-"+name, hashed);
         }
-        public static string GetHashedPassword(string key)
+        public static string GetHashedPassword(string name)
         {
-            return PlayerPrefs.GetString(key);
+            return PlayerPrefs.GetString("hash-" + name);
         }
 
-        public static string GetHashPassword(string key)
-        {
-            return PlayerPrefs.GetString(key);
-        }
-
-        public static bool SecureCheck(string key, string password)
+        public static bool SecureCheck(string name, string password)
         {
             if (password.Any(c => !char.IsLetterOrDigit(c))) return false;
-            if (!PlayerPrefs.HasKey(key)) return true; // If the key is not found, then it is a new user
+            if (!PlayerPrefs.HasKey(name)) return true; // If the key is not found, then it is a new user
 
-            string storedHash = GetHashedPassword(key);
+            string storedHash = GetHashedPassword(name);
             string testHash = CreateHashWithConstSalt(password);
             return CryptographicOperations.FixedTimeEquals(Encoding.UTF8.GetBytes(storedHash), Encoding.UTF8.GetBytes(testHash));
         }

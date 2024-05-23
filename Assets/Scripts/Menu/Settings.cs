@@ -142,7 +142,7 @@ public class Settings : MonoBehaviour
         if (changePasswordCoroutine?.Coroutine() != null) StopCoroutine(changePasswordCoroutine.Coroutine());
         changePasswordCoroutine = DatabaseHandler.ChangePassword(
             playerName.text, 
-            SecureStore.GetHashedPassword(playerName.text), 
+            SecureStore.CreateHashWithConstSalt(originalPasswordInput.text), 
             SecureStore.CreateHashWithConstSalt(changePasswordInput.text));
         StartCoroutine(changePasswordCoroutine.Coroutine());
     }

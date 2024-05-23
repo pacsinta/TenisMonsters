@@ -34,7 +34,7 @@ public class GameController : NetworkBehaviour
     readonly NetworkVariable<float> time = new();
     readonly NetworkVariable<bool> gameEnd = new(false);
     private bool timeCounting = false;
-    private float remainingTimeToSpawnPowerBall = 0;
+    private float timeToSpawnPowerBall = 0;
 
     private void Start()
     {
@@ -70,7 +70,7 @@ public class GameController : NetworkBehaviour
         }
         else
         {
-            spawnRotation = Quaternion.Euler(0, -180, 0);
+            spawnRotation = Quaternion.Euler(0, 180, 0);
         }
         var playerObject = NetworkManager.Singleton.SpawnManager.InstantiateAndSpawn(playerPrefab, client.ClientId, false, true, true, spawnPosition, spawnRotation);
         playerObject.GetComponent<PlayerController>().Environment = gameObject;
@@ -91,7 +91,8 @@ public class GameController : NetworkBehaviour
         UpdateTexts();
 
         // Pass the environment to the player objects
-        // Because the client object has a separate version on the client side, we need to pass the environment to it as well
+        // The instantiation of the players is done on the server side
+        // But the client object has a separate version on the client side, so we need to pass the GameController to it as well
         if(clientPlayerObject == null)
         {
             clientPlayerObject = GameObject.Find("ClientPlayer");
@@ -104,14 +105,14 @@ public class GameController : NetworkBehaviour
         if (timeCounting)
         {
             time.Value += Time.deltaTime;
-            remainingTimeToSpawnPowerBall += Time.deltaTime;
+            timeToSpawnPowerBall += Time.deltaTime;
         }
 
-        if (remainingTimeToSpawnPowerBall >= _gameInfo.Value.PowerBallSpawnTime)
+        if (timeToSpawnPowerBall >= _gameInfo.Value.PowerBallSpawnTime)
         {
             SpawnPowerBall(EPlayerSide.Host, _gameInfo.Value.GetAllPowerballEnabled());
             SpawnPowerBall(EPlayerSide.Client, _gameInfo.Value.GetAllPowerballEnabled());
-            remainingTimeToSpawnPowerBall = 0;
+            timeToSpawnPowerBall = 0;
         }
     }
 
