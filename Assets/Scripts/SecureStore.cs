@@ -3,6 +3,7 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using UnityEngine;
+using UnityEngine.Assertions;
 using UnityEngine.UIElements;
 
 namespace Assets.Scripts.Networking
@@ -17,7 +18,17 @@ namespace Assets.Scripts.Networking
 
         public static string CreateHashWithConstSalt(string password)
         {
-            byte[] encyptionConsSalt = Convert.FromBase64String(encryptionPassword);
+            byte[] encyptionConsSalt;
+            try
+            {
+                encyptionConsSalt = Convert.FromBase64String(encryptionPassword);
+            }
+            catch (FormatException)
+            {
+                Debug.Assert(false, "The encryption password is not a valid base64 string");
+                return null;
+            }
+            
             byte[] hashed = new Rfc2898DeriveBytes(password, encyptionConsSalt, 10000, HashAlgorithmName.SHA256).GetBytes(32);
             string result = Convert.ToBase64String(hashed);
             return result;
