@@ -9,7 +9,7 @@ namespace Assets.Scripts
         Host = 0,
         Client = 1
     }
-    public class PlayerInfo : INetworkSerializable
+    public class PlayerInfo : INetworkSerializable, System.IEquatable<PlayerInfo>
     {
         public FixedString32Bytes PlayerName;
         public int Score = 0;
@@ -38,6 +38,14 @@ namespace Assets.Scripts
         {
             serializer.SerializeValue(ref PlayerName);
             serializer.SerializeValue(ref Score);
+        }
+
+        public bool Equals(PlayerInfo playerInfo)
+        {
+            if(PlayerName == playerInfo.PlayerName && Score == playerInfo.Score) 
+                return true;
+            else
+                return false;
         }
     }
 }

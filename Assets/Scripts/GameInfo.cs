@@ -4,14 +4,19 @@ using UnityEngine;
 
 namespace Assets.Scripts
 {
-    public struct EnabledPowerBalls : INetworkSerializeByMemcpy
+    public struct EnabledPowerBalls : INetworkSerializeByMemcpy, System.IEquatable<EnabledPowerBalls>
     {
         public bool GravityPowerBall;
         public bool SpeedPowerBall;
         public bool RotationPowerBall;
+
+        public bool Equals(EnabledPowerBalls other) => 
+            GravityPowerBall == other.GravityPowerBall &&
+            SpeedPowerBall == other.SpeedPowerBall &&
+            RotationPowerBall == other.RotationPowerBall;
     }
 
-    public class GameInfo : INetworkSerializable
+    public class GameInfo : INetworkSerializable, System.IEquatable<GameInfo>
     {
         private EGameMode gameMode;
         private PowerBallInfo powerBallInfo = new()
@@ -50,11 +55,18 @@ namespace Assets.Scripts
             LongGame = 1,
             FirstToWin = 2
         }
-        private struct PowerBallInfo : INetworkSerializeByMemcpy
+        private struct PowerBallInfo : INetworkSerializeByMemcpy, System.IEquatable<PowerBallInfo>
         {
             public bool multiplePowerBalls;
             public int powerBallLiveTime;
             public int powerBallSpawnTime;
+
+            public bool Equals(PowerBallInfo other)
+            {
+                return multiplePowerBalls == other.multiplePowerBalls &&
+                       powerBallLiveTime == other.powerBallLiveTime &&
+                       powerBallSpawnTime == other.powerBallSpawnTime;
+            }
         }
 
 
@@ -131,6 +143,16 @@ namespace Assets.Scripts
         public EnabledPowerBalls GetAllPowerballEnabled()
         {
             return enabledPowerBalls;
+        }
+
+        public bool Equals(GameInfo other)
+        {
+            return gameMode == other.gameMode &&
+                   enabledPowerBalls.Equals(other.enabledPowerBalls) &&
+                   powerBallInfo.Equals(other.powerBallInfo) &&
+                   wallsEnabled == other.wallsEnabled &&
+                   skyType == other.skyType &&
+                   timeSpeed == other.timeSpeed;
         }
 
         public uint GetMaxTime

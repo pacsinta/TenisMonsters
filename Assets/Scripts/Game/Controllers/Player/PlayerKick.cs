@@ -46,7 +46,7 @@ namespace Assets.Scripts.Game.Controllers.Player
                 bool enableRotationKickEffect = clientKick ? rotationKick : currentEffects.BallRotationPowerDuration > 0;
                 bool enableGravityChangeEffect = clientKick ? gravityChange : currentEffects.GravityPowerDuration > 0;
 
-                ball.GetComponent<Rigidbody>().velocity = Vector3.zero;
+                ball.GetComponent<Rigidbody>().linearVelocity = Vector3.zero;
                 ball.transform.position += new Vector3(0, 0, 0.5f * direction); // move ball a bit forward to avoid animation clipping
 
                 float gravityAdjustment = enableGravityChangeEffect ? 0.8f : 1;
